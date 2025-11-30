@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RAG Chatbot - PDF Q&A</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .header { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .main { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+    .upload-section, .chat-section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .upload-area { border: 2px dashed #ddd; padding: 40px; text-align: center; border-radius: 8px; cursor: pointer; }
+    .upload-area:hover { border-color: #4CAF50; background: #f9f9f9; }
+    .btn { padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; }
+    .btn-primary { background: #4CAF50; color: white; }
+    .btn-primary:hover { background: #45a049; }
+    .messages { height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 4px; }
+    .message { margin-bottom: 15px; padding: 10px; border-radius: 8px; }
+    .message.user { background: #e3f2fd; margin-left: 20%; }
+    .message.assistant { background: #f5f5f5; margin-right: 20%; }
+    .input-group { display: flex; gap: 10px; }
+    .input-group input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+    .citations { margin-top: 10px; padding: 10px; background: #fff3cd; border-radius: 4px; font-size: 12px; }
+    .status { padding: 8px; margin: 10px 0; border-radius: 4px; font-size: 14px; }
+    .status.pending { background: #fff3cd; }
+    .status.processing { background: #cfe2ff; }
+    .status.done { background: #d1e7dd; }
+    .status.failed { background: #f8d7da; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    
+    const API_URL = 'http://localhost:4000/api';
+    const TOKEN = 'test-token'; // Replace with actual JWT
+    
+    function App() {
+      const [file, setFile] = useState(null);
+      const [uploadStatus, setUploadStatus] = useState(null);
+      const [messages, setMessages] = useState([]);
+      const [question, setQuestion] = useState('');
+      const [loading, setLoading] = useState(false);
+      
+      const handleFileChange = (e) => {
+        const selectedFile = e.target.files[0];
+        if (selectedFile && selectedFile.type === 'application/pdf') {
+          setFile(selectedFile);
+        } else {
+          alert('Please select a PDF file');
+        }
+      };
+      
+      const handleUpload = async () => {
+        if (!file) return;
+        
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        try {
+          const response = await fetch(`${API_URL}/upload`, {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${TOKEN}` },
+            body: formData
+          });
+          
+          const data = await response.json();
+          setUploadStatus({ id: data.uploadId, status: 'pending' });
+          checkStatus(data.uploadId);
+        } catch (error) {
+          alert('Upload failed: ' + error.message);
+        }
+      };
+      
+      const checkStatus = async (uploadId) => {
+        try {
+          const response = await fetch(`${API_URL}/upload/${uploadId}/status`, {
+            headers: { 'Authorization': `Bearer ${TOKEN}` }
+          });
+          const data = await response.json();
+          setUploadStatus(data);
+          
+          if (data.status === 'processing' || data.status === 'pending') {
+            setTimeout(() => checkStatus(uploadId), 2000);
+          }
+        } catch (error) {
+          console.error('Status check failed', error);
+        }
+      };
+      
+      const handleQuery = async () => {
+        if (!question.trim()) return;
+        
+        setMessages(prev => [...prev, { role: 'user', content: question }]);
+        setQuestion('');
+        setLoading(true);
+        
+        try {
+          const response = await fetch(`${API_URL}/query`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${TOKEN}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ question })
+          });
+          
+          const data = await response.json();
+          setMessages(prev => [...prev, {
+            role: 'assistant',
+            content: data.answer,
+            citations: data.citations
+          }]);
+        } catch (error) {
+          alert('Query failed: ' + error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+      
+      return (
+        <div className="container">
+          <div className="header">
+            <h1>RAG Chatbot - PDF Q&A System</h1>
+            <p>Upload your PDF notes and ask questions</p>
+          </div>
+          
+          <div className="main">
+            <div className="upload-section">
+              <h2>Upload PDF</h2>
+              <div className="upload-area" onClick={() => document.getElementById('fileInput').click()}>
+                <input
+                  id="fileInput"
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileChange}
+                  style={{ display: 'none' }}
+                />
+                <p>{file ? file.name : 'Click to select PDF'}</p>
+              </div>
+              <button className="btn btn-primary" onClick={handleUpload} disabled={!file} style={{ marginTop: '10px', width: '100%' }}>
+                Upload
+              </button>
+              
+              {uploadStatus && (
+                <div className={`status ${uploadStatus.status}`}>
+                  Status: {uploadStatus.status}
+                  {uploadStatus.chunks_count > 0 && ` (${uploadStatus.chunks_count} chunks)`}
+                </div>
+              )}
+            </div>
+            
+            <div className="chat-section">
+              <h2>Ask Questions</h2>
+              <div className="messages">
+                {messages.map((msg, idx) => (
+                  <div key={idx} className={`message ${msg.role}`}>
+                    <strong>{msg.role === 'user' ? 'You' : 'Assistant'}:</strong>
+                    <p>{msg.content}</p>
+                    {msg.citations && msg.citations.length > 0 && (
+                      <div className="citations">
+                        <strong>Sources:</strong>
+                        {msg.citations.map((c, i) => (
+                          <div key={i}>• {c.fileName} (Page {c.page}) - Score: {c.score.toFixed(2)}</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {loading && <div className="message assistant">Thinking...</div>}
+              </div>
+              
+              <div className="input-group">
+                <input
+                  type="text"
+                  placeholder="Ask a question about your PDFs..."
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleQuery()}
+                />
+                <button className="btn btn-primary" onClick={handleQuery} disabled={loading}>
+                  Send
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+</html>

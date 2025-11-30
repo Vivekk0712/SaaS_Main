@@ -42,6 +42,19 @@ razorpayProc.on('exit', (code) => {
 procs.push(razorpayProc)
 console.log('[dev] starting razorpay-plugin: npm run dev (in razorpay_plugin/)')
 
+// Start RAG Chatbot plugin (runs from its own directory)
+const ragProc = spawn(npmCmd, ['run', 'dev'], {
+  cwd: 'rag_chatbot_plugin',
+  stdio: 'inherit',
+  env: { ...process.env, ...envShared },
+  shell: process.platform === 'win32',
+})
+ragProc.on('exit', (code) => {
+  console.log(`[dev] rag-chatbot-plugin exited with code ${code}`)
+})
+procs.push(ragProc)
+console.log('[dev] starting rag-chatbot-plugin: npm run dev (in rag_chatbot_plugin/)')
+
 // Start websites
 run('frontend-next', npmCmd, ['run', 'dev', '-w', 'frontend-next'], envShared)
 run('onboarding-next', npmCmd, ['run', 'dev', '-w', 'onboarding-next'], envShared)

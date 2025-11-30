@@ -1,0 +1,21 @@
+# Python virtual environments
+venv/
+env/
+ENV/
+.venv/
+.env/
+virtualenv/
+__pycache__/
+*.py[cod]
+*.pyc
+.pytest_cache/
+
+# Node.js
+node_modules/
+dist/
+.env
+.env.local
+*.log
+uploads/
+temp/
+.DS_Store
