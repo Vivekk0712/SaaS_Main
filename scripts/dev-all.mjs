@@ -29,6 +29,19 @@ const envShared = {
 run('study-service', npmCmd, ['run', 'dev', '-w', '@school-sas/study-service'], envShared)
 run('onboarding-service', npmCmd, ['run', 'dev', '-w', '@school-sas/onboarding-service'], envShared)
 
+// Start Razorpay plugin (runs from its own directory)
+const razorpayProc = spawn(npmCmd, ['run', 'dev'], {
+  cwd: 'razorpay_plugin',
+  stdio: 'inherit',
+  env: { ...process.env, ...envShared },
+  shell: process.platform === 'win32',
+})
+razorpayProc.on('exit', (code) => {
+  console.log(`[dev] razorpay-plugin exited with code ${code}`)
+})
+procs.push(razorpayProc)
+console.log('[dev] starting razorpay-plugin: npm run dev (in razorpay_plugin/)')
+
 // Start websites
 run('frontend-next', npmCmd, ['run', 'dev', '-w', 'frontend-next'], envShared)
 run('onboarding-next', npmCmd, ['run', 'dev', '-w', 'onboarding-next'], envShared)
