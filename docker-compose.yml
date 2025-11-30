@@ -1,0 +1,59 @@
+version: '3.8'
+
+services:
+  # MySQL Database (for Frontend)
+  mysql:
+    image: mysql:8
+    container_name: school-mysql
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: sas
+      MYSQL_USER: sas_app
+      MYSQL_PASSWORD: 9482824040
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # MongoDB Database (for Backend Services)
+  mongodb:
+    image: mongo:latest
+    container_name: school-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # RabbitMQ (Optional - for messaging between services)
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: school-rabbitmq
+    restart: unless-stopped
+    ports:
+      - "5672:5672"      # AMQP port
+      - "15672:15672"    # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+volumes:
+  mysql_data:
+    driver: local
+  mongodb_data:
+    driver: local
+  rabbitmq_data:
+    driver: local

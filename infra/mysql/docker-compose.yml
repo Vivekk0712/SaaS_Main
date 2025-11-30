@@ -1,0 +1,22 @@
+version: "3.9"
+services:
+  mysql:
+    image: mysql:8
+    container_name: sas-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: changeme
+      MYSQL_DATABASE: sas
+      MYSQL_USER: sas_app
+      MYSQL_PASSWORD: sas_strong_password_123
+    ports:
+      - "3306:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --sql-require-primary-key=ON
+    volumes:
+      - mysql_data:/var/lib/mysql
+volumes:
+  mysql_data:
+

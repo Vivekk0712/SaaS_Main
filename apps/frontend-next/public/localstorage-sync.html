@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sync LocalStorage</title>
+</head>
+<body>
+    <h1>Syncing Student Data to LocalStorage</h1>
+    <p>This page will populate localStorage with student data from the API.</p>
+    <div id="status">Loading...</div>
+    
+    <script>
+        async function syncStudentsToLocalStorage() {
+            try {
+                const response = await fetch('/api/local/profiles/students');
+                const data = await response.json();
+                const students = data.items || [];
+                
+                // Convert to legacy format
+                const legacyStudents = students.map(student => ({
+                    usn: student.roll,
+                    name: student.name,
+                    klass: student.grade.replace('CLASS ', 'Class '),
+                    section: student.section
+                }));
+                
+                // Store in localStorage
+                localStorage.setItem('school:students', JSON.stringify(legacyStudents));
+                
+                document.getElementById('status').innerHTML = `
+                    <h2>Success!</h2>
+                    <p>Synchronized ${legacyStudents.length} students to localStorage.</p>
+                    <pre>${JSON.stringify(legacyStudents, null, 2)}</pre>
+                `;
+                
+                // Dispatch update event
+                window.dispatchEvent(new CustomEvent('school:update', { detail: { key: 'school:students' } }));
+                
+                console.log('Students synced to localStorage:', legacyStudents);
+                
+            } catch (error) {
+                document.getElementById('status').innerHTML = `
+                    <h2>Error</h2>
+                    <p>Failed to sync students: ${error.message}</p>
+                `;
+                console.error('Error syncing students:', error);
+            }
+        }
+        
+        // Run the sync
+        syncStudentsToLocalStorage();
+    </script>
+</body>
+</html>

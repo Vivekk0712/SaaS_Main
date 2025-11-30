@@ -1,0 +1,30 @@
+# CI workflow disabled temporarily
+# Uncomment when ready to enable builds
+
+# name: ci
+
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
+
+# jobs:
+#   build:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - uses: actions/checkout@v4
+
+#       - uses: actions/setup-node@v4
+#         with:
+#           node-version: 18
+#           cache: 'npm'
+      
+#       - name: Install deps
+#         run: npm ci
+
+#       - name: Build Shared Lib First
+#         run: npm run build -w @school-sas/shared-lib
+
+#       - name: Type check and build all services
+#         run: npm run build --workspaces --if-present

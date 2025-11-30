@@ -1,0 +1,45 @@
+:root {
+  --bg: #f7f8fc;
+  --panel: #ffffff;
+  --panel-border: rgba(15, 23, 42, 0.08);
+  --text: #1f2937;
+  --muted: #6b7280;
+  --blue: #3b82f6;
+  --green: #10b981;
+  --orange: #f59e0b;
+  --violet: #8b5cf6;
+}
+
+* { box-sizing: border-box }
+html, body { height: 100% }
+body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial; background: var(--bg); color: var(--text) }
+
+.wrap { min-height: 100vh; padding: 24px 16px; display: grid; gap: 16px; }
+.card { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 16px; padding: 18px; box-shadow: 0 18px 40px rgba(15,23,42,0.08) }
+.title { margin: 0 0 8px 0; font-size: 24px; }
+.subtitle { color: var(--muted); margin: 0 0 10px 0; }
+.grid { display: grid; gap: 12px; }
+.grid.cols-4 { grid-template-columns: repeat(4, minmax(0,1fr)); }
+.grid.cols-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+.grid.cols-2 { grid-template-columns: repeat(2, minmax(0,1fr)); }
+@media (max-width: 860px) { .grid.cols-4 { grid-template-columns: repeat(2, 1fr) } }
+@media (max-width: 560px) { .grid.cols-4, .grid.cols-3 { grid-template-columns: 1fr } }
+
+.stat { padding: 14px 16px; border-radius: 12px; border: 1px solid var(--panel-border) }
+.stat .label { color: var(--muted); font-size: 12px }
+.stat .value { font-weight: 800; font-size: 20px }
+.stat.blue { box-shadow: inset 0 0 0 1px rgba(59,130,246,.15) }
+.stat.green { box-shadow: inset 0 0 0 1px rgba(16,185,129,.15) }
+.stat.orange { box-shadow: inset 0 0 0 1px rgba(245,158,11,.2) }
+.stat.violet { box-shadow: inset 0 0 0 1px rgba(139,92,246,.2) }
+
+.row { display: flex; gap: 8px; align-items: center }
+.input, .select { padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(15,23,42,0.15); background: #fff }
+.table { width: 100%; border-collapse: collapse; border:1px solid var(--panel-border); border-radius: 12px; overflow: hidden }
+.table thead th { text-align: left; background: #f3f4f6; color: #374151; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; padding: 10px }
+.table tbody td { padding: 10px }
+.badge { display:inline-block; padding: 4px 8px; border-radius: 999px; font-size: 12px }
+.badge.blue { background: rgba(59,130,246,.15); color:#1d4ed8 }
+.badge.green { background: rgba(16,185,129,.15); color:#047857 }
+.chip { display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:10px; background:#f3f4f6; }
+

@@ -1,0 +1,138 @@
+{
+  "parents": [],
+  "applications": [],
+  "fees": [],
+  "profiles": {
+    "parents": [],
+    "students": []
+  },
+  "adhocFees": [
+    {
+      "id": "adhoc_milsu2ii",
+      "title": "Exam fees",
+      "purpose": "",
+      "items": [
+        {
+          "label": "NA",
+          "amount": 10
+        }
+      ],
+      "total": 10,
+      "target": {
+        "type": "student",
+        "studentName": "Aditya Kumar",
+        "parentPhone": "9000000001"
+      },
+      "createdAt": "2025-11-30T14:11:54.042Z"
+    }
+  ],
+  "attendance": {},
+  "marks": [],
+  "diary": {},
+  "circulars": [],
+  "calendar": {},
+  "meta": {
+    "version": 18,
+    "updatedAt": "2025-11-30T14:20:38.468Z"
+  },
+  "adhocBills": [
+    {
+      "id": "adhoc_bill_milr88xy_g2ny",
+      "adhocId": "adhoc_milqj63w",
+      "appId": "1A01",
+      "parentPhone": "9000000001",
+      "name": "Aditya Kumar",
+      "title": "Exam fees test",
+      "items": [
+        {
+          "label": "NA",
+          "amount": 10
+        }
+      ],
+      "total": 10,
+      "createdAt": "2025-11-30T13:26:56.326Z",
+      "status": "paid",
+      "paidAt": "2025-11-30T13:34:06.722Z"
+    },
+    {
+      "id": "adhoc_bill_milrcvxv_s7mk",
+      "adhocId": "adhoc_milqj63w",
+      "appId": "1A01",
+      "parentPhone": "9000000001",
+      "name": "Aditya Kumar",
+      "title": "Exam fees test",
+      "items": [
+        {
+          "label": "NA",
+          "amount": 10
+        }
+      ],
+      "total": 10,
+      "createdAt": "2025-11-30T13:30:32.755Z",
+      "status": "paid",
+      "paidAt": "2025-11-30T13:34:00.161Z"
+    },
+    {
+      "id": "adhoc_bill_milrhrhc_9mkx",
+      "adhocId": "adhoc_milqj63w",
+      "appId": "1A01",
+      "parentPhone": "9000000001",
+      "name": "Aditya Kumar",
+      "title": "Exam fees test",
+      "items": [
+        {
+          "label": "NA",
+          "amount": 10
+        }
+      ],
+      "total": 10,
+      "createdAt": "2025-11-30T13:34:20.256Z",
+      "status": "paid",
+      "paidAt": "2025-11-30T13:40:02.684Z"
+    },
+    {
+      "id": "adhoc_bill_milrotdq_we00",
+      "adhocId": "adhoc_milqj63w",
+      "appId": "1A01",
+      "parentPhone": "9000000001",
+      "name": "Aditya Kumar",
+      "title": "Exam fees test",
+      "items": [
+        {
+          "label": "NA",
+          "amount": 10
+        }
+      ],
+      "total": 10,
+      "createdAt": "2025-11-30T13:39:49.310Z",
+      "status": "paid",
+      "paidAt": "2025-11-30T13:40:34.788Z"
+    },
+    {
+      "id": "adhoc_bill_milsvd59_it3w",
+      "adhocId": "adhoc_milsu2ii",
+      "appId": "1A01",
+      "parentPhone": "9000000001",
+      "name": "Aditya Kumar",
+      "title": "Exam fees",
+      "items": [
+        {
+          "label": "NA",
+          "amount": 10
+        }
+      ],
+      "total": 10,
+      "createdAt": "2025-11-30T14:12:54.477Z",
+      "status": "paid",
+      "paidAt": "2025-11-30T14:20:38.467Z"
+    }
+  ],
+  "academics": {
+    "subjects": [],
+    "classSubjects": {},
+    "syllabus": {},
+    "textbooks": {},
+    "materials": {},
+    "pyqs": {}
+  }
+}

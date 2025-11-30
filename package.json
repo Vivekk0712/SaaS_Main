@@ -1,0 +1,37 @@
+{
+  "name": "school-sas-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w frontend-next",
+    "dev": "npm run dev -w frontend-next",
+    "start": "npm run start -w frontend-next",
+    "dev:admissions": "npm run dev -w admissions-form-next",
+    "build:admissions": "npm run build -w admissions-form-next",
+    "start:admissions": "npm run start -w admissions-form-next",
+    "dev:onboarding": "npm run dev -w onboarding-next",
+    "dev:students": "npm run dev -w students-next",
+    "build:onboarding": "npm run build -w onboarding-next",
+    "build:students": "npm run build -w students-next",
+    "start:onboarding": "npm run start -w onboarding-next",
+    "start:students": "npm run start -w students-next",
+    "dev:onboarding-service": "npm run dev -w @school-sas/onboarding-service",
+    "build:onboarding-service": "npm run build -w @school-sas/onboarding-service",
+    "start:onboarding-service": "npm run start -w @school-sas/onboarding-service",
+    "dev:stack": "node scripts/dev-all.mjs",
+    "lint": "echo 'add lints in packages/shared-config' && exit 0",
+    "test": "echo 'no tests yet' && exit 0",
+    "db:apply": "node apps/frontend-next/scripts/apply-schema-from-doc.mjs",
+    "db:seed": "node apps/frontend-next/scripts/seed-master.mjs && node apps/frontend-next/scripts/seed-dummy.mjs && node apps/frontend-next/scripts/seed-academics.mjs && node apps/onboarding-next/scripts/seed-parent-auth.mjs",
+    "db:all": "bash scripts/setup-and-seed.sh",
+    "db:backfill-guardians": "node apps/frontend-next/scripts/backfill-guardians.mjs"
+  },
+  "devDependencies": {
+    "@types/amqplib": "^0.10.8"
+  }
+}
