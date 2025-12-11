@@ -521,13 +521,9 @@ export default function StudentDashboard() {
 
   const navLinks: Array<{ href: Route; label: string; icon: string }> = [
     { href: '/student/dashboard', label: 'Dashboard', icon: '🏠' },
-    { href: '/student/progress', label: 'Progress', icon: '📊' },
-    { href: '/student/attendance', label: 'Attendance', icon: '✅' },
     { href: '/student/diary', label: 'Digital Diary', icon: '📔' },
     { href: '/student/calendar', label: 'Calendar', icon: '📅' },
-    { href: '/student/circulars', label: 'Circulars', icon: '📣' },
-    { href: '/student/syllabus', label: 'Academic Syllabus', icon: '📘' },
-    { href: '/student/ai-tutor', label: 'AI Tutor', icon: '🤖' }
+    { href: '/student/syllabus', label: 'Academic Syllabus', icon: '📘' }
   ]
 
   const closeMenu = React.useCallback(() => {
@@ -658,20 +654,7 @@ export default function StudentDashboard() {
             <strong>STUDENT</strong>
           </div>
           <nav className="tabs" aria-label="Student navigation">
-            {navLinks
-              .filter(link =>
-                link.href !== '/student/dashboard' &&
-                link.href !== '/student/calendar' &&
-                link.href !== '/student/circulars'
-              )
-              .map(link => {
-                const active = pathname?.startsWith(link.href)
-                return (
-                  <Link key={link.href} className={`tab ${active ? 'tab-active' : ''}`} href={link.href}>
-                    {link.label}
-                  </Link>
-                )
-              })}
+            {/* Top bar tabs hidden as requested */}
           </nav>
           <div className="actions" style={{ position: 'relative' }}>
             <button
@@ -1156,7 +1139,7 @@ export default function StudentDashboard() {
               {/* Circular / News (using real circulars) - compact pill card */}
               <MotionSection
                 className="card"
-                style={{ padding: 12, borderRadius: 16 }}
+                style={{ padding: 12, borderRadius: 16, display: 'none' }}
                 variants={cardVariants}
                 whileHover={{ y: -4, transition: { duration: 0.2 } }}
               >
@@ -1663,6 +1646,15 @@ export default function StudentDashboard() {
           </div>
         </div>
       </div>
+
+      <Link
+        href="/student/ai-tutor"
+        className="chat-ai-fab"
+        aria-label="Chat with AI tutor"
+      >
+        <span className="chat-ai-icon">🤖</span>
+        <span className="chat-ai-label">Chat with AI</span>
+      </Link>
     </MotionDiv>
   )
 }

@@ -1,12 +1,15 @@
 "use client"
 import React from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import type { Route } from 'next'
+import { useRouter, usePathname } from 'next/navigation'
 import {
   getClasses,
   getSectionsForClass,
   addCalendarEvent,
   readCalendarByMonth,
+  type AttachmentLink,
+  type AttachmentFile,
 } from '../data'
 
 type CalendarItem = {
@@ -20,7 +23,20 @@ type CalendarItem = {
   section?: string
 }
 
+const navLinks: Array<{ href: Route; label: string; icon: string }> = [
+  { href: '/teacher/dashboard', label: 'Dashboard', icon: '🏠' },
+  { href: '/teacher/attendance', label: 'Attendance', icon: '✅' },
+  { href: '/teacher/analytics', label: 'Analytics', icon: '📈' },
+  { href: '/teacher/assignments', label: 'Assignments', icon: '📚' },
+  { href: '/teacher/diary', label: 'Digital Diary', icon: '📔' },
+  { href: '/teacher/calendar', label: 'Academic Calendar', icon: '📅' },
+  { href: '/teacher/marks', label: 'Marks Entry', icon: '✏️' },
+  { href: '/teacher/academic-content', label: 'Academic Content', icon: '📘' },
+  { href: '/teacher/circulars', label: 'Circulars', icon: '📣' },
+]
+
 export default function TeacherCalendarPage() {
+  const pathname = usePathname()
   const router = useRouter()
   const [teacherName, setTeacherName] = React.useState<string>('Teacher')
 
@@ -34,6 +50,10 @@ export default function TeacherCalendarPage() {
   const [calScopeSection, setCalScopeSection] = React.useState<string>('')
   const [calList, setCalList] = React.useState<CalendarItem[]>([])
   const [message, setMessage] = React.useState('')
+  const [calLinkInput, setCalLinkInput] = React.useState('')
+  const [calAttachments, setCalAttachments] = React.useState<
+    Array<AttachmentLink | AttachmentFile>
+  >([])
 
   React.useEffect(() => {
     try {
@@ -88,6 +108,7 @@ export default function TeacherCalendarPage() {
       createdBy: string
       klass?: string
       section?: string
+      attachments?: Array<AttachmentLink | AttachmentFile>
     }> = []
     let current: any = null
     const pushCurrent = () => {
@@ -118,16 +139,51 @@ export default function TeacherCalendarPage() {
           createdBy: ev.createdBy,
           klass: ev.klass,
           section: ev.section,
+          attachments: Array.isArray(ev.attachments) ? ev.attachments : undefined,
         }
       } else {
         if (ev.date < current.start) current.start = ev.date
         if (ev.date > current.end) current.end = ev.date
         if (!current.description && ev.description) current.description = ev.description
+        if (!current.attachments && Array.isArray(ev.attachments) && ev.attachments.length) {
+          current.attachments = ev.attachments
+        }
       }
     }
     pushCurrent()
     return out
   }, [calList])
+
+  const addCalLink = () => {
+    try {
+      const u = new URL(calLinkInput.trim())
+      setCalAttachments(prev => [{ type: 'link', url: u.toString() } as AttachmentLink, ...prev])
+      setCalLinkInput('')
+    } catch {
+      setMessage('Enter a valid URL starting with http or https')
+      setTimeout(() => setMessage(''), 1200)
+    }
+  }
+
+  const addCalFiles = async (files?: FileList | null) => {
+    if (!files) return
+    const items: AttachmentFile[] = []
+    for (const f of Array.from(files)) {
+      const dataUrl = await new Promise<string>((res, rej) => {
+        const r = new FileReader()
+        r.onerror = () => rej('')
+        r.onload = () => res(String(r.result))
+        r.readAsDataURL(f)
+      })
+      items.push({
+        type: 'file',
+        name: f.name,
+        mime: f.type || 'application/octet-stream',
+        dataUrl,
+      })
+    }
+    if (items.length) setCalAttachments(prev => [...items, ...prev])
+  }
 
   const onAddCalendarEvent = () => {
     if (!calTitle.trim()) {
@@ -163,42 +219,50 @@ export default function TeacherCalendarPage() {
         payload.klass = calScopeClass
         if (calScopeSection) payload.section = calScopeSection
       }
+      if (calAttachments.length) {
+        payload.attachments = calAttachments
+      }
       addCalendarEvent(payload)
     })
     setMessage('Calendar event added.')
     setCalDesc('')
     setCalTitle('')
+    setCalAttachments([])
+    setCalLinkInput('')
     refreshCalList()
   }
 
   return (
-    <div>
-      <div className="topbar">
+    <div className="teacher-shell">
+      <div className="topbar topbar-teacher">
         <div className="topbar-inner">
           <div className="brand-mark">
             <span className="dot" />
             <strong>Teacher</strong>
           </div>
-          <nav className="tabs" aria-label="Teacher navigation">
-            <Link className="tab" href="/teacher/dashboard">
-              Dashboard
-            </Link>
-            <Link className="tab" href="/teacher/academic-content">
-              Academic Content
-            </Link>
-            <Link className="tab" href="/teacher/circulars">
-              Circulars
-            </Link>
-            <Link className="tab" href="/teacher/marks">
-              Marks Entry
-            </Link>
-            <span className="tab tab-active">Academic Calendar</span>
-          </nav>
         </div>
       </div>
 
-      <div className="dash-wrap">
-        <div className="dash">
+      <div className="dash-wrap teacher-main">
+        <div className="dash-layout">
+          <aside className="side-nav side-nav-teacher" aria-label="Teacher quick navigation">
+            {navLinks.map(link => {
+              const active = pathname?.startsWith(link.href)
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`side-nav-link ${active ? 'side-nav-link-active' : ''}`}
+                  aria-label={link.label}
+                >
+                  <span className="side-nav-icon">{link.icon}</span>
+                  <span>{link.label.split(' ')[0]}</span>
+                </Link>
+              )
+            })}
+          </aside>
+
+          <div className="dash">
           <h2 className="title">Academic Calendar</h2>
           <p className="subtitle">
             Add PTMs, holidays, and events for the whole school or specific classes/sections and see
@@ -281,6 +345,62 @@ export default function TeacherCalendarPage() {
                   value={calDesc}
                   onChange={e => setCalDesc(e.target.value)}
                 />
+
+                <div className="row">
+                  <input
+                    className="input"
+                    placeholder="https://link.to/resource"
+                    value={calLinkInput}
+                    onChange={e => setCalLinkInput(e.target.value)}
+                  />
+                  <button type="button" className="btn-ghost" onClick={addCalLink}>
+                    Add Link
+                  </button>
+                </div>
+
+                <div className="row" style={{ alignItems: 'center' }}>
+                  <input
+                    className="input"
+                    type="file"
+                    multiple
+                    onChange={e => addCalFiles(e.target.files)}
+                  />
+                </div>
+
+                {calAttachments.length > 0 && (
+                  <div style={{ display: 'grid', gap: 6 }}>
+                    {calAttachments.map((a, i) => (
+                      <div
+                        key={i}
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          border: '1px dashed var(--panel-border)',
+                          borderRadius: 8,
+                          padding: '6px 10px',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span className="note">{a.type === 'link' ? 'Link' : 'File'}</span>
+                          <span style={{ fontWeight: 600 }}>
+                            {a.type === 'link' ? a.url : a.name}
+                          </span>
+                        </div>
+                        <button
+                          className="btn-ghost"
+                          type="button"
+                          onClick={() =>
+                            setCalAttachments(prev => prev.filter((_, idx) => idx !== i))
+                          }
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
                 <div className="actions">
                   <button className="btn" type="button" onClick={onAddCalendarEvent}>
                     Add Event
@@ -306,6 +426,53 @@ export default function TeacherCalendarPage() {
                     <div className="note-title">{e.title}</div>
                     <small>{e.start === e.end ? e.start : `${e.start} → ${e.end}`}</small>
                     {e.description && <p>{e.description}</p>}
+                    {Array.isArray(e.attachments) && e.attachments.length > 0 && (
+                      <div style={{ display: 'grid', gap: 4, margin: '6px 0' }}>
+                        {e.attachments.map((a, j) => (
+                          <div
+                            key={j}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              border: '1px dashed var(--panel-border)',
+                              borderRadius: 8,
+                              padding: '4px 8px',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span className="note">
+                                {a.type === 'link' ? 'Link' : 'File'}
+                              </span>
+                              <span
+                                style={{
+                                  fontWeight: 600,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                }}
+                              >
+                                {a.type === 'link' ? a.url : a.name}
+                              </span>
+                            </div>
+                            {a.type === 'link' ? (
+                              <a
+                                className="back"
+                                href={a.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Open
+                              </a>
+                            ) : (
+                              <a className="back" href={a.dataUrl} download={a.name}>
+                                Download
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <small>
                       By {e.createdBy}
                       {e.klass && ` • ${e.klass}`}
@@ -321,6 +488,7 @@ export default function TeacherCalendarPage() {
             <Link className="back" href="/teacher/dashboard">
               &larr; Back to dashboard
             </Link>
+          </div>
           </div>
         </div>
       </div>

@@ -98,7 +98,6 @@ export default function TeacherAttendancePage() {
   const navLinks: Array<{ href: Route; label: string; icon: string }> = [
     { href: '/teacher/dashboard', label: 'Dashboard', icon: '🏠' },
     { href: '/teacher/attendance', label: 'Attendance', icon: '✅' },
-    { href: '/teacher/students', label: 'Students', icon: '👥' },
     { href: '/teacher/analytics', label: 'Analytics', icon: '📈' },
     { href: '/teacher/assignments', label: 'Assignments', icon: '📚' },
     { href: '/teacher/diary', label: 'Digital Diary', icon: '📔' },
@@ -118,14 +117,29 @@ export default function TeacherAttendancePage() {
     if (attendanceTopic.trim()) {
       saveAttendanceTopic(date, klass, section, hour, attendanceTopic)
     }
-    setMessage('Attendance saved.')
+    const hourLabel = `Hour ${hour}`
+    const classLabel = klass || 'Class'
+    const sectionLabel = section || ''
+    const subjectLabel = attSubject || 'Subject'
+    const dateLabel = date || new Date().toISOString().slice(0, 10)
+    setMessage(`Attendance saved for ${classLabel} ${sectionLabel} • ${dateLabel} • ${hourLabel} • ${subjectLabel}`)
     setTimeout(() => setMessage(''), 1500)
   }
 
   return (
-    <div className="dash-wrap">
-      <div className="dash-layout">
-        <aside className="side-nav" aria-label="Teacher quick navigation">
+    <div className="teacher-shell">
+      <div className="topbar topbar-teacher">
+        <div className="topbar-inner">
+          <div className="brand-mark">
+            <span className="dot" />
+            <strong>Teacher</strong>
+          </div>
+        </div>
+      </div>
+
+      <div className="dash-wrap teacher-main">
+        <div className="dash-layout">
+          <aside className="side-nav side-nav-teacher" aria-label="Teacher quick navigation">
           {navLinks.map(link => {
             const active = pathname?.startsWith(link.href)
             return (
@@ -140,19 +154,13 @@ export default function TeacherAttendancePage() {
               </Link>
             )
           })}
-        </aside>
+          </aside>
 
-        <div className="dash">
+          <div className="dash">
           <h2 className="title">Mark Attendance</h2>
           <p className="subtitle">
             Choose class, section, date, hour, and subject to record per-period attendance.
           </p>
-
-          {message && (
-            <div className="badge info" style={{ marginBottom: 8 }}>
-              {message}
-            </div>
-          )}
 
           <section className="cal" aria-label="Attendance">
             <div className="cal-head">
@@ -339,7 +347,15 @@ export default function TeacherAttendancePage() {
                     )
                   })}
                 </div>
-                <div className="actions">
+                <div className="actions" style={{ flexDirection: 'column', alignItems: 'flex-start', gap: 6 }}>
+                  {message && (
+                    <div
+                      className="badge info"
+                      style={{ marginBottom: 4, alignSelf: 'stretch', textAlign: 'left' }}
+                    >
+                      {message}
+                    </div>
+                  )}
                   <button className="btn" type="button" onClick={onSaveAttendance}>
                     Save Attendance
                   </button>
@@ -347,6 +363,7 @@ export default function TeacherAttendancePage() {
               </div>
             </div>
           </section>
+        </div>
         </div>
       </div>
     </div>

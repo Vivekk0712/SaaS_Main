@@ -158,8 +158,7 @@ export default function AITutorPage() {
     { href: '/student/diary', label: 'Diary', icon: '📔' },
     { href: '/student/calendar', label: 'Calendar', icon: '📅' },
     { href: '/student/circulars', label: 'Circulars', icon: '📣' },
-    { href: '/student/syllabus', label: 'Syllabus', icon: '📚' },
-    { href: '/student/ai-tutor', label: 'AI Tutor', icon: '🤖' },
+    { href: '/student/syllabus', label: 'Syllabus', icon: '📚' }
   ]
 
   return (

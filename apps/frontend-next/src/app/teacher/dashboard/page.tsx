@@ -6,6 +6,48 @@ import { usePathname, useRouter } from 'next/navigation'
 import { seedIfNeeded, getClasses, getSectionsForClass, rosterBy, saveAttendance, readAttendance, readAttendanceTopic, saveAttendanceTopic, saveDiary, addCalendarEvent, readCalendarByMonth, getAssignedClassesForTeacher, getAssignedSectionsForTeacher, hourOptionsForClass, getHoursForClass, getAssignedSubjectsForTeacher, getSubjects, getClassSubjects, listTestsForClass, subjectAveragesForTest, getMarkSheet, classAttendanceAverageBefore, classAttendanceAverageBetween, saveAssignment } from '../data'
 import { BarChart, type BarSeries } from '../../components/BarChart'
 
+type EventColor = 'blue' | 'green' | 'orange'
+type Event = { date: string; title: string; color: EventColor; description: string; tag: string }
+
+function getMonthMatrix(base: Date) {
+  const first = new Date(base.getFullYear(), base.getMonth(), 1)
+  const start = new Date(first)
+  start.setDate(first.getDate() - ((first.getDay() + 6) % 7)) // start on Monday
+  const days: Date[] = []
+  for (let i = 0; i < 42; i++) {
+    const d = new Date(start)
+    d.setDate(start.getDate() + i)
+    days.push(d)
+  }
+  return days
+}
+
+function formatYMD(d: Date) {
+  const m = (d.getMonth() + 1).toString().padStart(2, '0')
+  const day = d.getDate().toString().padStart(2, '0')
+  return `${d.getFullYear()}-${m}-${day}`
+}
+
+const MONTHS = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December'
+]
+
+function ymOf(d: Date) {
+  const m = (d.getMonth() + 1).toString().padStart(2, '0')
+  return `${d.getFullYear()}-${m}`
+}
+
 function useTheme() {
   const [theme, setTheme] = React.useState<'light' | 'dark'>('light')
   const [mounted, setMounted] = React.useState(false)
@@ -32,6 +74,11 @@ export default function TeacherDashboard() {
   const router = useRouter()
   const pathname = usePathname()
   const { theme, toggle } = useTheme()
+
+  const [month, setMonth] = React.useState(() => new Date())
+  const [selectedDay, setSelectedDay] = React.useState<string | null>(() =>
+    new Date().toISOString().slice(0, 10),
+  )
   const [mountedUI, setMountedUI] = React.useState(false)
   React.useEffect(() => { setMountedUI(true) }, [])
   const [teacher, setTeacher] = React.useState<{ name: string; subject: string } | null>(null)
@@ -72,6 +119,107 @@ export default function TeacherDashboard() {
   const [calScopeClass, setCalScopeClass] = React.useState<string>('')
   const [calScopeSection, setCalScopeSection] = React.useState<string>('')
   const [attendanceTopic, setAttendanceTopic] = React.useState('')
+  const [classFilterOpen, setClassFilterOpen] = React.useState(false)
+  const [selectedClassSections, setSelectedClassSections] = React.useState<string[]>([])
+  const classFilterRef = React.useRef<HTMLDivElement | null>(null)
+
+  const days = React.useMemo(() => getMonthMatrix(month), [month])
+  const isSameMonth = (d: Date) => d.getMonth() === month.getMonth()
+  const isToday = (d: Date) => {
+    const t = new Date()
+    return (
+      d.getFullYear() === t.getFullYear() &&
+      d.getMonth() === t.getMonth() &&
+      d.getDate() === t.getDate()
+    )
+  }
+  const monthStr = `${MONTHS[month.getMonth()]} ${month.getFullYear()}`
+  const [extraEvents, setExtraEvents] = React.useState<Event[]>([])
+  React.useEffect(() => {
+    try {
+      const raw = localStorage.getItem('school:calendar')
+      if (!raw) {
+        setExtraEvents([])
+        return
+      }
+      const store = JSON.parse(raw)
+      const out: Event[] = []
+      for (const k of Object.keys(store)) {
+        const v = store[k]
+        const arr = Array.isArray(v) ? v : [v]
+        for (const ev of arr) {
+          out.push({
+            date: ev.date,
+            title: ev.title,
+            color: ev.color as EventColor,
+            description: ev.description,
+            tag: ev.tag,
+          })
+        }
+      }
+      setExtraEvents(out)
+    } catch {
+      setExtraEvents([])
+    }
+  }, [])
+  React.useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'school:calendar') {
+        try {
+          const raw = localStorage.getItem('school:calendar')
+          const store = raw ? JSON.parse(raw) : {}
+          const out: Event[] = []
+          for (const k of Object.keys(store)) {
+            const v = store[k]
+            const arr = Array.isArray(v) ? v : [v]
+            for (const ev of arr)
+              out.push({
+                date: ev.date,
+                title: ev.title,
+                color: ev.color as EventColor,
+                description: ev.description,
+                tag: ev.tag,
+              })
+          }
+          setExtraEvents(out)
+        } catch {
+          setExtraEvents([])
+        }
+      }
+    }
+    const onBus = () => {
+      try {
+        const raw = localStorage.getItem('school:calendar')
+        const store = raw ? JSON.parse(raw) : {}
+        const out: Event[] = []
+        for (const k of Object.keys(store)) {
+          const v = store[k]
+          const arr = Array.isArray(v) ? v : [v]
+          for (const ev of arr)
+            out.push({
+              date: ev.date,
+              title: ev.title,
+              color: ev.color as EventColor,
+              description: ev.description,
+              tag: ev.tag,
+            })
+        }
+        setExtraEvents(out)
+      } catch {
+        setExtraEvents([])
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    window.addEventListener('school:update', onBus as EventListener)
+    return () => {
+      window.removeEventListener('storage', onStorage)
+      window.removeEventListener('school:update', onBus as EventListener)
+    }
+  }, [])
+  const eventsThisMonth = React.useMemo(
+    () => extraEvents.filter(e => e.date.slice(0, 7) === ymOf(month)),
+    [extraEvents, month],
+  )
 
   // Attendance subjects list (computed client-side)
   const previewPhoto = photoDraft ?? photo
@@ -167,7 +315,6 @@ export default function TeacherDashboard() {
     reader.readAsDataURL(file)
   }
 
-
   const graphData = React.useMemo(() => {
     const tests = listTestsForClass(calScopeClass || '', (calScopeSection || '') as any).slice(0, 2)
     const classSubs = getClassSubjects(calScopeClass || '', calScopeSection || '')
@@ -211,10 +358,77 @@ export default function TeacherDashboard() {
     return { subjects, series }
   }, [calScopeClass, calScopeSection])
 
+  const teacherClassSections = React.useMemo(() => {
+    if (!teacher) return [] as Array<{ klass: string; section: string }>
+    const classes = getAssignedClassesForTeacher(teacher.name)
+    const baseClasses = classes.length ? classes : getClasses()
+    const out: Array<{ klass: string; section: string }> = []
+    for (const klass of baseClasses) {
+      const secs = getAssignedSectionsForTeacher(teacher.name, klass)
+      const baseSecs = secs.length ? secs : getSectionsForClass(klass)
+      for (const section of baseSecs) {
+        if (!klass || !section) continue
+        out.push({ klass, section })
+      }
+    }
+    return out
+  }, [teacher])
+
+  const subjectPerformance = React.useMemo(() => {
+    if (!teacher) return [] as Array<{ key: string; klass: string; section: string; subject: string; pct: number | null }>
+    const combos: Array<{ key: string; klass: string; section: string; subject: string; pct: number | null }> = []
+    for (const { klass, section } of teacherClassSections) {
+      const assigned = getAssignedSubjectsForTeacher(teacher.name, klass, section)
+      const baseSubjects = assigned.length ? assigned : (teacherSubjects.length ? teacherSubjects : getSubjects())
+      const tests = listTestsForClass(klass, section as any)
+      for (const subject of baseSubjects) {
+        let pct: number | null = null
+        if (tests.length) {
+          let sum = 0
+          let count = 0
+          for (const t of tests) {
+            const avgs = subjectAveragesForTest(klass, section as any, t)
+            const found = avgs.find(x => x.subject.toLowerCase() === String(subject).toLowerCase())
+            if (found) {
+              sum += found.pct
+              count += 1
+            }
+          }
+          if (count) pct = Math.round(sum / count)
+        }
+        combos.push({
+          key: `${klass}||${section}||${subject}`,
+          klass,
+          section,
+          subject,
+          pct,
+        })
+      }
+    }
+    return combos
+  }, [teacher, teacherClassSections, teacherSubjects])
+
+  const filteredSubjectPerformance = React.useMemo(() => {
+    if (!selectedClassSections.length) return subjectPerformance
+    const allowed = new Set(selectedClassSections)
+    return subjectPerformance.filter(item => allowed.has(`${item.klass}||${item.section}`))
+  }, [subjectPerformance, selectedClassSections])
+
+  React.useEffect(() => {
+    if (!classFilterOpen) return
+    const onDown = (event: MouseEvent) => {
+      const target = event.target as Node | null
+      if (!target) return
+      if (classFilterRef.current?.contains(target)) return
+      setClassFilterOpen(false)
+    }
+    document.addEventListener('pointerdown', onDown)
+    return () => document.removeEventListener('pointerdown', onDown)
+  }, [classFilterOpen])
+
   const navLinks: Array<{ href: Route; label: string; icon: string }> = [
     { href: '/teacher/dashboard', label: 'Dashboard', icon: '🏠' },
     { href: '/teacher/attendance', label: 'Attendance', icon: '✅' },
-    { href: '/teacher/students', label: 'Students', icon: '👥' },
     { href: '/teacher/analytics', label: 'Analytics', icon: '📈' },
     { href: '/teacher/assignments', label: 'Assignments', icon: '📚' },
     { href: '/teacher/diary', label: 'Digital Diary', icon: '📔' },
@@ -411,43 +625,20 @@ export default function TeacherDashboard() {
   }, [calList])
 
   if (!mountedUI) {
-    return (
-      <div>
-        <div className="topbar">
-          <div className="topbar-inner">
-            <div className="brand-mark"><span className="dot" /><strong>Teacher</strong></div>
-          </div>
-        </div>
-        <div className="dash-wrap"><div className="dash"><p className="subtitle">Loading…</p></div></div>
-      </div>
-    )
+    return null
   }
 
   return (
-    <div>
-          <div className="topbar">
+    <div className="teacher-shell">
+      <div className="topbar topbar-teacher">
         <div className="topbar-inner">
           <div className="brand-mark">
             <span className="dot" />
             <strong>Teacher</strong>
           </div>
-          <nav className="tabs" aria-label="Teacher navigation">
-            {navLinks.filter(link => link.href !== '/teacher/diary' && link.href !== '/teacher/calendar').map(link => {
-              const active = pathname?.startsWith(link.href)
-              return (
-                <Link
-                  key={link.href}
-                  className={`tab ${active ? 'tab-active' : ''}`}
-                  href={link.href}
-                >
-                  {link.label}
-                </Link>
-              )
-            })}
-          </nav>
-          <div className="actions" style={{ position: 'relative', display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+          <div className="actions" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <button className="btn-ghost" onClick={toggle} aria-label="Toggle theme">
-              {theme === 'light' ? 'Dark' : 'Light'}
+              {theme === 'light' ? 'Dark' : 'Light'} Mode
             </button>
             {photo ? (
               <img
@@ -467,11 +658,21 @@ export default function TeacherDashboard() {
               />
             )}
             {menuOpen && (
-              <div ref={menuRef} className="menu" role="dialog" aria-label="Profile settings">
+              <div
+                ref={menuRef}
+                className="menu"
+                role="dialog"
+                aria-label="Profile settings"
+              >
                 <div className="menu-title">Profile Settings</div>
                 <div className="field">
                   <label className="label">Name</label>
-                  <input className="input" value={profileDraftName} onChange={e=>setProfileDraftName(e.target.value)} placeholder="Teacher name" />
+                  <input
+                    className="input"
+                    value={profileDraftName}
+                    onChange={e => setProfileDraftName(e.target.value)}
+                    placeholder="Teacher name"
+                  />
                 </div>
                 <div className="field">
                   <label className="label">Subject</label>
@@ -479,35 +680,80 @@ export default function TeacherDashboard() {
                 </div>
                 <div className="field">
                   <label className="label">Reset Password (simple)</label>
-                  <input className="input" type="password" value={profileDraftPassword} onChange={e=>setProfileDraftPassword(e.target.value)} placeholder="Enter new simple password" />
+                  <input
+                    className="input"
+                    type="password"
+                    value={profileDraftPassword}
+                    onChange={e => setProfileDraftPassword(e.target.value)}
+                    placeholder="Enter new simple password"
+                  />
                 </div>
                 <div className="field">
                   <label className="label">Profile Photo</label>
-                  <input className="input" type="file" accept="image/*" onChange={e=>onPhotoChange(e.target.files?.[0])} />
-                  {photoDraft && <div className="profile-preview">Preview ready. Save to keep changes.</div>}
+                  <input
+                    className="input"
+                    type="file"
+                    accept="image/*"
+                    onChange={e => onPhotoChange(e.target.files?.[0])}
+                  />
+                  {photoDraft && (
+                    <div className="profile-preview">
+                      Preview ready. Save to keep changes.
+                    </div>
+                  )}
                 </div>
                 {profileMessage && <div className="profile-message">{profileMessage}</div>}
                 <div className="actions">
-                  <button className="btn" type="button" onClick={() => {
-                    try {
-                      const trimmed = profileDraftName.trim() || (teacher?.name || 'Teacher')
-                      if (teacher) {
-                        const payload = { ...teacher, name: trimmed }
-                        sessionStorage.setItem('teacher', JSON.stringify(payload))
-                        setTeacher(payload)
+                  <button
+                    className="btn"
+                    type="button"
+                    onClick={() => {
+                      try {
+                        const trimmed = profileDraftName.trim() || (teacher?.name || 'Teacher')
+                        if (teacher) {
+                          const payload = { ...teacher, name: trimmed }
+                          sessionStorage.setItem('teacher', JSON.stringify(payload))
+                          setTeacher(payload)
+                        }
+                        if (teacherKey) {
+                          try {
+                            localStorage.setItem(
+                              `teacher:profile:${teacherKey}`,
+                              JSON.stringify({
+                                name: trimmed,
+                                password: profileDraftPassword.trim() || '',
+                              })
+                            )
+                          } catch {}
+                          if (photoDraft) {
+                            try {
+                              localStorage.setItem(`teacher:photo:${teacherKey}`, photoDraft)
+                            } catch {}
+                            setPhoto(photoDraft)
+                            setPhotoDraft(null)
+                          }
+                        }
+                        setProfileDraftPassword('')
+                        setProfileMessage('Profile updated successfully.')
+                      } catch {
+                        setProfileMessage('Could not update profile. Please try again.')
                       }
-                      if (teacherKey) {
-                        try { localStorage.setItem(`teacher:profile:${teacherKey}`, JSON.stringify({ name: trimmed, password: profileDraftPassword.trim() || '' })) } catch {}
-                        if (photoDraft) { try { localStorage.setItem(`teacher:photo:${teacherKey}`, photoDraft) } catch {} }
-                        if (photoDraft) { setPhoto(photoDraft); setPhotoDraft(null) }
-                      }
+                    }}
+                  >
+                    Save changes
+                  </button>
+                  <button
+                    className="btn-ghost"
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false)
+                      setPhotoDraft(null)
                       setProfileDraftPassword('')
-                      setProfileMessage('Profile updated successfully.')
-                    } catch {
-                      setProfileMessage('Could not update profile. Please try again.')
-                    }
-                  }}>Save changes</button>
-                  <button className="btn-ghost" type="button" onClick={() => { setMenuOpen(false); setPhotoDraft(null); setProfileDraftPassword(''); setProfileMessage('') }}>Close</button>
+                      setProfileMessage('')
+                    }}
+                  >
+                    Close
+                  </button>
                 </div>
               </div>
             )}
@@ -515,14 +761,22 @@ export default function TeacherDashboard() {
         </div>
       </div>
 
-      {/* Close profile menu on outside click / Escape */}
       {menuOpen && (
-        <ProfileMenuCloser onClose={() => { setMenuOpen(false); setPhotoDraft(null); setProfileDraftPassword(''); setProfileMessage('') }} anchorRef={avatarRef} menuRef={menuRef} />
+        <ProfileMenuCloser
+          onClose={() => {
+            setMenuOpen(false)
+            setPhotoDraft(null)
+            setProfileDraftPassword('')
+            setProfileMessage('')
+          }}
+          anchorRef={avatarRef}
+          menuRef={menuRef}
+        />
       )}
 
-      <div className="dash-wrap">
+      <div className="dash-wrap teacher-main">
         <div className="dash-layout">
-          <aside className="side-nav" aria-label="Teacher quick navigation">
+          <aside className="side-nav side-nav-teacher" aria-label="Teacher quick navigation">
             {navLinks.map(link => {
               const active = pathname?.startsWith(link.href)
               return (
@@ -543,12 +797,12 @@ export default function TeacherDashboard() {
             <div
               className="card"
               style={{
-                padding: '18px 22px',
-                borderRadius: 24,
-                marginBottom: 16,
+                padding: '12px 16px',
+                borderRadius: 18,
+                marginBottom: 10,
                 display: 'grid',
                 gridTemplateColumns: 'minmax(0, 2.2fr) minmax(0, 1.3fr)',
-                gap: 16,
+                gap: 12,
                 alignItems: 'center',
               }}
             >
@@ -655,7 +909,7 @@ export default function TeacherDashboard() {
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(2, minmax(0,1fr))',
+                  gridTemplateColumns: 'repeat(3, minmax(0,1fr))',
                   gap: 10,
                   fontSize: 12,
                 }}
@@ -680,9 +934,9 @@ export default function TeacherDashboard() {
                     type="button"
                     className="btn-tiny"
                     style={{ marginTop: 4, alignSelf: 'flex-start' }}
-                    onClick={() => router.push('/teacher/students')}
+                    onClick={() => router.push('/teacher/analytics')}
                   >
-                    View students
+                    View analytics
                   </button>
                 </div>
                 <div
@@ -705,10 +959,199 @@ export default function TeacherDashboard() {
                     Use the Attendance tab to mark periods
                   </div>
                 </div>
+                <div
+                  style={{
+                    borderRadius: 20,
+                    padding: '10px 12px',
+                    background: '#0f766e',
+                    color: '#ecfeff',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    gap: 4,
+                  }}
+                >
+                  <div style={{ fontSize: 11, opacity: 0.9 }}>Academic calendar</div>
+                  <div style={{ fontWeight: 800, fontSize: 16 }}>
+                    {ymOf(month)}
+                  </div>
+                  <button
+                    type="button"
+                    className="btn-tiny"
+                    style={{ marginTop: 4, alignSelf: 'flex-start' }}
+                    onClick={() => router.push('/teacher/calendar')}
+                  >
+                    View calendar
+                  </button>
+                </div>
               </div>
             </div>
 
-            <div className="card" style={{ marginTop: 18, padding: 16, borderRadius: 18 }}>
+            {teacher && (
+              <div
+                className="card"
+                style={{
+                  marginTop: 12,
+                  borderRadius: 18,
+                  padding: '12px 14px',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    gap: 8,
+                    marginBottom: 6,
+                  }}
+                >
+                  <div style={{ fontWeight: 700 }}>My subjects &amp; classes</div>
+                  <div ref={classFilterRef} style={{ position: 'relative' }}>
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      onClick={() => setClassFilterOpen(o => !o)}
+                      style={{ fontSize: 12, paddingInline: 10 }}
+                    >
+                      ⚙ Filter
+                    </button>
+                    {classFilterOpen && (
+                      <div
+                        className="card"
+                        style={{
+                          position: 'absolute',
+                          right: 0,
+                          marginTop: 6,
+                          padding: 10,
+                          zIndex: 30,
+                          width: 260,
+                          maxHeight: 260,
+                          overflowY: 'auto',
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            marginBottom: 6,
+                          }}
+                        >
+                          <div className="label" style={{ fontSize: 12 }}>
+                            Filter by class &amp; section
+                          </div>
+                          <button
+                            type="button"
+                            className="btn-ghost"
+                            style={{ fontSize: 11, paddingInline: 8 }}
+                            onClick={() => setClassFilterOpen(false)}
+                          >
+                            Done
+                          </button>
+                        </div>
+                        <div style={{ display: 'grid', gap: 4, marginBottom: 8 }}>
+                          {teacherClassSections.map(cs => {
+                            const key = `${cs.klass}||${cs.section}`
+                            const active = selectedClassSections.includes(key)
+                            return (
+                              <label
+                                key={key}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  gap: 8,
+                                  fontSize: 12,
+                                  padding: '4px 2px',
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                <span>
+                                  {cs.klass} • Sec {cs.section}
+                                </span>
+                                <input
+                                  type="checkbox"
+                                  checked={active}
+                                  onChange={() =>
+                                    setSelectedClassSections(prev => {
+                                      const set = new Set(prev)
+                                      if (set.has(key)) set.delete(key)
+                                      else set.add(key)
+                                      return Array.from(set)
+                                    })
+                                  }
+                                />
+                              </label>
+                            )
+                          })}
+                          {teacherClassSections.length === 0 && (
+                            <div className="note">No classes assigned yet.</div>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          className="btn-ghost"
+                          style={{ fontSize: 11, paddingInline: 10 }}
+                          onClick={() => setSelectedClassSections([])}
+                          disabled={selectedClassSections.length === 0}
+                        >
+                          Clear
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gap: 8, marginTop: 4 }}>
+                  {filteredSubjectPerformance.length === 0 && (
+                    <div className="note">
+                      No marks recorded yet for your classes.
+                    </div>
+                  )}
+                  {filteredSubjectPerformance.map(item => (
+                    <div
+                      key={item.key}
+                      style={{
+                        border: '1px solid var(--panel-border)',
+                        borderRadius: 12,
+                        padding: '8px 10px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 10,
+                        fontSize: 12,
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: 700 }}>{item.subject}</div>
+                        <div className="note">
+                          {item.klass} • Sec {item.section}
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: 800, fontSize: 18 }}>
+                          {item.pct != null ? `${item.pct}%` : '—'}
+                        </div>
+                        <div className="note" style={{ fontSize: 11 }}>
+                          Overall marks
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div
+              className="card"
+              style={{
+                marginTop: 14,
+                borderRadius: 18,
+                padding: 14,
+                width: '70%',
+                marginLeft: 'auto',
+                marginRight: 'auto',
+              }}
+            >
               <div
                 style={{
                   display: 'flex',
@@ -717,58 +1160,77 @@ export default function TeacherDashboard() {
                   marginBottom: 8,
                 }}
               >
-                <div style={{ fontWeight: 700 }}>Class performance snapshot</div>
-                <div style={{ display: 'flex', gap: 6, alignItems: 'center', position: 'relative' }}>
-                  <select
-                    className="input select"
-                    value={calScopeClass}
-                    onChange={(e) => {
-                      const value = e.target.value
-                      setCalScopeClass(value)
-                      const secs = getAssignedSectionsForTeacher(teacher?.name || '', value)
-                      setCalScopeSection(secs[0] || getSectionsForClass(value)[0] || '')
-                    }}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    style={{ fontSize: 11, padding: '2px 6px' }}
+                    onClick={() =>
+                      setMonth(m => new Date(m.getFullYear(), m.getMonth() - 1, 1))
+                    }
+                    aria-label="Previous month"
                   >
-                    {(teacher
-                      ? getAssignedClassesForTeacher(teacher.name).length
-                        ? getAssignedClassesForTeacher(teacher.name)
-                        : getClasses()
-                      : getClasses()
-                    ).map((c) => (
-                      <option key={c}>{c}</option>
-                    ))}
-                  </select>
-                  <select
-                    className="input select"
-                    value={calScopeSection}
-                    onChange={(e) => setCalScopeSection(e.target.value)}
+                    ◀
+                  </button>
+                  <div style={{ fontWeight: 700, fontSize: 13 }}>{monthStr}</div>
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    style={{ fontSize: 11, padding: '2px 6px' }}
+                    onClick={() =>
+                      setMonth(m => new Date(m.getFullYear(), m.getMonth() + 1, 1))
+                    }
+                    aria-label="Next month"
                   >
-                    {(calScopeClass
-                      ? getAssignedSectionsForTeacher(teacher?.name || '', calScopeClass).length
-                        ? getAssignedSectionsForTeacher(teacher?.name || '', calScopeClass)
-                        : getSectionsForClass(calScopeClass)
-                      : []
-                    ).map((s) => (
-                      <option key={s}>{s}</option>
-                    ))}
-                  </select>
+                    ▶
+                  </button>
                 </div>
+                <Link className="back" href="/teacher/calendar" style={{ fontSize: 12 }}>
+                  View All
+                </Link>
               </div>
-              {graphData.subjects.length === 0 && (
-                <div className="note">No tests recorded yet for this class/section.</div>
-              )}
-              {graphData.subjects.length > 0 && (
-                <BarChart
-                  title="Marks & attendance snapshot"
-                  categories={graphData.subjects}
-                  series={graphData.series}
-                  yMax={100}
-                />
-              )}
+              <div className="cal-grid cal-grid-compact">
+                {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(d => (
+                  <div key={d} className="cal-dow">
+                    {d}
+                  </div>
+                ))}
+                {days.map((d, index) => {
+                  const ymd = formatYMD(d)
+                  const dots = eventsThisMonth.filter(e => e.date === ymd)
+                  const primaryColor = dots[0]?.color
+                  const isSelected = selectedDay === ymd
+                  return (
+                    <div
+                      key={index}
+                      className={`cal-day ${isSameMonth(d) ? '' : 'cal-out'} ${
+                        isToday(d) ? 'cal-today' : ''
+                      } ${dots.length ? 'cal-has-event' : ''} ${
+                        isSelected ? 'cal-selected' : ''
+                      }`}
+                      data-eventcolor={primaryColor || undefined}
+                      onClick={() => setSelectedDay(ymd)}
+                    >
+                      <div className="cal-num">{d.getDate()}</div>
+                      <div className="event-dots">
+                        {dots.map((e, idx) => (
+                          <span
+                            key={idx}
+                            className={`event-dot dot-${e.color}`}
+                            title={e.title}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
             </div>
 
             <div className="dash" style={{ marginTop: 24 }}>
-              <Link className="back" href="/">&larr; Back to login</Link>
+              <Link className="back" href="/">
+                &larr; Back to login
+              </Link>
             </div>
           </div>
         </div>

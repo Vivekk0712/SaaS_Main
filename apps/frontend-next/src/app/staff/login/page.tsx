@@ -9,6 +9,9 @@ export default function StaffUnifiedLogin() {
   const [role, setRole] = React.useState<Role>('admissions')
   const [email, setEmail] = React.useState('')
   const [password, setPassword] = React.useState('')
+  const [phone, setPhone] = React.useState('')
+  const [otp, setOtp] = React.useState('')
+  const [otpVerified, setOtpVerified] = React.useState(false)
   const [loading, setLoading] = React.useState(false)
   const [googlePhone, setGooglePhone] = React.useState('')
 
@@ -29,9 +32,11 @@ export default function StaffUnifiedLogin() {
     window.location.href = url
   }, [googlePhone])
 
-  const submit = (e: React.FormEvent) => {
+  const submit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email || !password) return alert('Enter credentials')
+    if (!phone.trim() || !otp.trim()) return alert('Enter phone and OTP')
+    if (!otpVerified) return alert('Please verify OTP before signing in')
     if (password !== '12345') return alert('Wrong password. Use 12345')
     setLoading(true)
     try {
@@ -60,6 +65,86 @@ export default function StaffUnifiedLogin() {
           </select>
           <label className="label">Email</label>
           <input className="input" value={email} onChange={e=>setEmail(e.target.value)} />
+          <label className="label">Verification Phone</label>
+          <input className="input" value={phone} onChange={e=>{ setPhone(e.target.value); setOtpVerified(false) }} placeholder="e.g. +91 9xxxxxxxxx" />
+          <label className="label">OTP</label>
+          <div style={{ display:'flex', gap:8, marginBottom:6 }}>
+            <input className="input" value={otp} onChange={e=>{ setOtp(e.target.value); setOtpVerified(false) }} placeholder="Enter OTP" />
+          </div>
+          <div style={{ display:'flex', gap:8, alignItems:'center', flexWrap:'wrap' }}>
+            <button
+              type="button"
+              className="button"
+              onClick={async () => {
+                try {
+                  const ph = phone.trim()
+                  if (!ph) {
+                    alert('Enter phone number before requesting OTP')
+                    return
+                  }
+                  const r = await fetch('/api/otp/send', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ phone: ph }),
+                  })
+                  if (!r.ok) {
+                    alert('Could not send OTP. Please try again.')
+                    return
+                  }
+                  alert('OTP sent to your phone number.')
+                  setOtpVerified(false)
+                } catch {
+                  alert('Could not send OTP. Please try again.')
+                }
+              }}
+            >
+              Send OTP
+            </button>
+            <button
+              type="button"
+              className="button secondary"
+              onClick={async () => {
+                try {
+                  const ph = phone.trim()
+                  if (!ph || !otp.trim()) {
+                    alert('Enter phone and OTP before verifying')
+                    return
+                  }
+                  const r = await fetch('/api/otp/verify', {
+                    method: 'POST',
+                    headers: { 'content-type': 'application/json' },
+                    body: JSON.stringify({ phone: ph, code: otp.trim() }),
+                  })
+                  if (!r.ok) {
+                    alert('Invalid or expired OTP')
+                    setOtpVerified(false)
+                    return
+                  }
+                  setOtpVerified(true)
+                } catch {
+                  alert('Could not verify OTP. Please try again.')
+                  setOtpVerified(false)
+                }
+              }}
+            >
+              Verify OTP
+            </button>
+            {otpVerified && (
+              <span
+                style={{
+                  color: '#16a34a',
+                  fontSize: 13,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 4,
+                  animation: 'otp-pop 0.25s ease-out',
+                }}
+              >
+                <span>✓</span>
+                <span>Verified</span>
+              </span>
+            )}
+          </div>
           <label className="label">Password</label>
           <input className="input" type="password" value={password} onChange={e=>setPassword(e.target.value)} />
           <div className="actions">

@@ -7,7 +7,14 @@ import { findStudent, readCalendarByMonth } from '../../teacher/data'
 
 type EventColor = 'blue' | 'green' | 'orange'
 
-type Event = { date: string; title: string; color: EventColor; description: string; tag: string }
+type Event = {
+  date: string
+  title: string
+  color: EventColor
+  description: string
+  tag: string
+  attachments?: any[]
+}
 
 function getMonthMatrix(base: Date) {
   const first = new Date(base.getFullYear(), base.getMonth(), 1)
@@ -101,7 +108,8 @@ export default function ParentCalendarPage() {
           title: ev.title,
           color: ev.color as EventColor,
           description: ev.description,
-          tag: ev.tag
+          tag: ev.tag,
+          attachments: (ev as any).attachments || [],
         }))
         setEvents(mapped)
       } catch {
@@ -287,6 +295,51 @@ export default function ParentCalendarPage() {
                 <div className="note-title">{e.title}</div>
                 <small>{formatDMYFromYMD(e.date)}</small>
                 <p>{e.description}</p>
+                {Array.isArray(e.attachments) && e.attachments.length > 0 && (
+                  <div style={{ display: 'grid', gap: 6, paddingTop: 6 }}>
+                    {e.attachments.map((a: any, j: number) => (
+                      <div
+                        key={j}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          border: '1px dashed var(--panel-border)',
+                          borderRadius: 10,
+                          padding: '6px 8px',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <span className="note">{a.type === 'link' ? 'Link' : 'File'}</span>
+                          <span
+                            style={{
+                              fontWeight: 600,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {a.type === 'link' ? a.url : a.name}
+                          </span>
+                        </div>
+                        {a.type === 'link' ? (
+                          <a
+                            className="back"
+                            href={a.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            Open
+                          </a>
+                        ) : (
+                          <a className="back" href={a.dataUrl} download={a.name}>
+                            Download
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ))}
           </div>

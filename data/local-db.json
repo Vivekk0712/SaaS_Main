@@ -1,7 +1,176 @@
 {
   "parents": [],
-  "applications": [],
-  "fees": [],
+  "applications": [
+    {
+      "id": "2",
+      "parentPhone": "8431536379",
+      "grade": "9",
+      "section": null,
+      "status": "admissions_confirmed",
+      "createdAt": "2025-12-01T15:52:39.000Z",
+      "updatedAt": "2025-12-01T15:52:39.000Z",
+      "data": {
+        "health": {
+          "relation": "",
+          "allergies": "",
+          "bloodGroup": "",
+          "conditions": "",
+          "emergencyName": "888",
+          "emergencyPhone": "888"
+        },
+        "address": {
+          "permanent": "bhatrahalli",
+          "correspondence": ""
+        },
+        "student": {
+          "dob": "2025-12-01",
+          "caste": "",
+          "gender": "Male",
+          "lastName": "s",
+          "religion": "",
+          "firstName": "vinay",
+          "languages": "",
+          "nationality": ""
+        },
+        "admission": {
+          "year": "2025-26",
+          "grade": "9",
+          "category": ""
+        },
+        "documents": {
+          "tc": false,
+          "others": "",
+          "photos": false,
+          "aadhaar": false,
+          "reportCard": false
+        },
+        "guardians": {
+          "father": "VINAYAKA V",
+          "mother": "hii",
+          "guardian": "",
+          "fatherEmail": "",
+          "fatherPhone": "",
+          "motherEmail": "",
+          "motherPhone": "",
+          "fatherOccupation": "",
+          "motherOccupation": ""
+        },
+        "transport": {
+          "mode": "",
+          "route": ""
+        },
+        "declaration": {
+          "agree": true
+        },
+        "photoDataUrl": "",
+        "previousSchool": {
+          "name": "",
+          "board": "",
+          "reason": "",
+          "lastGrade": "",
+          "yearOfCompletion": ""
+        }
+      },
+      "confirmedAt": "2025-12-01T15:58:39.328Z"
+    },
+    {
+      "id": "1",
+      "parentPhone": "8431536379",
+      "grade": "1",
+      "section": "A",
+      "status": "fees_set",
+      "createdAt": "2025-11-22T06:07:59.000Z",
+      "updatedAt": "2025-11-22T06:07:59.000Z",
+      "data": {
+        "health": {
+          "relation": "",
+          "allergies": "",
+          "bloodGroup": "",
+          "conditions": "",
+          "emergencyName": "-",
+          "emergencyPhone": "-"
+        },
+        "address": {
+          "permanent": "hello",
+          "correspondence": ""
+        },
+        "student": {
+          "dob": "2025-11-22",
+          "caste": "",
+          "gender": "Male",
+          "lastName": "",
+          "religion": "",
+          "firstName": "Vinay",
+          "languages": "",
+          "nationality": ""
+        },
+        "admission": {
+          "year": "2025-26",
+          "grade": "1",
+          "number": "1",
+          "section": "A",
+          "category": ""
+        },
+        "documents": {
+          "tc": false,
+          "others": "",
+          "photos": false,
+          "aadhaar": false,
+          "reportCard": false
+        },
+        "guardians": {
+          "father": "VINAYAKA V",
+          "mother": "HIIII",
+          "guardian": "",
+          "fatherEmail": "",
+          "fatherPhone": "8431536279",
+          "motherEmail": "",
+          "motherPhone": "",
+          "fatherOccupation": "",
+          "motherOccupation": ""
+        },
+        "transport": {
+          "mode": "",
+          "route": ""
+        },
+        "declaration": {
+          "agree": true
+        },
+        "photoDataUrl": "",
+        "previousSchool": {
+          "name": "",
+          "board": "",
+          "reason": "",
+          "lastGrade": "",
+          "yearOfCompletion": ""
+        }
+      },
+      "confirmedAt": "2025-12-01T16:27:07.635Z"
+    }
+  ],
+  "fees": [
+    {
+      "appId": "1",
+      "items": [
+        {
+          "label": "scholl feee",
+          "amount": 10
+        }
+      ],
+      "total": 10,
+      "updatedAt": "2025-12-01T16:27:32.422Z",
+      "installments": {
+        "count": 1,
+        "parts": [
+          {
+            "label": "Installment 1",
+            "amount": 0,
+            "dueDate": "2025-12-01"
+          }
+        ]
+      }
+    }
+  ],
   "profiles": {
     "parents": [],
     "students": []
@@ -21,9 +190,63 @@
       "target": {
         "type": "student",
         "studentName": "Aditya Kumar",
-        "parentPhone": "9000000001"
+        "parentPhone": "+918431536379"
       },
       "createdAt": "2025-11-30T14:11:54.042Z"
+    },
+    {
+      "id": "adhoc_mim0mano",
+      "title": "EXAM FEE",
+      "purpose": "",
+      "items": [
+        {
+          "label": "EXAM FEE",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "target": {
+        "type": "student",
+        "studentName": "Aditya Kumar",
+        "parentPhone": "+918431536379"
+      },
+      "createdAt": "2025-11-30T17:49:48.276Z"
+    },
+    {
+      "id": "adhoc_minbf8rh",
+      "title": "sports",
+      "purpose": "",
+      "items": [
+        {
+          "label": "sports",
+          "amount": 10000
+        }
+      ],
+      "total": 10000,
+      "target": {
+        "type": "student",
+        "studentName": "Aditya Kumar",
+        "parentPhone": ""
+      },
+      "createdAt": "2025-12-01T15:40:01.181Z"
+    },
+    {
+      "id": "adhoc_mind78z7",
+      "title": "exam fee",
+      "purpose": "",
+      "items": [
+        {
+          "label": "exam fee",
+          "amount": 100
+        }
+      ],
+      "total": 100,
+      "target": {
+        "type": "student",
+        "studentName": "Aditya Kumar",
+        "parentPhone": ""
+      },
+      "createdAt": "2025-12-01T16:29:47.443Z"
     }
   ],
   "attendance": {},
@@ -32,15 +255,15 @@
   "circulars": [],
   "calendar": {},
   "meta": {
-    "version": 18,
-    "updatedAt": "2025-11-30T14:20:38.468Z"
+    "version": 31,
+    "updatedAt": "2025-12-07T13:48:45.143Z"
   },
   "adhocBills": [
     {
       "id": "adhoc_bill_milr88xy_g2ny",
       "adhocId": "adhoc_milqj63w",
       "appId": "1A01",
-      "parentPhone": "9000000001",
+      "parentPhone": "+918431536379",
       "name": "Aditya Kumar",
       "title": "Exam fees test",
       "items": [
@@ -58,7 +281,7 @@
       "id": "adhoc_bill_milrcvxv_s7mk",
       "adhocId": "adhoc_milqj63w",
       "appId": "1A01",
-      "parentPhone": "9000000001",
+      "parentPhone": "+918431536379",
       "name": "Aditya Kumar",
       "title": "Exam fees test",
       "items": [
@@ -76,7 +299,7 @@
       "id": "adhoc_bill_milrhrhc_9mkx",
       "adhocId": "adhoc_milqj63w",
       "appId": "1A01",
-      "parentPhone": "9000000001",
+      "parentPhone": "+918431536379",
       "name": "Aditya Kumar",
       "title": "Exam fees test",
       "items": [
@@ -94,7 +317,7 @@
       "id": "adhoc_bill_milrotdq_we00",
       "adhocId": "adhoc_milqj63w",
       "appId": "1A01",
-      "parentPhone": "9000000001",
+      "parentPhone": "+918431536379",
       "name": "Aditya Kumar",
       "title": "Exam fees test",
       "items": [
@@ -112,7 +335,7 @@
       "id": "adhoc_bill_milsvd59_it3w",
       "adhocId": "adhoc_milsu2ii",
       "appId": "1A01",
-      "parentPhone": "9000000001",
+      "parentPhone": "+918431536379",
       "name": "Aditya Kumar",
       "title": "Exam fees",
       "items": [
@@ -125,6 +348,162 @@
       "createdAt": "2025-11-30T14:12:54.477Z",
       "status": "paid",
       "paidAt": "2025-11-30T14:20:38.467Z"
+    },
+    {
+      "id": "adhoc_bill_mim0mjiz_ou6d",
+      "adhocId": "adhoc_mim0mano",
+      "appId": "1A01",
+      "parentPhone": "9000000001",
+      "name": "Aditya Kumar",
+      "title": "EXAM FEE",
+      "items": [
+        {
+          "label": "EXAM FEE",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-11-30T17:49:59.771Z",
+      "status": "paid",
+      "paidAt": "2025-12-01T11:55:37.456Z"
+    },
+    {
+      "id": "adhoc_bill_minbgyec_chmm",
+      "adhocId": "adhoc_minbf8rh",
+      "appId": "1A01",
+      "parentPhone": "9000000001",
+      "name": "Aditya Kumar",
+      "title": "sports",
+      "items": [
+        {
+          "label": "sports",
+          "amount": 10000
+        }
+      ],
+      "total": 10000,
+      "createdAt": "2025-12-01T15:41:21.060Z",
+      "status": "paid",
+      "paidAt": "2025-12-07T13:48:45.143Z"
+    },
+    {
+      "id": "adhoc_bill_minbgyec_uija",
+      "adhocId": "adhoc_minbf8rh",
+      "appId": "1A21",
+      "parentPhone": "9000000021",
+      "name": "Aditya Kumar",
+      "title": "sports",
+      "items": [
+        {
+          "label": "sports",
+          "amount": 10000
+        }
+      ],
+      "total": 10000,
+      "createdAt": "2025-12-01T15:41:21.060Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_minbgyec_eb11",
+      "adhocId": "adhoc_minbf8rh",
+      "appId": "3B06",
+      "parentPhone": "9000000156",
+      "name": "Aditya Kumar",
+      "title": "sports",
+      "items": [
+        {
+          "label": "sports",
+          "amount": 10000
+        }
+      ],
+      "total": 10000,
+      "createdAt": "2025-12-01T15:41:21.060Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_minbgyec_y8ic",
+      "adhocId": "adhoc_minbf8rh",
+      "appId": "3B26",
+      "parentPhone": "9000000176",
+      "name": "Aditya Kumar",
+      "title": "sports",
+      "items": [
+        {
+          "label": "sports",
+          "amount": 10000
+        }
+      ],
+      "total": 10000,
+      "createdAt": "2025-12-01T15:41:21.060Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mind7iil_lnss",
+      "adhocId": "adhoc_mind78z7",
+      "appId": "1A01",
+      "parentPhone": "9000000001",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "exam fee",
+          "amount": 100
+        }
+      ],
+      "total": 100,
+      "createdAt": "2025-12-01T16:29:59.805Z",
+      "status": "paid",
+      "paidAt": "2025-12-01T16:33:00.890Z"
+    },
+    {
+      "id": "adhoc_bill_mind7iil_g2jj",
+      "adhocId": "adhoc_mind78z7",
+      "appId": "1A21",
+      "parentPhone": "9000000021",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "exam fee",
+          "amount": 100
+        }
+      ],
+      "total": 100,
+      "createdAt": "2025-12-01T16:29:59.805Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mind7iil_sk3z",
+      "adhocId": "adhoc_mind78z7",
+      "appId": "3B06",
+      "parentPhone": "9000000156",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "exam fee",
+          "amount": 100
+        }
+      ],
+      "total": 100,
+      "createdAt": "2025-12-01T16:29:59.805Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mind7iil_iheh",
+      "adhocId": "adhoc_mind78z7",
+      "appId": "3B26",
+      "parentPhone": "9000000176",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "exam fee",
+          "amount": 100
+        }
+      ],
+      "total": 100,
+      "createdAt": "2025-12-01T16:29:59.805Z",
+      "status": "unpaid"
     }
   ],
   "academics": {

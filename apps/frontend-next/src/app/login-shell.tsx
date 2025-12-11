@@ -3,7 +3,7 @@ import React from 'react'
 import { seedIfNeeded } from './teacher/data'
 import { useRouter } from 'next/navigation'
 
-type Role = 'student' | 'parent' | 'admin' | 'teacher' | 'accountant'
+type Role = '' | 'student' | 'parent' | 'admin' | 'teacher' | 'accountant'
 
 type LoginShellProps = {
   initialOauthActive?: boolean
@@ -11,15 +11,29 @@ type LoginShellProps = {
 
 export default function LoginShell({ initialOauthActive = false }: LoginShellProps) {
   const router = useRouter()
-  const [role, setRole] = React.useState<Role>('student')
+  const [role, setRole] = React.useState<Role>('')
   const [phone, setPhone] = React.useState('')        // for student/parent
   const [name, setName] = React.useState('')         // for teacher/admin
   const [pass, setPass] = React.useState('')
+  const [otp, setOtp] = React.useState('')
+  const [otpVerified, setOtpVerified] = React.useState(false)
   const [error, setError] = React.useState('')
   const [loading, setLoading] = React.useState(false)
-  const [oauthActive, setOauthActive] = React.useState(initialOauthActive)
+  const [oauthActive, setOauthActive] = React.useState(false)
 
   const hero = React.useMemo(() => {
+    if (!role) {
+      return {
+        title: 'Gopalan Group of Institutions - your unified academic hub',
+        subtitle:
+          'One simple space for students, parents and staff to track academics, attendance and daily campus life.',
+        cards: [
+          'Access marks, attendance and updates in one place',
+          'Stay connected with teachers and campus announcements',
+          'Plan studies and activities with clear, timely information',
+        ],
+      }
+    }
     if (role === 'student') {
       return {
         title: 'Welcome, student — your journey begins here',
@@ -238,6 +252,10 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
 
   const startOAuth = React.useCallback(() => {
     if (typeof window === 'undefined') return
+    if (!role) {
+      alert('Please select a role before continuing with Google')
+      return
+    }
     try {
       let identifier = ''
       if (role === 'student' || role === 'parent') {
@@ -273,6 +291,8 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
   const resetFields = (r: Role) => {
     setError('')
     setPass('')
+    setOtp('')
+    setOtpVerified(false)
     if (r === 'student' || r === 'parent') {
       setPhone('')
       setName('')
@@ -285,12 +305,17 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
+    if (!role) {
+      setError('Please select a role')
+      return
+    }
     setLoading(true)
     try {
       switch (role) {
         case 'student': {
           const ph = phone.trim()
           if (!ph) throw new Error('Enter phone number')
+          if (otp.trim() && !otpVerified) throw new Error('Please verify OTP before signing in')
           if (!pass.trim()) throw new Error('Enter password')
           const r = await fetch('/api/local/profiles/student/resolve', {
             method: 'POST',
@@ -308,12 +333,14 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
             phone: ph
           }
           sessionStorage.setItem('student', JSON.stringify(session))
+          try { fetch('/api/notify/whatsapp-login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone: ph, role: 'student' }) }).catch(() => {}) } catch {}
           router.push('/student/dashboard')
           break
         }
         case 'parent': {
           const ph = phone.trim()
           if (!ph || !pass.trim()) throw new Error('Enter phone and password')
+          if (otp.trim() && !otpVerified) throw new Error('Please verify OTP before signing in')
           const r = await fetch('/api/local/profiles/parent/resolve', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
@@ -323,12 +350,15 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
           const j = await r.json()
           const session = { phone: j.phone, name: j.parentName }
           sessionStorage.setItem('parent', JSON.stringify(session))
+          try { fetch('/api/notify/whatsapp-login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone: ph, role: 'parent' }) }).catch(() => {}) } catch {}
           router.push('/parent/dashboard')
           break
         }
         case 'teacher': {
           const nm = name.trim()
           if (!nm) throw new Error('Enter teacher name')
+          if (!phone.trim()) throw new Error('Enter verification phone')
+          if (!otpVerified) throw new Error('Please verify OTP before signing in')
           if (pass !== '12345') throw new Error('Teacher password must be 12345 (temporary)')
           let raw = localStorage.getItem('school:teachers')
           let teachers = raw ? JSON.parse(raw) : []
@@ -348,6 +378,7 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
               ? t.subjects[0]
               : String(t.subject || '')
           sessionStorage.setItem('teacher', JSON.stringify({ name: t.name, subject: primary }))
+          try { fetch('/api/notify/whatsapp-login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone, role: 'teacher' }) }).catch(() => {}) } catch {}
           router.push('/teacher/dashboard')
           break
         }
@@ -356,15 +387,19 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
           if (!nm) throw new Error('Enter accountant name')
           if (pass !== '12345') throw new Error('Passcode must be 12345 (temporary)')
           sessionStorage.setItem('accountant', JSON.stringify({ name: nm }))
+          try { fetch('/api/notify/whatsapp-login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone, role: 'accountant' }) }).catch(() => {}) } catch {}
           router.push('/accountant/dashboard')
           break
         }
         case 'admin': {
           const nm = name.trim()
           if (!nm) throw new Error('Enter name')
+          if (!phone.trim()) throw new Error('Enter verification phone')
+          if (!otpVerified) throw new Error('Please verify OTP before signing in')
           if (pass !== '12345') throw new Error('Passcode must be 12345 (temporary)')
           const dept = 'General'
           sessionStorage.setItem('admin', JSON.stringify({ user: nm, dept }))
+          try { fetch('/api/notify/whatsapp-login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ phone, role: 'admin' }) }).catch(() => {}) } catch {}
           router.push('/admin/dashboard')
           break
         }
@@ -417,7 +452,7 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
           maxWidth: 1120,
         }}
       >
-        <section className="login-hero" aria-label="School SAS overview">
+        <section className="login-hero" aria-label="Gopalan Group of Institutions overview">
           <div style={{ marginBottom: 18 }}>
             <div className="login-hero-title">{hero.title}</div>
             <p className="login-hero-subtitle">{hero.subtitle}</p>
@@ -427,7 +462,7 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
               <div className="hero-card-label">{hero.cards[0]}</div>
               <img
                 src="/images/login-kid-1.jpg"
-                alt="Student using School SAS"
+                alt="Student at Gopalan Group of Institutions"
                 className="hero-card-img hero-card-img-wide"
               />
             </div>
@@ -435,7 +470,7 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
               <div className="hero-card-label">{hero.cards[1]}</div>
               <img
                 src="/images/login-kid-2.jpg"
-                alt="Parent checking updates"
+                alt="Parent checking updates from Gopalan Group of Institutions"
                 className="hero-card-img"
               />
             </div>
@@ -443,7 +478,7 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
               <div className="hero-card-label">{hero.cards[2]}</div>
               <img
                 src="/images/login-kid-3.jpg"
-                alt="Teacher managing class"
+                alt="Teacher managing class at Gopalan Group of Institutions"
                 className="hero-card-img"
               />
             </div>
@@ -467,10 +502,10 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
                 value={role}
                 onChange={(e) => { const r = e.target.value as Role; setRole(r); resetFields(r) }}
               >
+                <option value="">Select role ▾</option>
                 <option value="student">Student</option>
                 <option value="parent">Parent</option>
                 <option value="teacher">Teacher</option>
-                <option value="accountant">Accountant</option>
                 <option value="admin">Admin / HOD</option>
               </select>
             </div>
@@ -486,6 +521,92 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
                     onChange={e => setPhone(e.target.value)}
                     placeholder="e.g. +91 9xxxxxxxxx"
                   />
+                </div>
+                <div className="field">
+                  <label className="label" htmlFor="sotp">OTP</label>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                    <input
+                      id="sotp"
+                      className="input"
+                      value={otp}
+                      onChange={e => { setOtp(e.target.value); setOtpVerified(false) }}
+                      placeholder="Enter OTP"
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className="button"
+                      onClick={async () => {
+                        try {
+                          const ph = phone.trim()
+                          if (!ph) {
+                            alert('Enter phone number before requesting OTP')
+                            return
+                          }
+                          const r = await fetch('/api/otp/send', {
+                            method: 'POST',
+                            headers: { 'content-type': 'application/json' },
+                            body: JSON.stringify({ phone: ph }),
+                          })
+                          if (!r.ok) {
+                            alert('Could not send OTP. Please try again.')
+                            return
+                          }
+                          alert('OTP sent to your phone number.')
+                          setOtpVerified(false)
+                        } catch {
+                          alert('Could not send OTP. Please try again.')
+                        }
+                      }}
+                    >
+                      Send OTP
+                    </button>
+                    <button
+                      type="button"
+                      className="button secondary"
+                      onClick={async () => {
+                        try {
+                          const ph = phone.trim()
+                          if (!ph || !otp.trim()) {
+                            alert('Enter phone and OTP before verifying')
+                            return
+                          }
+                          const r = await fetch('/api/otp/verify', {
+                            method: 'POST',
+                            headers: { 'content-type': 'application/json' },
+                            body: JSON.stringify({ phone: ph, code: otp.trim() }),
+                          })
+                          if (!r.ok) {
+                            alert('Invalid or expired OTP')
+                            setOtpVerified(false)
+                            return
+                          }
+                          setOtpVerified(true)
+                        } catch {
+                          alert('Could not verify OTP. Please try again.')
+                          setOtpVerified(false)
+                        }
+                      }}
+                    >
+                      Verify OTP
+                    </button>
+                    {otpVerified && (
+                      <span
+                        style={{
+                          color: '#16a34a',
+                          fontSize: 13,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          animation: 'otp-pop 0.25s ease-out',
+                        }}
+                      >
+                        <span>✓</span>
+                        <span>Verified</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="field">
                   <label className="label" htmlFor="spass">Password</label>
@@ -514,6 +635,92 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
                   />
                 </div>
                 <div className="field">
+                  <label className="label" htmlFor="potp">OTP</label>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                    <input
+                      id="potp"
+                      className="input"
+                      value={otp}
+                      onChange={e => { setOtp(e.target.value); setOtpVerified(false) }}
+                      placeholder="Enter OTP"
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className="button"
+                      onClick={async () => {
+                        try {
+                          const ph = phone.trim()
+                          if (!ph) {
+                            alert('Enter phone number before requesting OTP')
+                            return
+                          }
+                          const r = await fetch('/api/otp/send', {
+                            method: 'POST',
+                            headers: { 'content-type': 'application/json' },
+                            body: JSON.stringify({ phone: ph }),
+                          })
+                          if (!r.ok) {
+                            alert('Could not send OTP. Please try again.')
+                            return
+                          }
+                          alert('OTP sent to your phone number.')
+                          setOtpVerified(false)
+                        } catch {
+                          alert('Could not send OTP. Please try again.')
+                        }
+                      }}
+                    >
+                      Send OTP
+                    </button>
+                    <button
+                      type="button"
+                      className="button secondary"
+                      onClick={async () => {
+                        try {
+                          const ph = phone.trim()
+                          if (!ph || !otp.trim()) {
+                            alert('Enter phone and OTP before verifying')
+                            return
+                          }
+                          const r = await fetch('/api/otp/verify', {
+                            method: 'POST',
+                            headers: { 'content-type': 'application/json' },
+                            body: JSON.stringify({ phone: ph, code: otp.trim() }),
+                          })
+                          if (!r.ok) {
+                            alert('Invalid or expired OTP')
+                            setOtpVerified(false)
+                            return
+                          }
+                          setOtpVerified(true)
+                        } catch {
+                          alert('Could not verify OTP. Please try again.')
+                          setOtpVerified(false)
+                        }
+                      }}
+                    >
+                      Verify OTP
+                    </button>
+                    {otpVerified && (
+                      <span
+                        style={{
+                          color: '#16a34a',
+                          fontSize: 13,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          animation: 'otp-pop 0.25s ease-out',
+                        }}
+                      >
+                        <span>✓</span>
+                        <span>Verified</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="field">
                   <label className="label" htmlFor="ppass">Password</label>
                   <input
                     id="ppass"
@@ -538,6 +745,102 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
                     onChange={e => setName(e.target.value)}
                     placeholder="e.g. Ms. Priya N"
                   />
+                </div>
+                <div className="field">
+                  <label className="label" htmlFor="tphone">Verification Phone</label>
+                  <input
+                    id="tphone"
+                    className="input"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    placeholder="e.g. +91 9xxxxxxxxx"
+                  />
+                </div>
+                <div className="field">
+                  <label className="label" htmlFor="totp">OTP</label>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                    <input
+                      id="totp"
+                      className="input"
+                      value={otp}
+                      onChange={e => { setOtp(e.target.value); setOtpVerified(false) }}
+                      placeholder="Enter OTP"
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className="button"
+                      onClick={async () => {
+                        try {
+                          const ph = phone.trim()
+                          if (!ph) {
+                            alert('Enter phone number before requesting OTP')
+                            return
+                          }
+                          const r = await fetch('/api/otp/send', {
+                            method: 'POST',
+                            headers: { 'content-type': 'application/json' },
+                            body: JSON.stringify({ phone: ph }),
+                          })
+                          if (!r.ok) {
+                            alert('Could not send OTP. Please try again.')
+                            return
+                          }
+                          alert('OTP sent to your phone number.')
+                          setOtpVerified(false)
+                        } catch {
+                          alert('Could not send OTP. Please try again.')
+                        }
+                      }}
+                    >
+                      Send OTP
+                    </button>
+                    <button
+                      type="button"
+                      className="button secondary"
+                      onClick={async () => {
+                        try {
+                          const ph = phone.trim()
+                          if (!ph || !otp.trim()) {
+                            alert('Enter phone and OTP before verifying')
+                            return
+                          }
+                          const r = await fetch('/api/otp/verify', {
+                            method: 'POST',
+                            headers: { 'content-type': 'application/json' },
+                            body: JSON.stringify({ phone: ph, code: otp.trim() }),
+                          })
+                          if (!r.ok) {
+                            alert('Invalid or expired OTP')
+                            setOtpVerified(false)
+                            return
+                          }
+                          setOtpVerified(true)
+                        } catch {
+                          alert('Could not verify OTP. Please try again.')
+                          setOtpVerified(false)
+                        }
+                      }}
+                    >
+                      Verify OTP
+                    </button>
+                    {otpVerified && (
+                      <span
+                        style={{
+                          color: '#16a34a',
+                          fontSize: 13,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          animation: 'otp-pop 0.25s ease-out',
+                        }}
+                      >
+                        <span>✓</span>
+                        <span>Verified</span>
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div className="field">
                   <label className="label" htmlFor="tpass">Password</label>
@@ -592,6 +895,102 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
                   />
                 </div>
                 <div className="field">
+                  <label className="label" htmlFor="aphone">Verification Phone</label>
+                  <input
+                    id="aphone"
+                    className="input"
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    placeholder="e.g. +91 9xxxxxxxxx"
+                  />
+                </div>
+                <div className="field">
+                  <label className="label" htmlFor="aotp">OTP</label>
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 6 }}>
+                    <input
+                      id="aotp"
+                      className="input"
+                      value={otp}
+                      onChange={e => { setOtp(e.target.value); setOtpVerified(false) }}
+                      placeholder="Enter OTP"
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <button
+                      type="button"
+                      className="button"
+                      onClick={async () => {
+                        try {
+                          const ph = phone.trim()
+                          if (!ph) {
+                            alert('Enter phone number before requesting OTP')
+                            return
+                          }
+                          const r = await fetch('/api/otp/send', {
+                            method: 'POST',
+                            headers: { 'content-type': 'application/json' },
+                            body: JSON.stringify({ phone: ph }),
+                          })
+                          if (!r.ok) {
+                            alert('Could not send OTP. Please try again.')
+                            return
+                          }
+                          alert('OTP sent to your phone number.')
+                          setOtpVerified(false)
+                        } catch {
+                          alert('Could not send OTP. Please try again.')
+                        }
+                      }}
+                    >
+                      Send OTP
+                    </button>
+                    <button
+                      type="button"
+                      className="button secondary"
+                      onClick={async () => {
+                        try {
+                          const ph = phone.trim()
+                          if (!ph || !otp.trim()) {
+                            alert('Enter phone and OTP before verifying')
+                            return
+                          }
+                          const r = await fetch('/api/otp/verify', {
+                            method: 'POST',
+                            headers: { 'content-type': 'application/json' },
+                            body: JSON.stringify({ phone: ph, code: otp.trim() }),
+                          })
+                          if (!r.ok) {
+                            alert('Invalid or expired OTP')
+                            setOtpVerified(false)
+                            return
+                          }
+                          setOtpVerified(true)
+                        } catch {
+                          alert('Could not verify OTP. Please try again.')
+                          setOtpVerified(false)
+                        }
+                      }}
+                    >
+                      Verify OTP
+                    </button>
+                    {otpVerified && (
+                      <span
+                        style={{
+                          color: '#16a34a',
+                          fontSize: 13,
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          animation: 'otp-pop 0.25s ease-out',
+                        }}
+                      >
+                        <span>✓</span>
+                        <span>Verified</span>
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="field">
                   <label className="label" htmlFor="apass">Passcode</label>
                   <input
                     id="apass"
@@ -610,6 +1009,19 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
               <button className="btn" type="submit" disabled={loading}>
                 {loading ? 'Signing in...' : 'Sign In'}
               </button>
+              {(role === 'student' || role === 'parent') && (
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => {
+                    try {
+                      window.location.href = '/forgot-password'
+                    } catch {}
+                  }}
+                >
+                  Forgot password?
+                </button>
+              )}
             </div>
 
             {(role === 'student' || role === 'parent' || role === 'teacher' || role === 'admin') && (

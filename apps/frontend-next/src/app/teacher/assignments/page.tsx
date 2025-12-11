@@ -1,7 +1,8 @@
 "use client"
 import React from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import type { Route } from 'next'
+import { useRouter, usePathname } from 'next/navigation'
 import {
   listStudentAssignments,
   rosterBy,
@@ -13,7 +14,20 @@ import {
   type AssignmentStatus
 } from '../data'
 
+const navLinks: Array<{ href: Route; label: string; icon: string }> = [
+  { href: '/teacher/dashboard', label: 'Dashboard', icon: '🏠' },
+  { href: '/teacher/attendance', label: 'Attendance', icon: '✅' },
+  { href: '/teacher/analytics', label: 'Analytics', icon: '📈' },
+  { href: '/teacher/assignments', label: 'Assignments', icon: '📚' },
+  { href: '/teacher/diary', label: 'Digital Diary', icon: '📔' },
+  { href: '/teacher/calendar', label: 'Academic Calendar', icon: '📅' },
+  { href: '/teacher/marks', label: 'Marks Entry', icon: '✏️' },
+  { href: '/teacher/academic-content', label: 'Academic Content', icon: '📘' },
+  { href: '/teacher/circulars', label: 'Circulars', icon: '📣' },
+]
+
 export default function TeacherAssignmentsPage() {
+  const pathname = usePathname()
   const router = useRouter()
   const [teacherName, setTeacherName] = React.useState<string>('Teacher')
   const [cards, setCards] = React.useState<AssignmentEntry[]>([])
@@ -23,6 +37,7 @@ export default function TeacherAssignmentsPage() {
   const [rows, setRows] = React.useState<Array<{ usn: string; name: string; status: AssignmentStatus }>>([])
   const [message, setMessage] = React.useState<string>('')
   const [ready, setReady] = React.useState(false)
+  const detailRef = React.useRef<HTMLDivElement | null>(null)
 
   React.useEffect(() => {
     try {
@@ -69,6 +84,21 @@ export default function TeacherAssignmentsPage() {
     () => (klass && section ? rosterBy(klass, section) : []),
     [klass, section]
   )
+
+  // Hide the detail card when tapping/clicking outside it
+  React.useEffect(() => {
+    if (!selected) return
+    const onPointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null
+      if (!target) return
+      // Keep detail open if tap is inside detail card or on an assignment card
+      if (detailRef.current?.contains(target)) return
+      if ((target as HTMLElement | null)?.closest?.('[data-assignment-card="true"]')) return
+      setSelected(null)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    return () => document.removeEventListener('pointerdown', onPointerDown)
+  }, [selected])
 
   // Load existing assignment rows for the selected assignment & class/section
   React.useEffect(() => {
@@ -124,32 +154,39 @@ export default function TeacherAssignmentsPage() {
   }
 
   return (
-    <div>
-      <div className="topbar">
+    <div className="teacher-shell">
+      <div className="topbar topbar-teacher">
         <div className="topbar-inner">
           <div className="brand-mark">
             <span className="dot" />
             <strong>Teacher</strong>
           </div>
-          <nav className="tabs" aria-label="Teacher navigation">
-            <Link className="tab" href="/teacher/dashboard">Dashboard</Link>
-            <Link className="tab" href="/teacher/academic-content">Academic Content</Link>
-            <Link className="tab" href="/teacher/circulars">Circulars</Link>
-            <Link className="tab" href="/teacher/marks">Marks Entry</Link>
-            <Link className="tab tab-active" href="/teacher/assignments">Assignments</Link>
-          </nav>
-          <div className="actions">
-            <button className="btn-ghost" type="button" onClick={() => router.push('/')}>
-              Logout
-            </button>
-          </div>
         </div>
       </div>
 
-      <div className="dash-wrap">
+      <div className="dash-wrap teacher-main">
+        <div className="dash-layout">
+          <aside className="side-nav side-nav-teacher" aria-label="Teacher quick navigation">
+            {navLinks.map(link => {
+              const active = pathname?.startsWith(link.href)
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`side-nav-link ${active ? 'side-nav-link-active' : ''}`}
+                  aria-label={link.label}
+                >
+                  <span className="side-nav-icon">{link.icon}</span>
+                  <span>{link.label.split(' ')[0]}</span>
+                </Link>
+              )
+            })}
+          </aside>
+
+          <div className="dash">
         <div className="greeting">Assignments you have published.</div>
 
-        <section className="card">
+            <section className="card">
           {cards.length === 0 && (
             <p className="note">
               No assignments yet. Publish from “Digital Diary / Assignment” on the teacher dashboard to see them here.
@@ -161,6 +198,7 @@ export default function TeacherAssignmentsPage() {
                 key={`${a.date}-${a.klass}-${a.section}-${a.subject}-${idx}`}
                 type="button"
                 className="note-card"
+                data-assignment-card="true"
                 style={{ textAlign: 'left', cursor: 'pointer' }}
                 onClick={() => setSelected(a)}
               >
@@ -174,7 +212,7 @@ export default function TeacherAssignmentsPage() {
         </section>
 
         {ready && selected && (
-          <section className="card" style={{ marginTop: 16 }}>
+          <section ref={detailRef} className="card" style={{ marginTop: 16 }}>
             <div style={{ display: 'grid', gap: 12 }}>
               <div className="row" style={{ gap: 8, flexWrap: 'wrap' }}>
                 <select
@@ -276,6 +314,8 @@ export default function TeacherAssignmentsPage() {
             </div>
           </section>
         )}
+          </div>
+        </div>
       </div>
     </div>
   )

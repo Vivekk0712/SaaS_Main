@@ -11,6 +11,8 @@ export type CalendarEvent = {
   // Optional scoping: if provided, event applies only to this class/section
   klass?: string
   section?: string
+  // Optional attachments (links/files) shared with parents & students
+  attachments?: Array<AttachmentLink | AttachmentFile>
 }
 
 // Lightweight fetch throttle to avoid rapid repeated background refreshes
@@ -554,7 +556,18 @@ export type AssignmentEntry = {
 }
 
 // ---- Academic Syllabus Stores ----
-export type SyllabusSubtopic = { id: string; title: string; details?: string }
+export type SyllabusSubtopic = {
+  id: string
+  title: string
+  // Optional user-defined code/number like "1.1"
+  code?: string
+  // Optional short notes / summary for this topic
+  details?: string
+  // Optional list of helpful links for this topic
+  links?: string[]
+  // Optional attachments (files/links) associated with this topic
+  attachments?: Array<AttachmentLink | AttachmentFile>
+}
 export type SyllabusChapter = { id: string; title: string; subtopics: SyllabusSubtopic[] }
 export type SyllabusEntry = { klass: string; section: string; subject: string; chapters: SyllabusChapter[]; updatedAt?: number }
 
@@ -683,6 +696,28 @@ export function addMaterial(klass: string, section: string, subject: string, ite
   } catch {}
   // Persist to DB
   try { if (typeof fetch !== 'undefined') { const item = (item as any); fetch('/api/mysql/academics/materials', { method: 'POST', headers:{'content-type':'application/json'}, body: JSON.stringify({ klass, section, subject, item }) }) } } catch {}
+}
+
+export function addSubtopicMaterial(
+  klass: string,
+  section: string,
+  subject: string,
+  chapterId: string,
+  subtopicId: string,
+  item: ResourceItem,
+) {
+  try {
+    if (typeof fetch !== 'undefined') {
+      const payload = { klass, section, subject, chapterId, subtopicId, item }
+      fetch('/api/mysql/academics/materials', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).catch(() => {})
+    }
+  } catch {
+    // ignore db errors for subtopic materials
+  }
 }
 export function listMaterials(klass: string, section: string, subject: string): ResourceItem[] {
   try {

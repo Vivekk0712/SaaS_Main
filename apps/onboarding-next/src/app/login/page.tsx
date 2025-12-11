@@ -91,6 +91,10 @@ export default function LoginPage() {
   return (
     <div className="container login-shell login-shell-parent">
       <div className="auth-card">
+        <div className="brand" style={{ marginBottom: 8 }}>
+          <span className="dot" />
+          <strong>School SAS — Admissions</strong>
+        </div>
         <h1 className="title">Parent Login</h1>
         {!reset ? (
         <form onSubmit={login}>

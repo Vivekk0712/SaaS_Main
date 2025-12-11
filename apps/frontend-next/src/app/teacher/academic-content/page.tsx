@@ -1,11 +1,37 @@
 "use client"
-import React from 'react'
-import { getClasses, getSectionsForClass, getAssignedClassesForTeacher, getAssignedSectionsForTeacher, getAssignedSubjectsForTeacher, getClassSubjects, readSyllabus, saveSyllabus, setTextbook, addMaterial, listMaterials, listTextbooks, removeTextbook, removeMaterial, type SyllabusChapter, type AttachmentFile, type AttachmentLink, type TextbookEntry } from '../data'
+
+import React from "react"
+import Link from "next/link"
+import type { Route } from "next"
+import { usePathname, useRouter } from "next/navigation"
+import {
+  getClasses,
+  getSectionsForClass,
+  getAssignedClassesForTeacher,
+  getAssignedSectionsForTeacher,
+  getAssignedSubjectsForTeacher,
+  getClassSubjects,
+  readSyllabus,
+  saveSyllabus,
+  type SyllabusChapter,
+} from "../data"
+
+const navLinks: Array<{ href: Route; label: string; icon: string }> = [
+  { href: "/teacher/dashboard", label: "Dashboard", icon: "🏠" },
+  { href: "/teacher/attendance", label: "Attendance", icon: "✅" },
+  { href: "/teacher/analytics", label: "Analytics", icon: "📈" },
+  { href: "/teacher/assignments", label: "Assignments", icon: "📚" },
+  { href: "/teacher/diary", label: "Digital Diary", icon: "📔" },
+  { href: "/teacher/calendar", label: "Academic Calendar", icon: "📅" },
+  { href: "/teacher/marks", label: "Marks Entry", icon: "✏️" },
+  { href: "/teacher/academic-content", label: "Academic Content", icon: "📘" },
+  { href: "/teacher/circulars", label: "Circulars", icon: "📣" },
+]
 
 function parseChaptersFromIndex(text: string): SyllabusChapter[] {
   const lines = text
     .split(/\r?\n/)
-    .map(l => l.replace(/\s+/g, ' ').trim())
+    .map(l => l.replace(/\s+/g, " ").trim())
     .filter(l => l.length > 0)
 
   const chapters: SyllabusChapter[] = []
@@ -18,7 +44,7 @@ function parseChaptersFromIndex(text: string): SyllabusChapter[] {
   ]
 
   for (const raw of lines) {
-    const line = raw.replace(/\.+\s*\d+\s*$/, '').trim()
+    const line = raw.replace(/\.+\s*\d+\s*$/, "").trim()
     if (!line) continue
     let title: string | null = null
 
@@ -54,317 +80,438 @@ function parseChaptersFromIndex(text: string): SyllabusChapter[] {
 }
 
 export default function TeacherAcademicContent() {
+  const pathname = usePathname()
+  const router = useRouter()
   const [teacher, setTeacher] = React.useState<{ name: string; subject: string } | null>(null)
-  const [klass, setKlass] = React.useState<string>('')
-  const [section, setSection] = React.useState<string>('')
-  const [subject, setSubject] = React.useState<string>('')
+  const [klass, setKlass] = React.useState<string>("")
+  const [section, setSection] = React.useState<string>("")
+  const [subject, setSubject] = React.useState<string>("")
   const [mounted, setMounted] = React.useState(false)
+
+  const [chapters, setChapters] = React.useState<SyllabusChapter[]>([])
+  const [message, setMessage] = React.useState("")
+  // Simple chapter planner state
+  const [chapterCountInput, setChapterCountInput] = React.useState<string>("")
 
   React.useEffect(() => {
     setMounted(true)
-    try { const raw = sessionStorage.getItem('teacher'); if (raw) {
-      const t = JSON.parse(raw); setTeacher(t)
-      const classes = getAssignedClassesForTeacher(t.name)
-      if (classes.length) {
-        setKlass(classes[0])
-        const secs = getAssignedSectionsForTeacher(t.name, classes[0]); const sec = secs[0] || getSectionsForClass(classes[0])[0] || ''
-        setSection(sec)
-        const subs = getAssignedSubjectsForTeacher(t.name, classes[0], sec); const classSubs = getClassSubjects(classes[0], sec)
-        const list = (subs.length ? subs : (classSubs.length ? classSubs : []))
-        setSubject(list[0] || t.subject || '')
-      } else {
-        const all = getClasses(); setKlass(all[0] || '')
-        const sec = getSectionsForClass(all[0] || '')[0] || ''; setSection(sec)
-        const classSubs = getClassSubjects(all[0] || '', sec)
-        setSubject((classSubs[0] || t.subject || ''))
+    try {
+      const raw = sessionStorage.getItem("teacher")
+      if (raw) {
+        const t = JSON.parse(raw)
+        setTeacher(t)
+        const classes = getAssignedClassesForTeacher(t.name)
+        if (classes.length) {
+          const first = classes[0]
+          setKlass(first)
+          const secs = getAssignedSectionsForTeacher(t.name, first)
+          const sec = secs[0] || getSectionsForClass(first)[0] || ""
+          setSection(sec)
+          const subs = getAssignedSubjectsForTeacher(t.name, first, sec)
+          const classSubs = getClassSubjects(first, sec)
+          const list = subs.length ? subs : classSubs.length ? classSubs : []
+          setSubject(list[0] || t.subject || "")
+        } else {
+          const all = getClasses()
+          const first = all[0] || ""
+          setKlass(first)
+          const sec = getSectionsForClass(first)[0] || ""
+          setSection(sec)
+          const classSubs = getClassSubjects(first, sec)
+          setSubject(classSubs[0] || t.subject || "")
+        }
       }
-    } } catch {}
+    } catch {
+      // ignore
+    }
   }, [])
 
   React.useEffect(() => {
-    setSection(prev => { const arr = getSectionsForClass(klass); return arr.includes(prev) ? prev : (arr[0] || '') })
+    setSection(prev => {
+      const arr = getSectionsForClass(klass)
+      return arr.includes(prev) ? prev : arr[0] || ""
+    })
   }, [klass])
-
-  const [chapters, setChapters] = React.useState<SyllabusChapter[]>([])
-  const [message, setMessage] = React.useState('')
-  const [materials, setMaterials] = React.useState<Array<AttachmentLink | AttachmentFile>>([])
-  const [books, setBooks] = React.useState<TextbookEntry[]>([])
-  const [linkInput, setLinkInput] = React.useState('')
-  const [pendingSylFile, setPendingSylFile] = React.useState<File | null>(null)
-  const [pendingSylName, setPendingSylName] = React.useState<string>('')
-  const [pendingTB, setPendingTB] = React.useState<File | null>(null)
-  const [pendingChapterTB, setPendingChapterTB] = React.useState<File | null>(null)
-  const [pendingTBName, setPendingTBName] = React.useState<string>('')
-  const [pendingCTBName, setPendingCTBName] = React.useState<string>('')
-  const [selChapter, setSelChapter] = React.useState<string>('')
-  const [pendingMatFiles, setPendingMatFiles] = React.useState<File[]>([])
-  const [viewer, setViewer] = React.useState<{ url: string; name: string } | null>(null)
 
   const loadAll = React.useCallback(() => {
     if (!klass || !section || !subject) return
-    try { const syl = readSyllabus(klass, section, subject); setChapters(syl.chapters || []) } catch { setChapters([]) }
-    try { setMaterials(listMaterials(klass, section, subject)) } catch { setMaterials([]) }
-    try { setBooks(listTextbooks(klass, section, subject)) } catch { setBooks([]) }
+    try {
+      const syl = readSyllabus(klass, section, subject)
+      setChapters(syl.chapters || [])
+    } catch {
+      setChapters([])
+    }
   }, [klass, section, subject])
 
-  React.useEffect(() => { loadAll() }, [loadAll])
+  React.useEffect(() => {
+    loadAll()
+  }, [loadAll])
 
-  const publishTextbook = async (chapterId: string | null) => {
-    try {
-      const f = chapterId ? pendingChapterTB : pendingTB
-      if (!f) { setMessage('Choose a file first'); setTimeout(()=>setMessage(''), 1000); return }
-      const dataUrl = await new Promise<string>((res, rej) => { const r = new FileReader(); r.onerror = () => rej(''); r.onload = () => res(String(r.result)); r.readAsDataURL(f) })
-      setTextbook({ klass, section, subject, name: f.name, mime: f.type || 'application/octet-stream', dataUrl, chapterId: chapterId || undefined } as any)
-      loadAll(); setMessage('Textbook published.'); setTimeout(()=>setMessage(''), 1600)
-      setPendingTB(null); setPendingChapterTB(null); setSelChapter('')
-      setPendingTBName(''); setPendingCTBName('')
-    } catch { setMessage('Failed to publish'); setTimeout(()=>setMessage(''), 1200) }
-  }
-
-  const addLink = (kind: 'materials') => {
-    try {
-      const raw = linkInput.trim(); const u = new URL(raw)
-      const item: AttachmentLink = { type: 'link', url: u.toString() }
-      addMaterial(klass, section, subject, item); setLinkInput('')
-      loadAll(); setMessage('Link published.'); setTimeout(()=>setMessage(''), 1000)
-    } catch { setMessage('Enter a valid URL starting with http'); setTimeout(()=>setMessage(''), 1200) }
-  }
-
-  const publishMaterials = async () => {
-    try {
-      for (const f of pendingMatFiles) {
-        const dataUrl = await new Promise<string>((res, rej) => { const r = new FileReader(); r.onerror = () => rej('read-error'); r.onload = () => res(String(r.result)); r.readAsDataURL(f) })
-        addMaterial(klass, section, subject, { type: 'file', name: f.name, mime: f.type || 'application/octet-stream', dataUrl })
-      }
-      setPendingMatFiles([])
-      loadAll(); setMessage('Materials published.'); setTimeout(()=>setMessage(''), 1000)
-    } catch {
-      setMessage('Failed to publish one or more files'); setTimeout(()=>setMessage(''), 1500)
-    }
-  }
-  const generateSyllabusFromContentsPdf = async () => {
-    if (!klass || !section || !subject) {
-      setMessage('Select class, section, and subject first.'); setTimeout(()=>setMessage(''), 1500)
-      return
-    }
-    if (!pendingSylFile) {
-      setMessage('Select a contents/index PDF first.'); setTimeout(()=>setMessage(''), 1500)
-      return
-    }
-    try {
-      setMessage('Reading contents PDF to build syllabus...')
-      const arrayBuffer = await pendingSylFile.arrayBuffer()
-      const pdfjs: any = await import('pdfjs-dist/build/pdf')
-      if (pdfjs.GlobalWorkerOptions && pdfjs.version) {
-        pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
-      }
-      const getDocument = pdfjs.getDocument
-      if (!getDocument) throw new Error('PDF engine not available')
-      const loadingTask = getDocument({ data: arrayBuffer })
-      const pdf = await loadingTask.promise
-      const maxPages = Math.min(pdf.numPages || 1, 8)
-      let allText = ''
-      for (let i = 1; i <= maxPages; i++) {
-        const page = await pdf.getPage(i)
-        const content = await page.getTextContent()
-        const strings = (content.items || []).map((it: any) => it.str || '').filter(Boolean)
-        allText += strings.join(' ') + '\n'
-      }
-      const nextChapters = parseChaptersFromIndex(allText)
-      if (!nextChapters.length) {
-        setMessage('Could not detect chapters from contents PDF.'); setTimeout(()=>setMessage(''), 2500)
-        return
-      }
-      setChapters(nextChapters)
-      saveSyllabus({ klass, section, subject, chapters: nextChapters })
-      setMessage('Syllabus auto-generated from contents PDF.'); setTimeout(()=>setMessage(''), 2500)
-      setPendingSylFile(null); setPendingSylName('')
-    } catch {
-      setMessage('Failed to auto-generate syllabus from contents PDF.'); setTimeout(()=>setMessage(''), 2500)
-    }
-  }
   const subjectOptions = React.useMemo(() => {
     if (!teacher) return [] as string[]
     const subs = getAssignedSubjectsForTeacher(teacher.name, klass, section)
     const classSubs = getClassSubjects(klass, section)
-    return (subs.length ? subs : classSubs)
+    return subs.length ? subs : classSubs
   }, [teacher, klass, section])
 
+  const saveCurrentSyllabus = (nextChapters: SyllabusChapter[]) => {
+    if (!klass || !section || !subject) return
+    try {
+      saveSyllabus({ klass, section, subject, chapters: nextChapters })
+    } catch {
+      // ignore
+    }
+  }
+
+  const applyChapterCount = () => {
+    const raw = chapterCountInput.trim()
+    if (!raw) {
+      setMessage("Enter total chapters (e.g., 10)")
+      setTimeout(() => setMessage(""), 1400)
+      return
+    }
+    const n = Number(raw)
+    if (!Number.isFinite(n) || n <= 0 || n > 25) {
+      setMessage("Enter a valid number of chapters between 1 and 25.")
+      setTimeout(() => setMessage(""), 1800)
+      return
+    }
+    setChapters(prev => {
+      const existing = prev || []
+      const next: SyllabusChapter[] = []
+      for (let i = 0; i < n; i++) {
+        if (existing[i]) {
+          next.push(existing[i])
+        } else {
+          next.push({
+            id: `${Date.now()}-${i}`,
+            title: `Chapter ${i + 1}`,
+            subtopics: [],
+          })
+        }
+      }
+      saveCurrentSyllabus(next)
+      return next
+    })
+    setMessage("Chapters grid updated.")
+    setTimeout(() => setMessage(""), 1400)
+  }
+
+  const updateChapterTitle = (id: string, title: string) => {
+    setChapters(prev => {
+      const next = (prev || []).map(ch =>
+        ch.id === id ? { ...ch, title } : ch,
+      )
+      saveCurrentSyllabus(next)
+      return next
+    })
+  }
+
+  const addSubtopic = (chapterId: string) => {
+    setChapters(prev => {
+      const next = (prev || []).map(ch =>
+        ch.id === chapterId
+          ? {
+              ...ch,
+              subtopics: [
+                ...ch.subtopics,
+                {
+                  id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+                  title: `Topic ${ch.subtopics.length + 1}`,
+                  details: "",
+                  links: [],
+                },
+              ],
+            }
+          : ch,
+      )
+      saveCurrentSyllabus(next)
+      return next
+    })
+  }
+
+  const updateSubtopic = (
+    chapterId: string,
+    subId: string,
+    field: "title" | "details" | "links",
+    value: string,
+  ) => {
+    setChapters(prev => {
+      const next = (prev || []).map(ch => {
+        if (ch.id !== chapterId) return ch
+        const updatedSubs = ch.subtopics.map(st => {
+          if (st.id !== subId) return st
+          if (field === "title") {
+            return { ...st, title: value }
+          }
+          if (field === "details") {
+            return { ...st, details: value }
+          }
+          if (field === "links") {
+            const raw = value || ""
+            const links = raw
+              .split(",")
+              .map(s => s.trim())
+              .filter(Boolean)
+            return { ...st, links }
+          }
+          return st
+        })
+        return { ...ch, subtopics: updatedSubs }
+      })
+      saveCurrentSyllabus(next)
+      return next
+    })
+  }
+
+  const generateSyllabusFromContentsPdf = async () => {
+    if (!klass || !section || !subject) {
+      setMessage("Select class, section, and subject first.")
+      setTimeout(() => setMessage(""), 1500)
+      return
+    }
+    if (!pendingSylFile) {
+      setMessage("Select a contents/index PDF first.")
+      setTimeout(() => setMessage(""), 1500)
+      return
+    }
+    try {
+      setMessage("Reading contents PDF to build syllabus...")
+      const arrayBuffer = await pendingSylFile.arrayBuffer()
+      const pdfjs: any = await import("pdfjs-dist/build/pdf")
+      if (pdfjs.GlobalWorkerOptions && pdfjs.version) {
+        pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
+      }
+      const loadingTask = pdfjs.getDocument({ data: arrayBuffer })
+      const pdf = await loadingTask.promise
+      const maxPages = Math.min(pdf.numPages || 1, 8)
+      let allText = ""
+      for (let i = 1; i <= maxPages; i++) {
+        const page = await pdf.getPage(i)
+        const content = await page.getTextContent()
+        const strings = (content.items || []).map((it: any) => it.str || "").filter(Boolean)
+        allText += strings.join(" ") + "\n"
+      }
+      const nextChapters = parseChaptersFromIndex(allText)
+      if (!nextChapters.length) {
+        setMessage("Could not detect chapters from contents PDF.")
+        setTimeout(() => setMessage(""), 2500)
+        return
+      }
+      setChapters(nextChapters)
+      saveSyllabus({ klass, section, subject, chapters: nextChapters })
+      setMessage("Syllabus auto-generated from contents PDF.")
+      setTimeout(() => setMessage(""), 2500)
+      setPendingSylFile(null)
+      setPendingSylName("")
+    } catch {
+      setMessage("Failed to auto-generate syllabus from contents PDF.")
+      setTimeout(() => setMessage(""), 2500)
+    }
+  }
+
   return (
-    <div className="dash">
-      <h2 className="title">Academic Syllabus</h2>
-      <p className="subtitle">Upload a separate contents/index PDF to auto-generate syllabus; manage textbooks and notes/materials per subject.</p>
-
-      <div className="chart-card" style={{display:'grid', gap:10}}>
-        <div className="row">
-          <select className="input select" value={klass} onChange={e=>setKlass(e.target.value)}>
-            <option value="">Select Class</option>
-            {mounted ? ((teacher ? (getAssignedClassesForTeacher(teacher.name).length ? getAssignedClassesForTeacher(teacher.name) : getClasses()) : getClasses()).map(c=> <option key={c}>{c}</option>)) : null}
-          </select>
-          <select className="input select" value={section} onChange={e=>setSection(e.target.value)}>
-            <option value="">Section</option>
-            {mounted ? ((teacher ? (getAssignedSectionsForTeacher(teacher.name, klass).length ? getAssignedSectionsForTeacher(teacher.name, klass) : getSectionsForClass(klass)) : getSectionsForClass(klass)).map(s=> <option key={s}>{s}</option>)) : null}
-          </select>
-          <select className="input select" value={subject} onChange={e=>setSubject(e.target.value)}>
-            <option value="">Subject</option>
-            {mounted ? (subjectOptions.map(s=> <option key={s}>{s}</option>)) : null}
-          </select>
+    <div className="teacher-shell">
+      <div className="topbar topbar-teacher">
+        <div className="topbar-inner">
+          <div className="brand-mark">
+            <span className="dot" />
+            <strong>Teacher</strong>
+          </div>
         </div>
       </div>
 
-      <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:12, marginTop:12}}>
-        <div className="chart-card">
-          <div className="chart-title">Syllabus — Auto-generated from Contents PDF</div>
-          <div className="note" style={{marginBottom:8}}>
-            Upload the chapter contents / index as a separate PDF here. The system will read that PDF and automatically create the syllabus for all chapters. Manual add is disabled.
-          </div>
-          <div className="row" style={{marginBottom:8}}>
-            <input
-              className="input"
-              type="file"
-              accept="application/pdf,application/*,.pdf"
-              onChange={e => {
-                const f = e.target.files?.[0] || null
-                setPendingSylFile(f)
-                setPendingSylName(f ? f.name : '')
-              }}
-            />
-            <button className="btn" type="button" onClick={generateSyllabusFromContentsPdf}>Generate Syllabus</button>
-          </div>
-          {pendingSylName && <div className="note" style={{marginBottom:8}}>Selected contents PDF: {pendingSylName}</div>}
-          <div style={{display:'grid', gap:8}}>
-            {chapters.map((ch, idx) => (
-              <div key={ch.id} style={{border:'1px solid var(--panel-border)', borderRadius:10, padding:10}}>
-                <div style={{fontWeight:800}}>{idx+1}. {ch.title}</div>
+      <div className="dash-wrap teacher-main">
+        <div className="dash-layout">
+          <aside className="side-nav side-nav-teacher" aria-label="Teacher quick navigation">
+            {navLinks.map(link => {
+              const active = pathname?.startsWith(link.href)
+              return (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  className={`side-nav-link ${active ? "side-nav-link-active" : ""}`}
+                  aria-label={link.label}
+                >
+                  <span className="side-nav-icon">{link.icon}</span>
+                  <span>{link.label.split(" ")[0]}</span>
+                </Link>
+              )
+            })}
+          </aside>
+
+          <div className="dash">
+            <h2 className="title">Academic Syllabus</h2>
+            <p className="subtitle">
+              Upload a separate contents/index PDF to auto-generate syllabus; manage textbooks and notes/materials per
+              subject.
+            </p>
+
+            <div className="chart-card" style={{ display: "grid", gap: 10 }}>
+              <div className="row">
+                <select className="input select" value={klass} onChange={e => setKlass(e.target.value)}>
+                  <option value="">Select Class</option>
+                  {mounted
+                    ? (teacher
+                        ? getAssignedClassesForTeacher(teacher.name).length
+                          ? getAssignedClassesForTeacher(teacher.name)
+                          : getClasses()
+                        : getClasses()
+                      ).map(c => (
+                        <option key={c}>{c}</option>
+                      ))
+                    : null}
+                </select>
+                <select className="input select" value={section} onChange={e => setSection(e.target.value)}>
+                  <option value="">Section</option>
+                  {mounted
+                    ? (teacher
+                        ? getAssignedSectionsForTeacher(teacher.name, klass).length
+                          ? getAssignedSectionsForTeacher(teacher.name, klass)
+                          : getSectionsForClass(klass)
+                        : getSectionsForClass(klass)
+                      ).map(s => (
+                        <option key={s}>{s}</option>
+                      ))
+                    : null}
+                </select>
+                <select className="input select" value={subject} onChange={e => setSubject(e.target.value)}>
+                  <option value="">Subject</option>
+                  {mounted ? subjectOptions.map(s => <option key={s}>{s}</option>) : null}
+                </select>
               </div>
-            ))}
-            {chapters.length === 0 && <div className="note">No syllabus detected yet. Upload a contents/index PDF and click Generate Syllabus.</div>}
-          </div>
-        </div>
+            </div>
 
-        <div className="chart-card">
-          <div className="chart-title">Textbooks</div>
-          <div className="row">
-            <select className="input select" value="" onChange={()=>{}} disabled>
-              <option value="">Full Book</option>
-            </select>
-            <input className="input" type="file" accept="application/pdf,application/*,.pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg,.webp" onChange={e=> { const f=e.target.files?.[0]||null; setPendingTB(f); setPendingTBName(f?f.name:'') }} />
-            <button className="btn" type="button" onClick={()=> publishTextbook(null)}>Publish</button>
-          </div>
-          {pendingTBName && <div className="note" style={{marginTop:6}}>Selected: {pendingTBName}</div>}
-          <div className="row" style={{marginTop:8}}>
-            <select className="input select" value={selChapter} onChange={e=> setSelChapter(e.target.value)}>
-              <option value="">Attach to Chapter…</option>
-              {chapters.map(c => <option key={c.id} value={c.id}>{c.title}</option>)}
-            </select>
-            <input className="input" type="file" accept="application/pdf,application/*,.pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg,.webp" onChange={e=> { const f=e.target.files?.[0]||null; setPendingChapterTB(f); setPendingCTBName(f?f.name:'') }} />
-            <button className="btn" type="button" onClick={()=> publishTextbook(selChapter || null)} disabled={!selChapter}>Publish</button>
-          </div>
-          {pendingCTBName && <div className="note" style={{marginTop:6}}>Selected (Chapter): {pendingCTBName}</div>}
-          <div className="note" style={{marginTop:8}}>Published textbooks appear in the list below. Use View/Download; no inline preview here.</div>
-        </div>
-      </div>
-
-      <div className="chart-card" style={{marginTop:12}}>
-        <div className="chart-title">Published Textbooks (Logs)</div>
-        <div style={{display:'grid', gridTemplateColumns:'repeat(2,minmax(0,1fr))', gap:8}}>
-          {books.map((b, i) => {
-            const ch = (b as any).chapterId
-            const chTitle = ch ? (chapters.find(c => c.id === ch)?.title || `Chapter ${i+1}`) : 'Full Book'
-            return (
-              <div key={`${b.name}-${i}`} style={{border:'1px solid var(--panel-border)', borderRadius:10, padding:'8px 10px', display:'grid', gap:8}}>
-                <div style={{display:'grid', gap:4}}>
-                  <div style={{fontWeight:700}}>{chTitle}</div>
-                  <small className="note">{b.name}</small>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 12, marginTop: 12 }}>
+              <div className="chart-card">
+                <div className="chart-title">Syllabus — Chapters &amp; Subtopics</div>
+                <div className="note" style={{ marginBottom: 8 }}>
+                  Enter how many chapters you handle for this class/section/subject. We&apos;ll create that many colorful
+                  boxes. Inside each chapter you can add subtopics, short notes, and helpful links.
                 </div>
-                <div className="row" style={{gap:8}}>
-                  <button className="btn-ghost" onClick={()=> setViewer({ url: b.dataUrl, name: b.name })}>View</button>
-                  <a className="btn-ghost" href={b.dataUrl} download>Download</a>
-                  <button className="btn-ghost" onClick={()=> { removeTextbook(klass, section, subject, (b as any).chapterId || null, b.uploadedAt); loadAll() }}>Remove</button>
+                <div className="row" style={{ marginBottom: 8, flexWrap: "wrap", gap: 8 }}>
+                  <input
+                    className="input"
+                    type="number"
+                    min={1}
+                    max={25}
+                    placeholder="Total chapters (e.g., 10)"
+                    value={chapterCountInput}
+                    onChange={e => setChapterCountInput(e.target.value)}
+                    style={{ maxWidth: 220 }}
+                  />
+                  <button className="btn" type="button" onClick={applyChapterCount}>
+                    Create / Resize Chapters Grid
+                  </button>
+                </div>
+                <div
+                  className="parent"
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))",
+                    gridAutoRows: "minmax(120px, auto)",
+                    gap: 12,
+                    marginTop: 10,
+                  }}
+                >
+                  {chapters.map((ch, idx) => {
+                    const palette = [
+                      "linear-gradient(135deg, #0b1220, #1d4ed8)",
+                      "linear-gradient(135deg, #022c22, #16a34a)",
+                      "linear-gradient(135deg, #111827, #7c3aed)",
+                      "linear-gradient(135deg, #3f1f0e, #ea580c)",
+                      "linear-gradient(135deg, #111827, #14b8a6)",
+                      "linear-gradient(135deg, #31102b, #e11d48)",
+                    ]
+                    const bg = palette[idx % palette.length]
+                    const openChapter = () => {
+                      const qp = new URLSearchParams()
+                      qp.set("chapterId", ch.id)
+                      if (klass) qp.set("klass", klass)
+                      if (section) qp.set("section", section)
+                      if (subject) qp.set("subject", subject)
+                      router.push(`/teacher/academic-content/chapter?${qp.toString()}`)
+                    }
+                    return (
+                      <button
+                        key={ch.id}
+                        type="button"
+                        onClick={openChapter}
+                        style={{
+                          borderRadius: 14,
+                          padding: 12,
+                          background: bg,
+                          color: "#f9fafb",
+                          boxShadow: "0 18px 40px rgba(15,23,42,0.75)",
+                          display: "flex",
+                          flexDirection: "column",
+                          justifyContent: "space-between",
+                          textAlign: "left",
+                          border: "none",
+                          cursor: "pointer",
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontSize: 11, opacity: 0.9 }}>Chapter {idx + 1}</div>
+                          <div
+                            style={{
+                              fontWeight: 800,
+                              marginTop: 4,
+                              fontSize: 13,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
+                            {ch.title || `Chapter ${idx + 1}`}
+                          </div>
+                        </div>
+                        <div
+                          style={{
+                            marginTop: 10,
+                            fontSize: 11,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            opacity: 0.9,
+                          }}
+                        >
+                          <span>
+                            {(ch.subtopics || []).length
+                              ? `${ch.subtopics.length} subtopic${ch.subtopics.length === 1 ? "" : "s"}`
+                              : "No subtopics yet"}
+                          </span>
+                          <span
+                            style={{
+                              padding: "3px 8px",
+                              borderRadius: 999,
+                              background: "rgba(15,23,42,0.75)",
+                              border: "1px solid rgba(148,163,184,0.7)",
+                            }}
+                          >
+                            Open
+                          </span>
+                        </div>
+                      </button>
+                    )
+                  })}
+                  {chapters.length === 0 && (
+                    <div className="note">
+                      No chapters yet. Enter the total chapters above and click &quot;Create / Resize Chapters Grid&quot;.
+                    </div>
+                  )}
                 </div>
               </div>
-            )
-          })}
-          {books.length === 0 && <div className="note">No textbooks published yet.</div>}
-        </div>
-      </div>
+            </div>
 
-      {viewer && (
-        <div role="dialog" aria-label="Document viewer" style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:1000, display:'grid', placeItems:'center'}} onClick={()=>setViewer(null)}>
-          <div style={{width:'min(960px, 96vw)', height:'80vh', background:'var(--panel)', border:'1px solid var(--panel-border)', borderRadius:12, overflow:'hidden'}} onClick={e=> e.stopPropagation()}>
-            <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 12px', borderBottom:'1px solid var(--panel-border)'}}>
-              <div style={{fontWeight:800, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}} title={viewer.name}>{viewer.name}</div>
-              <div className="row" style={{gap:8, margin:0}}>
-                <a className="btn-ghost" href={viewer.url} target="_blank" rel="noopener noreferrer">Open</a>
-                <a className="btn-ghost" href={viewer.url} download>Download</a>
-                <button className="btn-ghost" onClick={()=>setViewer(null)}>Close</button>
+            {message && (
+              <div className="profile-message" style={{ marginTop: 8 }}>
+                {message}
               </div>
-            </div>
-            <div style={{height:'calc(100% - 44px)', background:'#fff'}}>
-              <object data={viewer.url} type="application/pdf" width="100%" height="100%">
-                <iframe src={viewer.url} title="Document" style={{width:'100%', height:'100%', border:0}} />
-              </object>
-            </div>
+            )}
           </div>
         </div>
-      )}
-
-      <div className="chart-card" style={{marginTop:12}}>
-        <div className="chart-title">Notes & Materials</div>
-        <div className="row"><input className="input" placeholder="https://link.to/material" value={linkInput} onChange={e=>setLinkInput(e.target.value)} /><button className="btn-ghost" onClick={()=>addLink('materials')}>Publish Link</button></div>
-        <div className="row"><input className="input" type="file" multiple accept="application/pdf,application/*,.pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.csv,.txt,.zip,.rar,image/*,video/*,audio/*" onChange={e=> {
-          const files = e.target.files
-          if (!files || files.length === 0) return
-          setPendingMatFiles(prev => [...prev, ...Array.from(files)])
-          setMessage('Files staged. Click Publish.'); setTimeout(()=>setMessage(''), 1000)
-        }} /><button className="btn" type="button" onClick={publishMaterials} disabled={pendingMatFiles.length===0}>Publish Files</button></div>
-        {pendingMatFiles.length>0 && (
-          <div className="note" style={{marginTop:6}}>Staged: {pendingMatFiles.map(f=>f.name).join(', ')}</div>
-        )}
-        <div className="chart-title" style={{marginTop:10}}>Published Materials (Logs)</div>
-        <div style={{display:'grid', gap:6, marginTop:6}}>
-          {materials.map((m, i) => {
-            const isFile = m.type === 'file'
-            const name = isFile ? (m as AttachmentFile).name : (m as AttachmentLink).url
-            const url = isFile ? (m as AttachmentFile).dataUrl : (m as AttachmentLink).url
-            return (
-              <div key={i} style={{display:'grid', gridTemplateColumns:'1fr auto auto auto', gap:8, alignItems:'center', border:'1px dashed var(--panel-border)', borderRadius:8, padding:'6px 10px'}}>
-                <div style={{fontWeight:700, overflow:'hidden', textOverflow:'ellipsis'}} title={name}>{name}</div>
-                {isFile ? (
-                  <button className="btn-ghost" onClick={()=> setViewer({ url, name })}>View</button>
-                ) : (
-                  <a className="btn-ghost" href={url} target="_blank" rel="noopener noreferrer">Open</a>
-                )}
-                <a className="btn-ghost" href={url} download>Download</a>
-                <button className="btn-ghost" onClick={()=>{ removeMaterial(klass, section, subject, i); loadAll() }}>Remove</button>
-              </div>
-            )
-          })}
-          {materials.length === 0 && <div className="note">No materials yet.</div>}
-        </div>
       </div>
-
-      {viewer && (
-        <div role="dialog" aria-label="Document viewer" style={{position:'fixed', inset:0, background:'rgba(0,0,0,0.6)', zIndex:1000, display:'grid', placeItems:'center'}} onClick={()=>setViewer(null)}>
-          <div style={{width:'min(960px, 96vw)', height:'80vh', background:'var(--panel)', border:'1px solid var(--panel-border)', borderRadius:12, overflow:'hidden'}} onClick={e=> e.stopPropagation()}>
-            <div style={{display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 12px', borderBottom:'1px solid var(--panel-border)'}}>
-              <div style={{fontWeight:800, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap'}} title={viewer.name}>{viewer.name}</div>
-              <div className="row" style={{gap:8, margin:0}}>
-                <a className="btn-ghost" href={viewer.url} target="_blank" rel="noopener noreferrer">Open</a>
-                <a className="btn-ghost" href={viewer.url} download>Download</a>
-                <button className="btn-ghost" onClick={()=>setViewer(null)}>Close</button>
-              </div>
-            </div>
-            <div style={{height:'calc(100% - 44px)', background:'#fff'}}>
-              <object data={viewer.url} type="application/pdf" width="100%" height="100%">
-                <iframe src={viewer.url} title="Document" style={{width:'100%', height:'100%', border:0}} />
-              </object>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {message && <div className="profile-message" style={{marginTop:8}}>{message}</div>}
     </div>
   )
 }

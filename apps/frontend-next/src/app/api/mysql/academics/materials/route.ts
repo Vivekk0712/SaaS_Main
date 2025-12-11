@@ -11,6 +11,8 @@ export async function GET(req: Request) {
     const klass = searchParams.get('klass') || ''
     const section = searchParams.get('section') || ''
     const subject = searchParams.get('subject') || ''
+    const chapterId = searchParams.get('chapterId') || ''
+    const subtopicId = searchParams.get('subtopicId') || ''
     if (!klass || !section || !subject) return bad('missing_fields')
     const cls = await query<{ id:number }>('SELECT id FROM classes WHERE name=?', [klass])
     if (!cls.length) return NextResponse.json({ items: [] })
@@ -18,12 +20,22 @@ export async function GET(req: Request) {
     if (!sec.length) return NextResponse.json({ items: [] })
     const sub = await query<{ id:number }>('SELECT id FROM subjects WHERE LOWER(name)=LOWER(?)', [subject])
     if (!sub.length) return NextResponse.json({ items: [] })
+    let where = 'class_id=? AND section_id=? AND subject_id=?'
+    const params: any[] = [cls[0].id, sec[0].id, sub[0].id]
+    if (chapterId) {
+      where += ' AND chapter_id=?'
+      params.push(chapterId)
+    }
+    if (subtopicId) {
+      where += ' AND subtopic_id=?'
+      params.push(subtopicId)
+    }
     const rows = await query<any>(
       `SELECT type, name, url, mime, data_url AS dataUrl, uploaded_at
          FROM materials
-        WHERE class_id=? AND section_id=? AND subject_id=?
+        WHERE ${where}
         ORDER BY uploaded_at DESC`,
-      [cls[0].id, sec[0].id, sub[0].id]
+      params
     )
     return NextResponse.json({ items: rows })
   } catch {
@@ -38,6 +50,8 @@ export async function POST(req: Request) {
     const section = String(body.section || '')
     const subject = String(body.subject || '')
     const item = body.item || {}
+    const chapterId = body.chapterId ? String(body.chapterId) : null
+    const subtopicId = body.subtopicId ? String(body.subtopicId) : null
     if (!klass || !section || !subject || !item || !item.type) return bad('invalid_payload')
     const cls = await query<{ id:number }>('SELECT id FROM classes WHERE name=?', [klass])
     if (!cls.length) return bad('class_not_found', 404)
@@ -46,9 +60,9 @@ export async function POST(req: Request) {
     const sub = await query<{ id:number }>('SELECT id FROM subjects WHERE LOWER(name)=LOWER(?)', [subject])
     if (!sub.length) return bad('subject_not_found', 404)
     await query(
-      `INSERT INTO materials (class_id, section_id, subject_id, type, name, url, mime, data_url)
-       VALUES (?,?,?,?,?,?,?,?)`,
-      [cls[0].id, sec[0].id, sub[0].id, item.type, item.name || null, item.url || null, item.mime || null, item.dataUrl || null]
+      `INSERT INTO materials (class_id, section_id, subject_id, chapter_id, subtopic_id, type, name, url, mime, data_url)
+       VALUES (?,?,?,?,?,?,?,?,?,?)`,
+      [cls[0].id, sec[0].id, sub[0].id, chapterId, subtopicId, item.type, item.name || null, item.url || null, item.mime || null, item.dataUrl || null]
     )
     return NextResponse.json({ ok: true })
   } catch {

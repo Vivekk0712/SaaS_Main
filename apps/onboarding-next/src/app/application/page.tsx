@@ -35,6 +35,34 @@ export default function ApplicationPage() {
   const phone = React.useMemo(() => {
     try { return JSON.parse(sessionStorage.getItem('onb:parent') || '{}').phone || '' } catch { return '' }
   }, [])
+  const [draftSaved, setDraftSaved] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    if (!phone) return
+    try {
+      const raw = localStorage.getItem(`onb:draft:${phone}`)
+      if (raw) {
+        const parsed = JSON.parse(raw) as AppData
+        setData(d => ({ ...d, ...parsed }))
+        setDraftSaved('Draft loaded')
+        setTimeout(() => setDraftSaved(null), 1500)
+      }
+    } catch {
+      // ignore bad drafts
+    }
+  }, [phone])
+
+  React.useEffect(() => {
+    if (!phone) return
+    try {
+      localStorage.setItem(`onb:draft:${phone}`, JSON.stringify(data))
+      setDraftSaved('Draft saved')
+      const id = setTimeout(() => setDraftSaved(null), 1500)
+      return () => clearTimeout(id)
+    } catch {
+      // ignore storage errors
+    }
+  }, [phone, data])
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -63,6 +91,7 @@ export default function ApplicationPage() {
         })
         if (!rl.ok) throw new Error('local_submit_failed')
       }
+      try { if (phone) localStorage.removeItem(`onb:draft:${phone}`) } catch {}
       alert('Submitted. Admissions department has been notified.')
     } catch (e) { alert('Submit failed (server/local).') } finally { setSubmitting(false) }
   }
@@ -101,6 +130,11 @@ export default function ApplicationPage() {
       <div className="hero-card" style={{ marginBottom: 16 }}>
         <h1 className="title">New Admission Application</h1>
         <p className="subtitle">Fill the form below. It is styled like an A4 document and will be sent to the Admissions department instantly.</p>
+        {draftSaved && (
+          <p className="note" style={{ marginTop: 4 }}>
+            {draftSaved}
+          </p>
+        )}
       </div>
       <div className="paper-wrap">
         <div className="paper relative">

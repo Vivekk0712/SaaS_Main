@@ -212,8 +212,7 @@ export default function AttendancePage() {
     { href: '/student/diary', label: 'Digital Diary', icon: '📔' },
     { href: '/student/calendar', label: 'Calendar', icon: '📅' },
     { href: '/student/circulars', label: 'Circulars', icon: '📣' },
-    { href: '/student/syllabus', label: 'Academic Syllabus', icon: '📘' },
-    { href: '/student/ai-tutor', label: 'AI Tutor', icon: '🤖' }
+    { href: '/student/syllabus', label: 'Academic Syllabus', icon: '📘' }
   ]
 
   const recompute = React.useCallback(() => {
@@ -379,7 +378,14 @@ export default function AttendancePage() {
       <div className="dash-wrap student-main">
         <div className="dash-layout">
           <aside className="side-nav side-nav-student" aria-label="Student quick navigation">
-            {navLinks.map(link => {
+            {navLinks
+              .filter(link =>
+                link.href === '/student/dashboard' ||
+                link.href === '/student/diary' ||
+                link.href === '/student/calendar' ||
+                link.href === '/student/syllabus'
+              )
+              .map(link => {
               const active = pathname?.startsWith(link.href)
               return (
                 <Link

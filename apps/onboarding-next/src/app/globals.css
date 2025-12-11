@@ -1,39 +1,56 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap');
+
 :root {
-  --bg: #f7f8fc;
+  /* Match main app (3000) Edukids-inspired palette */
+  --bg: #f6efe3;
   --panel: #ffffff;
   --panel-border: rgba(15, 23, 42, 0.08);
-  --panel-soft: rgba(30, 58, 138, 0.05);
-  --text: #1f2933;
-  --muted: #6b7280;
-  --accent: #1f3c88;
-  --accent-strong: #1d4ed8;
-  --accent-soft: #e2e8ff;
-  --success: #10b981;
+  --panel-soft: #fbe9c2;
+  --text: #3b2c1a;
+  --muted: #6b4f2a;
+  --accent: #f97316;
+  --accent-strong: #ea580c;
+  --accent-soft: #fed7aa;
+  --accent-gold: #fbbf24;
+  --accent-purple: #8b5cf6;
+  --success: #16a34a;
   --danger: #dc2626;
+  --blue: #2563eb;
+  --green: #16a34a;
+  --orange: #f97316;
+  --pink: #ec4899;
+  --violet: #8b5cf6;
 }
 
 html[data-theme='dark'] {
-  --bg: #000000;
-  --panel: #101213;
-  --panel-border: #1f1f25;
-  --panel-soft: rgba(96, 165, 250, 0.12);
-  --text: #f3f4f6;
+  --bg: #020617;
+  --panel: #0f172a;
+  --panel-border: rgba(15, 23, 42, 0.85);
+  --panel-soft: rgba(30, 64, 175, 0.42);
+  --text: #f9fafb;
   --muted: #9ca3af;
-  --accent: #60a5fa;
-  --accent-strong: #3b82f6;
-  --accent-soft: rgba(96, 165, 250, 0.18);
-  --success: #34d399;
-  --danger: #f87171;
+  --accent: #f97316;
+  --accent-strong: #fb923c;
+  --accent-soft: rgba(248, 171, 100, 0.16);
+  --accent-gold: #facc15;
+  --accent-purple: #a855f7;
+  --success: #22c55e;
+  --danger: #f97373;
+  --blue: #60a5fa;
+  --green: #22c55e;
+  --orange: #fb923c;
+  --pink: #f472b6;
+  --violet: #a855f7;
 }
 
 * { box-sizing: border-box; }
 html, body { height: 100%; }
 body {
   margin: 0;
-  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+  font-family: 'Nunito', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
   background:
-    radial-gradient(circle at 0% 0%, rgba(147, 51, 234, 0.12), transparent 60%),
-    radial-gradient(circle at 100% 100%, rgba(59, 130, 246, 0.12), transparent 60%),
+    radial-gradient(circle at 0% 0%, rgba(248, 171, 100, 0.18), transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(96, 165, 250, 0.18), transparent 60%),
     var(--bg);
   color: var(--text);
   transition: background 0.3s ease, color 0.3s ease;
@@ -41,8 +58,8 @@ body {
 
 html[data-theme='dark'] body {
   background:
-    radial-gradient(circle at 0% 0%, rgba(88, 28, 135, 0.6), transparent 60%),
-    radial-gradient(circle at 100% 100%, rgba(37, 99, 235, 0.55), transparent 60%),
+    radial-gradient(circle at 0% 0%, rgba(15, 23, 42, 0.9), transparent 60%),
+    radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.9), transparent 60%),
     #020617;
 }
 /* (decorative logo layers removed on request) */
@@ -52,7 +69,7 @@ html[data-theme='dark'] body {
 html[data-theme='dark'] .hero-card { background: linear-gradient(140deg, rgba(18, 18, 20, 0.96), rgba(18, 18, 20, 0.88)); box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55); }
 .card, .auth-card { width: 100%; max-width: 840px; padding: 28px; border-radius: 16px; background: linear-gradient(135deg, rgba(255, 255, 255, 0.96), rgba(255, 255, 255, 0.88)); border: 1px solid var(--panel-border); box-shadow: 0 24px 50px rgba(15, 23, 42, 0.10); }
 html[data-theme='dark'] .card, html[data-theme='dark'] .auth-card { background: linear-gradient(140deg, rgba(18, 18, 20, 0.96), rgba(18, 18, 20, 0.88)); box-shadow: 0 24px 50px rgba(0, 0, 0, 0.55); }
-.title { margin: 0 0 12px 0; font-size: 26px; }
+.title { margin: 0 0 12px 0; font-size: 26px; font-family: 'Playfair Display', serif; }
 .subtitle { color: var(--muted); margin-bottom: 16px; }
 .label { display:block; margin: 10px 0 6px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
 .input, .select, .textarea { width: 100%; padding: 12px 14px; border-radius: 10px; border: 1px solid rgba(15,23,42,0.15); background: #fff; color: var(--text); outline: none; transition: border-color .18s ease, box-shadow .18s ease; }

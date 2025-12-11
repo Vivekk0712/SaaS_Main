@@ -38,8 +38,7 @@ export default function StudentDiaryPage() {
     { href: '/student/diary', label: 'Digital Diary', icon: '📔' },
     { href: '/student/calendar', label: 'Calendar', icon: '📅' },
     { href: '/student/circulars', label: 'Circulars', icon: '📣' },
-    { href: '/student/syllabus', label: 'Academic Syllabus', icon: '📘' },
-    { href: '/student/ai-tutor', label: 'AI Tutor', icon: '🤖' }
+    { href: '/student/syllabus', label: 'Academic Syllabus', icon: '📘' }
   ]
 
   // Resolve student identity from session

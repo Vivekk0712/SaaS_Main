@@ -108,7 +108,16 @@ export default function ParentDashboard() {
     }>
   >([])
   const [month, setMonth] = React.useState<Date>(() => new Date())
-  const [notifications, setNotifications] = React.useState<Array<{date:string; title:string; tag:string; color:EventColor; description:string}>>([])
+  const [notifications, setNotifications] = React.useState<
+    Array<{
+      date: string
+      title: string
+      tag: string
+      color: EventColor
+      description: string
+      attachments?: any[]
+    }>
+  >([])
   const [nextDue, setNextDue] = React.useState<{ amount:number; dueDate?:string } | null>(null)
   const [overdueCount, setOverdueCount] = React.useState<number>(0)
   const [progress, setProgress] = React.useState<Array<{ test:string; subject:string; score:number; max:number; date?:string; klass:string; section:string }>>([])
@@ -330,7 +339,17 @@ export default function ParentDashboard() {
   React.useEffect(() => {
     // Notifications: reuse academic calendar entries of the current month
     try {
-      setNotifications(readCalendarByMonth(ymOf(month), klass || undefined, section || undefined) as any)
+      const items = readCalendarByMonth(
+        ymOf(month),
+        klass || undefined,
+        section || undefined,
+      ) as any[]
+      setNotifications(
+        (items || []).map(ev => ({
+          ...(ev || {}),
+          attachments: (ev as any).attachments || [],
+        })),
+      )
     } catch {
       setNotifications([])
     }
@@ -1441,6 +1460,60 @@ export default function ParentDashboard() {
                           {ev.description && (
                             <div style={{ fontSize: 12, marginTop: 6 }}>
                               {ev.description}
+                            </div>
+                          )}
+                          {Array.isArray(ev.attachments) && ev.attachments.length > 0 && (
+                            <div
+                              style={{
+                                display: 'grid',
+                                gap: 4,
+                                marginTop: 8,
+                              }}
+                            >
+                              {ev.attachments.map((a: any, j: number) => (
+                                <div
+                                  key={j}
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    border: '1px dashed rgba(15,23,42,0.5)',
+                                    borderRadius: 10,
+                                    padding: '6px 8px',
+                                    background: 'rgba(15,23,42,0.04)',
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span className="note">
+                                      {a.type === 'link' ? 'Link' : 'File'}
+                                    </span>
+                                    <span
+                                      style={{
+                                        fontWeight: 600,
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                      }}
+                                    >
+                                      {a.type === 'link' ? a.url : a.name}
+                                    </span>
+                                  </div>
+                                  {a.type === 'link' ? (
+                                    <a
+                                      className="back"
+                                      href={a.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                    >
+                                      Open
+                                    </a>
+                                  ) : (
+                                    <a className="back" href={a.dataUrl} download={a.name}>
+                                      Download
+                                    </a>
+                                  )}
+                                </div>
+                              ))}
                             </div>
                           )}
                         </div>
