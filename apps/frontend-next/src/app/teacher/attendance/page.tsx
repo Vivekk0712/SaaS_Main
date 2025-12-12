@@ -32,6 +32,9 @@ export default function TeacherAttendancePage() {
   const [attSubject, setAttSubject] = React.useState<string>('')
   const [attendanceTopic, setAttendanceTopic] = React.useState('')
   const [message, setMessage] = React.useState('')
+  const [notificationMessage, setNotificationMessage] = React.useState('')
+  const [isSendingNotifications, setIsSendingNotifications] = React.useState(false)
+  const [attendanceSaved, setAttendanceSaved] = React.useState(false)
 
   React.useEffect(() => {
     seedIfNeeded()
@@ -91,6 +94,9 @@ export default function TeacherAttendancePage() {
     setPresent(next)
     const topic = readAttendanceTopic(date, klass, section, hour)
     setAttendanceTopic(topic || '')
+    // Reset notification state when changing attendance slot
+    setAttendanceSaved(false)
+    setNotificationMessage('')
   }, [date, klass, section, hour])
 
   const students = React.useMemo(() => rosterBy(klass, section), [klass, section])
@@ -123,7 +129,59 @@ export default function TeacherAttendancePage() {
     const subjectLabel = attSubject || 'Subject'
     const dateLabel = date || new Date().toISOString().slice(0, 10)
     setMessage(`Attendance saved for ${classLabel} ${sectionLabel} • ${dateLabel} • ${hourLabel} • ${subjectLabel}`)
+    setAttendanceSaved(true)
+    setNotificationMessage('')
     setTimeout(() => setMessage(''), 1500)
+  }
+
+  const absentCount = React.useMemo(() => {
+    return students.filter(s => present[s.usn] === 'A').length
+  }, [students, present])
+
+  const onSendNotifications = async () => {
+    const absentStudents = students.filter(s => present[s.usn] === 'A').map(s => s.usn)
+    
+    if (absentStudents.length === 0) {
+      setNotificationMessage('No absent students to notify')
+      setTimeout(() => setNotificationMessage(''), 3000)
+      return
+    }
+
+    setIsSendingNotifications(true)
+    setNotificationMessage('Sending notifications...')
+
+    try {
+      const response = await fetch('/api/attendance/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          date,
+          klass,
+          section,
+          hour,
+          absentStudents
+        })
+      })
+
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        setNotificationMessage(`✅ ${result.message}`)
+        if (result.skipped > 0) {
+          setTimeout(() => {
+            setNotificationMessage(prev => `${prev} (${result.skipped} skipped - no phone number)`)
+          }, 100)
+        }
+      } else {
+        setNotificationMessage(`❌ ${result.message || 'Failed to send notifications'}`)
+      }
+    } catch (error) {
+      console.error('Notification error:', error)
+      setNotificationMessage('❌ Failed to send notifications. Please try again.')
+    } finally {
+      setIsSendingNotifications(false)
+      setTimeout(() => setNotificationMessage(''), 5000)
+    }
   }
 
   return (
@@ -359,6 +417,47 @@ export default function TeacherAttendancePage() {
                   <button className="btn" type="button" onClick={onSaveAttendance}>
                     Save Attendance
                   </button>
+                  
+                  {attendanceSaved && absentCount > 0 && (
+                    <div style={{ marginTop: 8, width: '100%' }}>
+                      <div style={{ 
+                        padding: '12px', 
+                        background: 'rgba(59, 130, 246, 0.1)', 
+                        borderRadius: 8,
+                        border: '1px solid rgba(59, 130, 246, 0.2)',
+                        marginBottom: 8
+                      }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>
+                          📱 Send WhatsApp Notifications
+                        </div>
+                        <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                          {absentCount} student{absentCount !== 1 ? 's' : ''} marked absent
+                        </div>
+                      </div>
+                      
+                      {notificationMessage && (
+                        <div
+                          className="badge info"
+                          style={{ marginBottom: 8, width: '100%', textAlign: 'left' }}
+                        >
+                          {notificationMessage}
+                        </div>
+                      )}
+                      
+                      <button 
+                        className="btn-ghost" 
+                        type="button" 
+                        onClick={onSendNotifications}
+                        disabled={isSendingNotifications}
+                        style={{ width: '100%' }}
+                      >
+                        {isSendingNotifications 
+                          ? 'Sending...' 
+                          : `Send to Absent Students (${absentCount})`
+                        }
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

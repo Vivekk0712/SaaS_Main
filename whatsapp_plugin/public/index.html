@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>WhatsApp Plugin Demo</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <main class="container">
+      <h1>WhatsApp Notification Demo</h1>
+      <p>Use this form to enqueue a test WhatsApp message job in the backend.</p>
+
+      <div class="alert alert-info">
+        <strong>ℹ️ Template Message:</strong> The message content is defined in Meta Business Manager. 
+        You only need to select the template and provide the data values.
+      </div>
+
+      <form id="message-form">
+        <fieldset>
+          <legend>Job Details</legend>
+          <label>
+            Tenant ID
+            <input type="text" id="tenantId" name="tenantId" value="demo-school" required />
+          </label>
+          <label>
+            Message Type
+            <select id="type" name="type">
+              <option value="transactional">Transactional (Template)</option>
+              <option value="bulk">Bulk (Template)</option>
+              <option value="otp">OTP (Template)</option>
+              <option value="session_text">Session Text (24h window)</option>
+            </select>
+          </label>
+          <label>
+            Template Name
+            <select id="templateName" name="templateName" onchange="updateTemplateInfo()">
+              <option value="hello_world">hello_world</option>
+              <option value="attendance_alert" selected>attendance_alert</option>
+            </select>
+          </label>
+          <label>
+            Language Code
+            <select id="language" name="language">
+              <option value="en" selected>English (en)</option>
+              <option value="en_US">English US (en_US)</option>
+              <option value="hi">Hindi (hi)</option>
+            </select>
+          </label>
+          <label>
+            Priority
+            <select id="priority" name="priority">
+              <option value="normal" selected>Normal</option>
+              <option value="high">High</option>
+              <option value="low">Low</option>
+            </select>
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Recipients</legend>
+          <label>
+            Recipient Phones (comma separated, E.164)
+            <input
+              type="text"
+              id="recipients"
+              name="recipients"
+              placeholder="+919876543210, +919812345678"
+              required
+            />
+          </label>
+        </fieldset>
+
+        <fieldset>
+          <legend>Template Data</legend>
+          <div id="template-info" class="template-info">
+            <p><strong>Meta Template:</strong> Attendance alert: {{1}} was marked {{2}} on {{3}} as per school records.</p>
+            <p><strong>Required fields:</strong> student_name, status, date</p>
+          </div>
+          <textarea id="payload" name="payload" rows="4" spellcheck="false">{
+  "student_name": "Rahul",
+  "status": "Absent",
+  "date": "2025-11-04"
+}</textarea>
+        </fieldset>
+
+        <button type="submit">Send Test WhatsApp</button>
+        <p id="status" role="status"></p>
+      </form>
+    </main>
+    <script src="/script.js" type="module"></script>
+  </body>
+  </html>
+
+

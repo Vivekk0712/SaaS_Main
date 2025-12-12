@@ -55,6 +55,19 @@ ragProc.on('exit', (code) => {
 procs.push(ragProc)
 console.log('[dev] starting rag-chatbot-plugin: npm run dev (in rag_chatbot_plugin/)')
 
+// Start WhatsApp plugin (runs from its own directory)
+const whatsappProc = spawn(npmCmd, ['run', 'dev'], {
+  cwd: 'whatsapp_plugin',
+  stdio: 'inherit',
+  env: { ...process.env, ...envShared },
+  shell: process.platform === 'win32',
+})
+whatsappProc.on('exit', (code) => {
+  console.log(`[dev] whatsapp-plugin exited with code ${code}`)
+})
+procs.push(whatsappProc)
+console.log('[dev] starting whatsapp-plugin: npm run dev (in whatsapp_plugin/)')
+
 // Start websites
 run('frontend-next', npmCmd, ['run', 'dev', '-w', 'frontend-next'], envShared)
 run('onboarding-next', npmCmd, ['run', 'dev', '-w', 'onboarding-next'], envShared)
@@ -68,7 +81,7 @@ if (process.env.WITH_ADMISSIONS === '1') {
 const shutdown = () => {
   console.log('Shutting down child processes...')
   for (const p of procs) {
-    try { p.kill('SIGINT') } catch {}
+    try { p.kill('SIGINT') } catch { }
   }
   setTimeout(() => process.exit(0), 500)
 }

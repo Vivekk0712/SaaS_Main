@@ -1,0 +1,4 @@
+Hello! This is a test message from our School ERP WhatsApp integration.
+
+
+

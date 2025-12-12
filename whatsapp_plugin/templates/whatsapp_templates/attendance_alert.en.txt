@@ -1,0 +1,1 @@
+Attendance alert: {{student_name}} was marked {{status}} on {{date}} as per school records.
