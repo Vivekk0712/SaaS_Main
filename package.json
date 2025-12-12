@@ -5,7 +5,10 @@
   "workspaces": [
     "apps/*",
     "services/*",
-    "packages/*"
+    "packages/*",
+    "razorpay_plugin",
+    "rag_chatbot_plugin",
+    "whatsapp_plugin"
   ],
   "scripts": {
     "build": "npm run build -w frontend-next",

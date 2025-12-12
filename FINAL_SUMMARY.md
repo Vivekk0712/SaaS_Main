@@ -4,6 +4,14 @@
 
 ---
 
+## ✅ What's Fixed
+
+1. **localStorage SSR Error** - Fixed server-side rendering issue
+2. **WhatsApp Plugin Auto-Install** - Added to workspaces, now `npm install` installs all plugin dependencies
+3. **WhatsApp Plugin Auto-Start** - Automatically starts with `npm run dev:stack`
+
+---
+
 ## 🚀 Quick Start
 
 ### 1. Update Test Phone Numbers

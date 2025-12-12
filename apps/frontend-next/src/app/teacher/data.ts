@@ -189,6 +189,7 @@ export const STUDENTS: Student[] = [
 ]
 
 export function seedIfNeeded() {
+  if (typeof window === 'undefined') return // Skip on server-side
   const versionKey = 'school:seed:version'
   const desired = 'v4-empty-initial'
   const current = localStorage.getItem(versionKey)
@@ -449,7 +450,7 @@ function primeRosterFromProfiles() {
 export function rosterBy(klass: string, section: string): Student[] {
   // Make sure roster is primed from central profiles so views work
   primeRosterFromProfiles()
-  const raw = localStorage.getItem('school:students')
+  const raw = typeof window !== 'undefined' ? localStorage.getItem('school:students') : null
   const all: Student[] = raw ? JSON.parse(raw) : []
   return all.filter(s => s.klass === klass && s.section === (section as any))
 }
