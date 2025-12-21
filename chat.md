@@ -1,334 +1,234 @@
-PS C:\Users\Dell\SAS-main> git commit -m "First commit with payment integration"
-[master (root-commit) 98aca4c] First commit with payment integration
- 317 files changed, 50179 insertions(+)
- create mode 100644 .github/workflows/ci.yml
- create mode 100644 .gitignore
- create mode 100644 ARCHITECTURE_SIMPLE.md
- create mode 100644 FIXED_SETUP.md
- create mode 100644 PRODUCT_EPICS.md
- create mode 100644 PROJECT_GUIDE.md
- create mode 100644 RAZORPAY_CHECKLIST.md
- create mode 100644 RAZORPAY_QUICK_START.md
- create mode 100644 RAZORPAY_README.md
- create mode 100644 RAZORPAY_SETUP_GUIDE.md
- create mode 100644 README.md
- create mode 100644 README_START_HERE.md
- create mode 100644 SIMPLE_SETUP_GUIDE.md
- create mode 100644 School_SAS_PRD.pdf
- create mode 100644 aemr1ps.pdf
- create mode 100644 apps/admissions-form-next/README.md
- create mode 100644 apps/admissions-form-next/next-env.d.ts
- create mode 100644 apps/admissions-form-next/next.config.mjs
- create mode 100644 apps/admissions-form-next/package.json
- create mode 100644 apps/admissions-form-next/src/app/globals.css
- create mode 100644 apps/admissions-form-next/src/app/layout.tsx
- create mode 100644 apps/admissions-form-next/src/app/page.tsx
- create mode 100644 apps/admissions-form-next/tsconfig.json
- create mode 100644 apps/frontend-next/README.md
- create mode 100644 apps/frontend-next/next-env.d.ts
- create mode 100644 apps/frontend-next/next.config.mjs
- create mode 100644 apps/frontend-next/next.config.ts
- create mode 100644 apps/frontend-next/package.json
- create mode 100644 apps/frontend-next/public/google-logo.svg
- create mode 100644 apps/frontend-next/public/images/login-kid-1.jpg
- create mode 100644 apps/frontend-next/public/images/login-kid-2.jpg
- create mode 100644 apps/frontend-next/public/images/login-kid-3.jpg
- create mode 100644 apps/frontend-next/public/localstorage-sync.html
- create mode 100644 apps/frontend-next/scripts/apply-schema-from-doc.mjs
- create mode 100644 apps/frontend-next/scripts/backfill-guardians.mjs
- create mode 100644 apps/frontend-next/scripts/db-health.mjs
- create mode 100644 apps/frontend-next/scripts/etl-import.mjs
- create mode 100644 apps/frontend-next/scripts/seed-academics.mjs
- create mode 100644 apps/frontend-next/scripts/seed-dummy.mjs
- create mode 100644 apps/frontend-next/scripts/seed-master.mjs
- create mode 100644 apps/frontend-next/scripts/validate-db.mjs
- create mode 100644 apps/frontend-next/src/app/accountant/dashboard/page.tsx
- create mode 100644 apps/frontend-next/src/app/accountant/fees/[id]/page.tsx
- create mode 100644 apps/frontend-next/src/app/accountant/login/page.tsx
- create mode 100644 apps/frontend-next/src/app/admin/dashboard/page.tsx
- create mode 100644 apps/frontend-next/src/app/admin/dashboard/students-manager.tsx
- create mode 100644 apps/frontend-next/src/app/admin/reset/page.tsx
- create mode 100644 apps/frontend-next/src/app/admissions/application/[id]/page.tsx
- create mode 100644 apps/frontend-next/src/app/admissions/dashboard/page.tsx
- create mode 100644 apps/frontend-next/src/app/admissions/login/page.tsx
- create mode 100644 apps/frontend-next/src/app/api/_lib/db.ts
- create mode 100644 apps/frontend-next/src/app/api/_lib/filedb.ts
- create mode 100644 apps/frontend-next/src/app/api/auth/oauth/callback/route.ts
- create mode 100644 apps/frontend-next/src/app/api/auth/oauth/start/route.ts
- create mode 100644 apps/frontend-next/src/app/api/auth/otp/start/route.ts
- create mode 100644 apps/frontend-next/src/app/api/auth/otp/verify/route.ts
- create mode 100644 apps/frontend-next/src/app/api/debug/adhoc-bills/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/_lib/filedb.ts
- create mode 100644 apps/frontend-next/src/app/api/local/_lib/grade.ts
- create mode 100644 apps/frontend-next/src/app/api/local/academics/class-subjects/route.ts   
- create mode 100644 apps/frontend-next/src/app/api/local/academics/materials/route.ts        
- create mode 100644 apps/frontend-next/src/app/api/local/academics/pyqs/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/academics/subjects/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/academics/syllabus/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/academics/textbooks/route.ts        
- create mode 100644 apps/frontend-next/src/app/api/local/accounting/adhoc/[id]/delete/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/accounting/adhoc/[id]/send/route.ts 
- create mode 100644 apps/frontend-next/src/app/api/local/accounting/adhoc/resolve/route.ts   
- create mode 100644 apps/frontend-next/src/app/api/local/accounting/adhoc/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/admin/reset/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/meta/version/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/parent/fees/adhoc/pay/route.ts      
- create mode 100644 apps/frontend-next/src/app/api/local/parent/fees/adhoc/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/parent/fees/pay/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/parent/fees/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/profiles/parent/reset/route.ts      
- create mode 100644 apps/frontend-next/src/app/api/local/profiles/parent/resolve/route.ts    
- create mode 100644 apps/frontend-next/src/app/api/local/profiles/student/reset/route.ts     
- create mode 100644 apps/frontend-next/src/app/api/local/profiles/student/resolve/route.ts   
- create mode 100644 apps/frontend-next/src/app/api/local/profiles/students/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/profiles/students/sync-classes/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/profiles/students/update/route.ts   
- create mode 100644 apps/frontend-next/src/app/api/local/profiles/students/with-fees/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/profiles/sync-from-onboarding/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/staff/applications/[id]/confirm/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/staff/applications/[id]/delete/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/staff/applications/[id]/fees/confirm/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/staff/applications/[id]/fees/pay/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/staff/applications/[id]/fees/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/staff/applications/[id]/route.ts    
- create mode 100644 apps/frontend-next/src/app/api/local/staff/applications/delete-submitted/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/staff/applications/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/staff/fees/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/staff/overview/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/student/idcard/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/teacher/attendance/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/teacher/calendar/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/teacher/circulars/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/teacher/diary/route.ts
- create mode 100644 apps/frontend-next/src/app/api/local/teacher/marks/route.ts
- create mode 100644 apps/frontend-next/src/app/api/mysql/academics/class-subjects/route.ts   
- create mode 100644 apps/frontend-next/src/app/api/mysql/academics/classes/route.ts
- create mode 100644 apps/frontend-next/src/app/api/mysql/academics/materials/route.ts        
- create mode 100644 apps/frontend-next/src/app/api/mysql/academics/sections/route.ts
- create mode 100644 apps/frontend-next/src/app/api/mysql/academics/subjects/route.ts
- create mode 100644 apps/frontend-next/src/app/api/mysql/auth/login/route.ts
- create mode 100644 apps/frontend-next/src/app/api/mysql/hod/assignments/route.ts
- create mode 100644 apps/frontend-next/src/app/api/mysql/profiles/students/route.ts
- create mode 100644 apps/frontend-next/src/app/api/mysql/teacher/attendance/route.ts
- create mode 100644 apps/frontend-next/src/app/api/mysql/teacher/calendar/route.ts
- create mode 100644 apps/frontend-next/src/app/api/mysql/teacher/circulars/route.ts
- create mode 100644 apps/frontend-next/src/app/api/mysql/teacher/diary/route.ts
- create mode 100644 apps/frontend-next/src/app/api/mysql/teacher/marks/route.ts
- create mode 100644 apps/frontend-next/src/app/api/mysql/teacher/marks/save/route.ts
- create mode 100644 apps/frontend-next/src/app/api/mysql/teachers/list/route.ts
- create mode 100644 apps/frontend-next/src/app/api/payments/create-order/route.ts
- create mode 100644 apps/frontend-next/src/app/api/payments/verify/route.ts
- create mode 100644 apps/frontend-next/src/app/api/sync-localstorage/route.ts
- create mode 100644 apps/frontend-next/src/app/back-button.tsx
- create mode 100644 apps/frontend-next/src/app/components/BarChart.tsx
- create mode 100644 apps/frontend-next/src/app/components/LineChart.tsx
- create mode 100644 apps/frontend-next/src/app/components/PieChart.tsx
- create mode 100644 apps/frontend-next/src/app/globals.css
- create mode 100644 apps/frontend-next/src/app/head.tsx
- create mode 100644 apps/frontend-next/src/app/layout.tsx
- create mode 100644 apps/frontend-next/src/app/lib/colors.ts
- create mode 100644 apps/frontend-next/src/app/login-shell.tsx
- create mode 100644 apps/frontend-next/src/app/page.tsx
- create mode 100644 apps/frontend-next/src/app/parent/attendance/page.tsx
- create mode 100644 apps/frontend-next/src/app/parent/calendar/page.tsx
- create mode 100644 apps/frontend-next/src/app/parent/circulars/page.tsx
- create mode 100644 apps/frontend-next/src/app/parent/dashboard/page.tsx
- create mode 100644 apps/frontend-next/src/app/parent/diary/page.tsx
- create mode 100644 apps/frontend-next/src/app/parent/payments/page.tsx
- create mode 100644 apps/frontend-next/src/app/parent/progress/page.tsx
- create mode 100644 apps/frontend-next/src/app/principal/application/[id]/page.tsx
- create mode 100644 apps/frontend-next/src/app/principal/classes/page.tsx
- create mode 100644 apps/frontend-next/src/app/principal/dashboard/page.tsx
- create mode 100644 apps/frontend-next/src/app/principal/fees/[id]/page.tsx
- create mode 100644 apps/frontend-next/src/app/principal/login/page.tsx
- create mode 100644 apps/frontend-next/src/app/principal/performance/page.tsx
- create mode 100644 apps/frontend-next/src/app/staff/login/page.tsx
- create mode 100644 apps/frontend-next/src/app/student/attendance/page.tsx
- create mode 100644 apps/frontend-next/src/app/student/calendar/page.tsx
- create mode 100644 apps/frontend-next/src/app/student/circulars/page.tsx
- create mode 100644 apps/frontend-next/src/app/student/dashboard/dashboard.module.css        
- create mode 100644 apps/frontend-next/src/app/student/dashboard/page.tsx
- create mode 100644 apps/frontend-next/src/app/student/diary/page.tsx
- create mode 100644 apps/frontend-next/src/app/student/progress/page.tsx
- create mode 100644 apps/frontend-next/src/app/student/syllabus/page.tsx
- create mode 100644 apps/frontend-next/src/app/teacher/academic-content/page.tsx
- create mode 100644 apps/frontend-next/src/app/teacher/analytics/page.tsx
- create mode 100644 apps/frontend-next/src/app/teacher/assignments/page.tsx
- create mode 100644 apps/frontend-next/src/app/teacher/attendance/page.tsx
- create mode 100644 apps/frontend-next/src/app/teacher/calendar/page.tsx
- create mode 100644 apps/frontend-next/src/app/teacher/circulars/page.tsx
- create mode 100644 apps/frontend-next/src/app/teacher/dashboard-simple/page.tsx
- create mode 100644 apps/frontend-next/src/app/teacher/dashboard/page.tsx
- create mode 100644 apps/frontend-next/src/app/teacher/data.ts
- create mode 100644 apps/frontend-next/src/app/teacher/diary/page.tsx
- create mode 100644 apps/frontend-next/src/app/teacher/marks/page.tsx
- create mode 100644 apps/frontend-next/src/app/teacher/progress/page.tsx
- create mode 100644 apps/frontend-next/src/app/teacher/students/page.tsx
- create mode 100644 apps/frontend-next/src/app/teacher/syllabus/page.tsx
- create mode 100644 apps/frontend-next/src/app/test-teacher-data/page.tsx
- create mode 100644 apps/frontend-next/src/app/theme-toggle.tsx
- create mode 100644 apps/frontend-next/src/components/MotionComponents.tsx
- create mode 100644 apps/frontend-next/src/lib/oauth-pkce.ts
- create mode 100644 apps/frontend-next/tsconfig.json
- create mode 100644 apps/image/login-kid-1.jpg
- create mode 100644 apps/image/login-kid-2.jpg
- create mode 100644 apps/image/login-kid-3.jpg
- create mode 100644 apps/onboarding-next/next-env.d.ts
- create mode 100644 apps/onboarding-next/next.config.mjs
- create mode 100644 apps/onboarding-next/package.json
- create mode 100644 apps/onboarding-next/scripts/seed-parent-auth.mjs
- create mode 100644 apps/onboarding-next/src/app/api/_lib/db.ts
- create mode 100644 apps/onboarding-next/src/app/api/local/_lib/filedb.ts
- create mode 100644 apps/onboarding-next/src/app/api/local/_lib/grade.ts
- create mode 100644 apps/onboarding-next/src/app/api/local/admin/reset/route.ts
- create mode 100644 apps/onboarding-next/src/app/api/local/admin/wipe/route.ts
- create mode 100644 apps/onboarding-next/src/app/api/local/applications/route.ts
- create mode 100644 apps/onboarding-next/src/app/api/local/login/route.ts
- create mode 100644 apps/onboarding-next/src/app/api/local/password/reset/route.ts
- create mode 100644 apps/onboarding-next/src/app/api/local/signup/route.ts
- create mode 100644 apps/onboarding-next/src/app/api/local/staff/applications/[id]/confirm/route.ts
- create mode 100644 apps/onboarding-next/src/app/api/local/staff/applications/[id]/fees/route.ts
- create mode 100644 apps/onboarding-next/src/app/api/local/staff/applications/[id]/route.ts  
- create mode 100644 apps/onboarding-next/src/app/api/local/staff/applications/route.ts       
- create mode 100644 apps/onboarding-next/src/app/api/local/staff/fees/route.ts
- create mode 100644 apps/onboarding-next/src/app/application/page.tsx
- create mode 100644 apps/onboarding-next/src/app/globals.css
- create mode 100644 apps/onboarding-next/src/app/layout.tsx
- create mode 100644 apps/onboarding-next/src/app/login/page.tsx
- create mode 100644 apps/onboarding-next/src/app/page.tsx
- create mode 100644 apps/onboarding-next/src/app/signup/page.tsx
- create mode 100644 apps/onboarding-next/src/app/staff/accountant/fees/[id]/page.tsx
- create mode 100644 apps/onboarding-next/src/app/staff/accountant/fees/page.tsx
- create mode 100644 apps/onboarding-next/src/app/staff/admissions/[id]/fees/page.tsx
- create mode 100644 apps/onboarding-next/src/app/staff/admissions/[id]/page.tsx
- create mode 100644 apps/onboarding-next/src/app/staff/admissions/page.tsx
- create mode 100644 apps/onboarding-next/src/app/staff/principal/fees/[id]/page.tsx
- create mode 100644 apps/onboarding-next/src/app/staff/principal/fees/page.tsx
- create mode 100644 apps/onboarding-next/src/app/theme-toggle.tsx
- create mode 100644 apps/onboarding-next/src/components/FeeEditor.tsx
- create mode 100644 apps/onboarding-next/tsconfig.json
- create mode 100644 apps/students-next/next-env.d.ts
- create mode 100644 apps/students-next/next.config.mjs
- create mode 100644 apps/students-next/package.json
- create mode 100644 apps/students-next/src/app/api/_lib/db.ts
- create mode 100644 apps/students-next/src/app/api/admin/wipe/route.ts
- create mode 100644 apps/students-next/src/app/api/students/route.ts
- create mode 100644 apps/students-next/src/app/globals.css
- create mode 100644 apps/students-next/src/app/layout.tsx
- create mode 100644 apps/students-next/src/app/page.tsx
- create mode 100644 apps/students-next/tsconfig.json
- create mode 100644 chat.md
- create mode 100644 content.pdf
- create mode 100644 data/local-db.json
- create mode 100644 docker-compose.yml
- create mode 100644 docs/ARCHITECTURE.md
- create mode 100644 docs/REPO_SCAFFOLDING.md
- create mode 100644 docs/adrs/0001-database-mongodb.md
- create mode 100644 docs/adrs/0002-messaging-rabbitmq.md
- create mode 100644 docs/adrs/0003-cloud-aws.md
- create mode 100644 docs/adrs/0004-notifications-twilio.md
- create mode 100644 docs/adrs/0005-payments-razorpay.md
- create mode 100644 docs/dummy.md
- create mode 100644 docs/erp-onboarding-data-contract.md
- create mode 100644 docs/mysql-database.md
- create mode 100644 docs/onboarding-form-fields.md
- create mode 100644 docs/onboarding-implementation-plan.md
- create mode 100644 epics/ai-integration-epic.md
- create mode 100644 epics/education-content-epic.md
- create mode 100644 epics/notification-epic.md
- create mode 100644 epics/payment-epic.md
- create mode 100644 epics/student-onboarding-epic.md
- create mode 100644 infra/README.md
- create mode 100644 infra/mysql/docker-compose.yml
- create mode 100644 nixtio/css_links.txt
- create mode 100644 nixtio/index.html
- create mode 100644 nixtio/inline_styles.html
- create mode 100644 package-lock.json
- create mode 100644 package.json
- create mode 100644 packages/shared-lib/package.json
- create mode 100644 packages/shared-lib/src/index.ts
- create mode 100644 packages/shared-lib/src/logger.ts
- create mode 100644 packages/shared-lib/src/mongo.ts
- create mode 100644 packages/shared-lib/src/rabbit.ts
- create mode 100644 packages/shared-lib/tsconfig.json
- create mode 100644 pnpm-workspace.yaml
- create mode 100644 razorpay-tables.sql
- create mode 100644 razorpay_plugin/.env.example
- create mode 100644 razorpay_plugin/.gitignore
- create mode 100644 razorpay_plugin/ARCHITECTURE.md
- create mode 100644 razorpay_plugin/QUICK_START.md
- create mode 100644 razorpay_plugin/README.md
- create mode 100644 razorpay_plugin/TROUBLESHOOTING.md
- create mode 100644 razorpay_plugin/package-lock.json
- create mode 100644 razorpay_plugin/package.json
- create mode 100644 razorpay_plugin/public/index.html
- create mode 100644 razorpay_plugin/sql/schema.sql
- create mode 100644 razorpay_plugin/src/config/database.ts
- create mode 100644 razorpay_plugin/src/config/env.ts
- create mode 100644 razorpay_plugin/src/config/logger.ts
- create mode 100644 razorpay_plugin/src/domain/payment.types.ts
- create mode 100644 razorpay_plugin/src/index.ts
- create mode 100644 razorpay_plugin/src/repositories/payment.repository.ts
- create mode 100644 razorpay_plugin/src/routes/payment.routes.ts
- create mode 100644 razorpay_plugin/src/routes/webhook.routes.ts
- create mode 100644 razorpay_plugin/src/services/razorpay.service.ts
- create mode 100644 razorpay_plugin/test-payment.ps1
- create mode 100644 razorpay_plugin/tsconfig.json
- create mode 100644 schema.sql
- create mode 100644 scripts/dev-all.mjs
- create mode 100644 scripts/fresh-install.cmd
- create mode 100644 scripts/fresh-install.ps1
- create mode 100644 scripts/full-clean.cmd
- create mode 100644 scripts/full-clean.ps1
- create mode 100644 scripts/mysql-fix-sas-user.sql
- create mode 100644 scripts/mysql-nuke.sql
- create mode 100644 scripts/mysql-reset.sql
- create mode 100644 scripts/reset-and-seed.cmd
- create mode 100644 scripts/setup-and-seed.cmd
- create mode 100644 scripts/setup-and-seed.sh
- create mode 100644 scripts/wait-for-mysql.sh
- create mode 100644 scripts/wipe-all.mjs
- create mode 100644 services/_template/package.json
- create mode 100644 services/_template/src/index.ts
- create mode 100644 services/_template/tsconfig.json
- create mode 100644 services/auth-service/package.json
- create mode 100644 services/auth-service/src/index.ts
- create mode 100644 services/auth-service/tsconfig.json
- create mode 100644 services/notification-service/package.json
- create mode 100644 services/notification-service/src/index.ts
- create mode 100644 services/notification-service/tsconfig.json
- create mode 100644 services/onboarding-service/package.json
- create mode 100644 services/onboarding-service/src/grade.ts
- create mode 100644 services/onboarding-service/src/index.ts
- create mode 100644 services/onboarding-service/tsconfig.json
- create mode 100644 services/payment-service/package.json
- create mode 100644 services/payment-service/src/index.ts
- create mode 100644 services/payment-service/tsconfig.json
- create mode 100644 services/reporting-service/package.json
- create mode 100644 services/reporting-service/src/index.ts
- create mode 100644 services/reporting-service/tsconfig.json
- create mode 100644 services/study-service/package.json
- create mode 100644 services/study-service/src/index.ts
- create mode 100644 services/study-service/tsconfig.json
- create mode 100644 stories/ai-integration-stories.md
- create mode 100644 stories/education-content-stories.md
- create mode 100644 stories/notification-stories.md
- create mode 100644 stories/payment-stories.md
- create mode 100644 stories/student-onboarding-stories.md
- create mode 100644 test-mysql.mjs
- create mode 100644 test-razorpay-integration.ps1
- create mode 100644 tsconfig.base.json
-PS C:\Users\Dell\SAS-main> git branch -M main
-PS C:\Users\Dell\SAS-main> git remote add origin https://github.com/Vivekk0712/SaaS_Main.git
-PS C:\Users\Dell\SAS-main> git push -u origin main
-Enumerating objects: 550, done.
-Counting objects: 100% (550/550), done.
-Delta compression using up to 8 threads
-Compressing objects: 100% (391/391), done.
-Writing objects: 100% (550/550), 56.70 MiB | 3.73 MiB/s, done.
-Total 550 (delta 81), reused 0 (delta 0), pack-reused 0 (from 0)
-remote: Resolving deltas: 100% (81/81), done.
-To https://github.com/Vivekk0712/SaaS_Main.git
- * [new branch]      main -> main
-branch 'main' set up to track 'origin/main'.
-PS C:\Users\Dell\SAS-main> 
+i am integrating backblaze as our storage for rag and other file uploads
+so tell me the steps to create account and use free storage for developement phase from backblaze 
+
+Here is the **clean, step-by-step guide** to create a **Backblaze B2 account** and get **free storage for development**, and how to integrate it into your ERP + RAG system.
+
+---
+
+# ✅ **1. Create a Backblaze B2 Account (Free Tier Available)**
+
+### **Step 1 — Sign up**
+
+Go to:
+👉 **[https://www.backblaze.com/cloud-storage](https://www.backblaze.com/cloud-storage)**
+
+Click **Start Free** → Create account.
+
+### **Step 2 — Verify your email**
+
+You must confirm your email before accessing B2.
+
+### **Step 3 — Add basic information**
+
+Backblaze will ask for:
+
+* Name
+* Country
+* Phone number
+
+*(Phone verification may be required.)*
+
+---
+
+# ✅ **2. Free Tier Details (What You Get)**
+
+Backblaze B2 free tier gives you:
+
+| Item               | Amount                                      |
+| ------------------ | ------------------------------------------- |
+| **Free storage**   | **10 GB**                                   |
+| **Free egress**    | Up to **3x of stored data** (≈ 30 GB/month) |
+| **Free API calls** | Enough for development                      |
+
+This is **perfect for local development**, PoC, and testing your RAG pipeline.
+
+---
+
+# ✅ **3. Create a B2 Bucket (Storage space)**
+
+### Step 1 — Go to your dashboard:
+
+👉 [https://secure.backblaze.com/b2_buckets.htm](https://secure.backblaze.com/b2_buckets.htm)
+
+### Step 2 — Click **“Create a Bucket”**
+
+Choose:
+
+* **Bucket Name** → `erp-rag-dev`
+* **Bucket Type** → Public or Private
+
+  * For PDFs: choose **Private**
+  * For testing only, Public is OK
+* Enable **Object Lock**? → **No** (not required for development)
+
+Click **Create Bucket**.
+
+---
+
+# ✅ **4. Generate Application Keys (Important for backend access)**
+
+### Step 1 — Go to:
+
+👉 **App Keys** → [https://secure.backblaze.com/app_keys.htm](https://secure.backblaze.com/app_keys.htm)
+
+### Step 2 — Click **Add New Application Key**
+
+Choose:
+
+* **Name:** `rag-backend-dev`
+* **Bucket Access:** Choose *your bucket only*
+* **Permissions:**
+  ✔ read
+  ✔ write
+
+Click **Create New Key**.
+
+You will get:
+
+```
+keyID
+applicationKey
+bucketId
+```
+
+⚠️ **Copy these immediately** — Backblaze shows the key only once.
+Store in your `.env` file.
+
+---
+
+# ✅ **5. Install the SDK / Use S3-Compatible APIs**
+
+Backblaze B2 fully supports **AWS S3 API**, so your RAG backend can use:
+
+### Node.js:
+
+```
+npm install @aws-sdk/client-s3
+```
+
+### Python:
+
+```
+pip install boto3
+```
+
+### Example `.env` for Node.js RAG backend:
+
+```
+B2_ENDPOINT=https://s3.us-west-004.backblazeb2.com
+B2_REGION=us-west-004
+B2_BUCKET=erp-rag-dev
+B2_KEY_ID=YOUR_KEY_ID
+B2_APPLICATION_KEY=YOUR_APPLICATION_KEY
+```
+
+---
+
+# ✅ **6. Upload PDFs (Teachers) → B2 Storage → Embed to Qdrant**
+
+Your ERP workflow becomes:
+
+1. Teacher uploads PDF
+2. Backend uploads file to **Backblaze B2**
+3. Backend reads PDF → extracts text → chunks → embeds
+4. Embeddings stored in **Qdrant**
+5. Student selects Subject → Chapter → Query
+6. Retrieval filtered by metadata
+7. LLM answers
+
+Everything now uses B2 as the **central storage**.
+
+---
+
+# ✅ **7. Testing B2 Upload from Node.js**
+
+```js
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+
+const s3 = new S3Client({
+  endpoint: process.env.B2_ENDPOINT,
+  region: process.env.B2_REGION,
+  credentials: {
+    accessKeyId: process.env.B2_KEY_ID,
+    secretAccessKey: process.env.B2_APPLICATION_KEY,
+  },
+});
+
+async function uploadPDF(buffer, filename) {
+  const command = new PutObjectCommand({
+    Bucket: process.env.B2_BUCKET,
+    Key: filename,
+    Body: buffer,
+  });
+
+  await s3.send(command);
+  return `File uploaded to B2: ${filename}`;
+}
+```
+
+---
+
+# ✅ **8. Recommended Bucket Structure for Schools**
+
+```
+/school_1/
+    /subjects/
+        /math/
+            chapter1.pdf
+            chapter2.pdf
+        /science/
+/school_2/
+/school_3/
+```
+
+And metadata stored in MySQL:
+
+| document_id | school_id | subject | chapter | b2_path | uploaded_by |
+| ----------- | --------- | ------- | ------- | ------- | ----------- |
+
+---
+
+# ✅ **9. For RAG: How B2 + Qdrant + LLM Works Efficiently**
+
+Backblaze stores:
+
+* PDFs (original files)
+
+Qdrant stores:
+
+* Embeddings
+* Chunk metadata
+* Links to B2 file paths
+
+LLM uses:
+
+* Only retrieved chunks
+* Not the original PDF
+
+This is the **industry-standard architecture** used by actual enterprise RAG systems.
+
+---
+
+# ✅ **10. Summary — What You Needed to Do**
+
+Here are the exact steps you must follow **now**:
+
+### ✔ Step 1 — Create Backblaze account
+
+### ✔ Step 2 — Make a bucket
+
+### ✔ Step 3 — Generate keys
+
+### ✔ Step 4 — Add keys into your `.env`
+
+### ✔ Step 5 — Integrate B2 into backend via S3-compatible API
+
+### ✔ Step 6 — Upload PDFs there
+
+### ✔ Step 7 — Continue RAG embedding pipeline normally
+
+You're done — you can now use Backblaze for RAG storage!
+
+---
+
+

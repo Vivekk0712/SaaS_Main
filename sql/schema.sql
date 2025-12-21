@@ -225,9 +225,13 @@ CREATE TABLE IF NOT EXISTS materials (
   url         TEXT NULL,
   mime        VARCHAR(128) NULL,
   data_url    MEDIUMTEXT NULL,
+  b2_key      VARCHAR(500) NULL COMMENT 'Backblaze B2 object key',
+  file_size   INT NULL COMMENT 'File size in bytes',
+  b2_path     VARCHAR(1000) NULL COMMENT 'Full B2 path/URL',
   uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_mat_lookup (class_id, section_id, subject_id),
   KEY idx_mat_subtopic (class_id, section_id, subject_id, chapter_id, subtopic_id),
+  KEY idx_b2_key (b2_key),
   CONSTRAINT fk_mat_class   FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
   CONSTRAINT fk_mat_section FOREIGN KEY (section_id) REFERENCES sections(id) ON DELETE CASCADE,
   CONSTRAINT fk_mat_subject FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
@@ -242,8 +246,12 @@ CREATE TABLE IF NOT EXISTS textbooks (
   mime       VARCHAR(128) NOT NULL,
   data_url   MEDIUMTEXT NOT NULL,
   chapter_id VARCHAR(64) NULL,
+  b2_key     VARCHAR(500) NULL COMMENT 'Backblaze B2 object key',
+  file_size  INT NULL COMMENT 'File size in bytes',
+  b2_path    VARCHAR(1000) NULL COMMENT 'Full B2 path/URL',
   uploaded_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_tb_lookup (class_id, section_id, subject_id),
+  KEY idx_b2_key (b2_key),
   CONSTRAINT fk_tb_class   FOREIGN KEY (class_id) REFERENCES classes(id) ON DELETE CASCADE,
   CONSTRAINT fk_tb_section FOREIGN KEY (section_id) REFERENCES sections(id) ON DELETE CASCADE,
   CONSTRAINT fk_tb_subject FOREIGN KEY (subject_id) REFERENCES subjects(id) ON DELETE CASCADE
@@ -501,5 +509,13 @@ CREATE TABLE IF NOT EXISTS applications (
 -- ============================================
 -- SCHEMA COMPLETE
 -- ============================================
+
+-- Note: Backblaze B2 Storage Integration
+-- The 'materials' and 'textbooks' tables include B2 storage columns:
+-- - b2_key: Backblaze B2 object key for cloud-stored files
+-- - file_size: File size in bytes
+-- - b2_path: Full B2 path/URL
+-- These columns enable cloud storage instead of base64 data_url storage
+-- for better performance and scalability.
 
 SELECT 'Schema created successfully!' AS message;

@@ -20,12 +20,28 @@ export class UploadController {
       }
       
       const db = getDatabase();
-      const user = req.user!;
+      
+      // Check if metadata is provided (teacher upload) or use user context (student upload)
+      let metadata: any = {};
+      if (req.body.metadata) {
+        try {
+          metadata = typeof req.body.metadata === 'string' 
+            ? JSON.parse(req.body.metadata) 
+            : req.body.metadata;
+        } catch (e) {
+          logger.warn('Failed to parse metadata', e);
+        }
+      }
+      
+      // Determine if this is a teacher or student upload
+      const isTeacherUpload = !!(metadata.klass && metadata.section && metadata.subject);
+      const studentId = isTeacherUpload ? 0 : (req.user?.id || 0); // 0 for teacher uploads
+      const classId = req.user?.classId || 0;
       
       // Save upload record
       const [result] = await db.execute(
         'INSERT INTO uploads (file_name, file_path, student_id, class_id, qdrant_collection) VALUES (?, ?, ?, ?, ?)',
-        [req.file.originalname, `temp/${Date.now()}_${req.file.originalname}`, user.id, user.classId || 0, config.qdrant.collection]
+        [req.file.originalname, `temp/${Date.now()}_${req.file.originalname}`, studentId, classId, config.qdrant.collection]
       );
       
       const uploadId = (result as any).insertId;
@@ -36,11 +52,17 @@ export class UploadController {
         [uploadId, 'pending']
       );
       
-      // Process asynchronously
-      this.processUpload(uploadId, req.file.buffer, req.file.originalname, user.id, user.classId || 0)
-        .catch(err => logger.error('Upload processing failed', err));
+      // Process asynchronously with metadata
+      this.processUpload(
+        uploadId, 
+        req.file.buffer, 
+        req.file.originalname, 
+        studentId, 
+        classId,
+        metadata
+      ).catch(err => logger.error('Upload processing failed', err));
       
-      res.json({ uploadId, status: 'pending' });
+      res.json({ uploadId, status: 'pending', isTeacherUpload });
     } catch (error) {
       logger.error('Upload failed', error);
       res.status(500).json({ error: 'Upload failed' });
@@ -112,7 +134,8 @@ export class UploadController {
     buffer: Buffer,
     fileName: string,
     studentId: number,
-    classId: number
+    classId: number,
+    metadata: any = {}
   ) {
     const db = getDatabase();
     
@@ -132,7 +155,7 @@ export class UploadController {
       const texts = chunks.map(c => c.text);
       const embeddings = await this.embeddingService.embedTexts(texts);
       
-      // Prepare payloads
+      // Prepare payloads with metadata
       const payloads = chunks.map((chunk, idx) => ({
         uploadId,
         studentId,
@@ -140,7 +163,14 @@ export class UploadController {
         fileName,
         page: chunk.pageNumber,
         chunkIndex: chunk.chunkIndex,
-        textExcerpt: chunk.text.substring(0, 500)
+        textExcerpt: chunk.text.substring(0, 500),
+        // Add teacher upload metadata
+        klass: metadata.klass || '',
+        section: metadata.section || '',
+        subject: metadata.subject || '',
+        chapterId: metadata.chapterId || '',
+        type: metadata.type || '',
+        b2Key: metadata.b2Key || '',
       }));
       
       // Upsert to Qdrant
@@ -152,7 +182,7 @@ export class UploadController {
         ['done', chunks.length, uploadId]
       );
       
-      logger.info(`Successfully processed upload ${uploadId}`);
+      logger.info(`Successfully processed upload ${uploadId} with metadata`, metadata);
     } catch (error) {
       logger.error(`Processing failed for upload ${uploadId}`, error);
       await db.execute(

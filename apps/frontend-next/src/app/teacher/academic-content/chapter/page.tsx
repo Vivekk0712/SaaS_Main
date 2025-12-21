@@ -14,6 +14,57 @@ import {
   type AttachmentFile,
 } from "../../data"
 
+// File Download Button Component - handles B2 signed URLs
+function FileDownloadButton({ file }: { file: AttachmentFile }) {
+  const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState(false)
+
+  const handleDownload = async () => {
+    setLoading(true)
+    setError(false)
+    
+    try {
+      // Check if dataUrl is a B2 key or base64
+      const isB2Key = !file.dataUrl.startsWith('data:')
+      
+      if (isB2Key) {
+        // Get signed URL from B2
+        const { getSignedUrl } = await import('@/lib/uploadToBackblaze')
+        const signedUrl = await getSignedUrl(file.dataUrl)
+        
+        if (signedUrl) {
+          // Open in new tab or trigger download
+          window.open(signedUrl, '_blank')
+        } else {
+          setError(true)
+        }
+      } else {
+        // Legacy base64 - direct download
+        const link = document.createElement('a')
+        link.href = file.dataUrl
+        link.download = file.name
+        link.click()
+      }
+    } catch (err) {
+      console.error('Download error:', err)
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <button
+      className="btn-ghost"
+      type="button"
+      onClick={handleDownload}
+      disabled={loading}
+    >
+      {loading ? 'Loading...' : error ? 'Error' : 'Download'}
+    </button>
+  )
+}
+
 const navLinks: Array<{ href: Route; label: string; icon: string }> = [
   { href: "/teacher/dashboard", label: "Dashboard", icon: "🏠" },
   { href: "/teacher/attendance", label: "Attendance", icon: "✅" },
@@ -187,13 +238,9 @@ function SubtopicRow({
                     Open
                   </a>
                 ) : (
-                  <a
-                    className="btn-ghost"
-                    href={(a as AttachmentFile).dataUrl}
-                    download={(a as AttachmentFile).name}
-                  >
-                    Download
-                  </a>
+                  <FileDownloadButton 
+                    file={a as AttachmentFile}
+                  />
                 )}
                 <button
                   className="btn-ghost"
@@ -328,26 +375,49 @@ export default function TeacherChapterDetailPage() {
 
   const addFiles = async (subId: string, files?: FileList | null) => {
     if (!files || files.length === 0) return
+    
+    setMessage("Uploading files to cloud storage...")
+    const { uploadFileToB2 } = await import('@/lib/uploadToBackblaze')
+    
     const items: AttachmentFile[] = []
+    let successCount = 0
+    let failCount = 0
+    
     for (const f of Array.from(files)) {
-      const dataUrl = await new Promise<string>((res, rej) => {
-        const r = new FileReader()
-        r.onerror = () => rej("")
-        r.onload = () => res(String(r.result))
-        r.readAsDataURL(f)
+      // Upload to Backblaze B2
+      const result = await uploadFileToB2(f, {
+        klass,
+        section,
+        subject,
+        type: 'material',
+        chapterId,
+      }, (progress) => {
+        setMessage(`Uploading ${f.name}... ${progress.percentage}%`)
       })
-      items.push({
-        type: "file",
-        name: f.name,
-        mime: f.type || "application/octet-stream",
-        dataUrl,
-      })
+      
+      if (result.success) {
+        // Store B2 reference instead of base64
+        items.push({
+          type: "file",
+          name: f.name,
+          mime: f.type || "application/octet-stream",
+          dataUrl: result.b2Key, // Store B2 key instead of base64
+        })
+        successCount++
+      } else {
+        failCount++
+        console.error(`Failed to upload ${f.name}:`, result.error)
+      }
     }
+    
     if (items.length) {
       updateAttachments(subId, prev => [...items, ...prev])
       items.forEach(it => addSubtopicMaterial(klass, section, subject, chapterId, subId, it))
-      setMessage("File(s) uploaded.")
-      setTimeout(() => setMessage(""), 1200)
+      setMessage(`${successCount} file(s) uploaded${failCount > 0 ? `, ${failCount} failed` : ''}.`)
+      setTimeout(() => setMessage(""), 2000)
+    } else if (failCount > 0) {
+      setMessage(`Failed to upload ${failCount} file(s).`)
+      setTimeout(() => setMessage(""), 2000)
     }
   }
 

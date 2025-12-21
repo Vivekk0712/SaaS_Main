@@ -9,99 +9,101 @@ export default function AITutorPage() {
   const [messages, setMessages] = React.useState<Array<{ role: 'user' | 'assistant'; content: string; sources?: any[] }>>([])
   const [input, setInput] = React.useState('')
   const [loading, setLoading] = React.useState(false)
-  const [documents, setDocuments] = React.useState<any[]>([])
-  const [uploading, setUploading] = React.useState(false)
-  const fileInputRef = React.useRef<HTMLInputElement>(null)
+  
+  const [subjects, setSubjects] = React.useState<string[]>([])
+  const [chapters, setChapters] = React.useState<any[]>([])
+  const [subtopics, setSubtopics] = React.useState<any[]>([])
+  
+  const [selectedSubject, setSelectedSubject] = React.useState('')
+  const [selectedChapter, setSelectedChapter] = React.useState('')
+  const [selectedSubtopic, setSelectedSubtopic] = React.useState('')
+  
   const messagesEndRef = React.useRef<HTMLDivElement>(null)
 
   const student = React.useMemo(() => {
     try {
       const data = JSON.parse(sessionStorage.getItem('student') || '{}')
-      // Use roll as student ID (or any unique identifier)
-      return { ...data, id: data.roll || data.id || 1 }
+      return { 
+        ...data, 
+        id: data.roll || data.id || 1,
+        klass: data.grade || data.klass || 'Class 10',
+        section: data.section || 'A'
+      }
     } catch {
-      return { id: 1 } // Fallback to student ID 1 for testing
+      return { id: 1, klass: 'Class 10', section: 'A' }
     }
   }, [])
 
-  const loadDocuments = async () => {
-    try {
-      const res = await fetch(`/api/chatbot/documents?studentId=${student.id}`)
-      if (res.ok) {
-        const data = await res.json()
-        setDocuments(data.documents || [])
+  React.useEffect(() => {
+    const loadSubjects = async () => {
+      try {
+        const res = await fetch(`/api/mysql/academics/class-subjects?klass=${encodeURIComponent(student.klass)}&section=${encodeURIComponent(student.section)}`)
+        if (res.ok) {
+          const data = await res.json()
+          setSubjects(data.items || [])
+          if (data.items && data.items.length > 0) {
+            setSelectedSubject(data.items[0])
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load subjects:', error)
       }
-    } catch (error) {
-      console.error('Failed to load documents:', error)
     }
-  }
+    loadSubjects()
+  }, [student.klass, student.section])
 
   React.useEffect(() => {
-    loadDocuments()
-  }, [student.id])
+    if (!selectedSubject) return
+    
+    const loadChapters = async () => {
+      try {
+        const raw = localStorage.getItem('school:syllabus')
+        if (raw) {
+          const syllabusData = JSON.parse(raw)
+          const key = `${student.klass}|${student.section}|${selectedSubject.toLowerCase()}`
+          const syllabus = syllabusData.find((s: any) => 
+            `${s.klass}|${s.section}|${s.subject.toLowerCase()}` === key
+          )
+          if (syllabus && syllabus.chapters) {
+            setChapters(syllabus.chapters)
+            if (syllabus.chapters.length > 0) {
+              setSelectedChapter(syllabus.chapters[0].id)
+            }
+          } else {
+            setChapters([])
+          }
+        }
+      } catch (error) {
+        console.error('Failed to load chapters:', error)
+      }
+    }
+    loadChapters()
+  }, [selectedSubject, student.klass, student.section])
+
+  React.useEffect(() => {
+    if (!selectedChapter) return
+    
+    const chapter = chapters.find(c => c.id === selectedChapter)
+    if (chapter && chapter.subtopics) {
+      setSubtopics(chapter.subtopics)
+      if (chapter.subtopics.length > 0) {
+        setSelectedSubtopic(chapter.subtopics[0].id)
+      }
+    } else {
+      setSubtopics([])
+    }
+  }, [selectedChapter, chapters])
 
   React.useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    if (file.type !== 'application/pdf') {
-      alert('Please upload only PDF files')
-      return
-    }
-
-    setUploading(true)
-    const formData = new FormData()
-    formData.append('file', file)
-    formData.append('studentId', student.id)
-
-    try {
-      const res = await fetch('/api/chatbot/upload', {
-        method: 'POST',
-        body: formData,
-      })
-
-      if (res.ok) {
-        alert('PDF uploaded successfully! Processing...')
-        loadDocuments()
-      } else {
-        const error = await res.json()
-        alert(`Upload failed: ${error.error || 'Unknown error'}`)
-      }
-    } catch (error) {
-      console.error('Upload error:', error)
-      alert('Failed to upload file')
-    } finally {
-      setUploading(false)
-      if (fileInputRef.current) fileInputRef.current.value = ''
-    }
-  }
-
-  const handleDeleteDocument = async (docId: string) => {
-    if (!confirm('Are you sure you want to delete this document?')) return
-
-    try {
-      const res = await fetch(`/api/chatbot/documents?id=${docId}`, {
-        method: 'DELETE',
-      })
-
-      if (res.ok) {
-        alert('Document deleted successfully')
-        loadDocuments()
-      } else {
-        alert('Failed to delete document')
-      }
-    } catch (error) {
-      console.error('Delete error:', error)
-      alert('Failed to delete document')
-    }
-  }
-
   const handleSendMessage = async () => {
     if (!input.trim() || loading) return
+    if (!selectedSubject || !selectedChapter) {
+      alert('Please select a subject and chapter first')
+      return
+    }
 
     const userMessage = { role: 'user' as const, content: input }
     setMessages(prev => [...prev, userMessage])
@@ -114,7 +116,13 @@ export default function AITutorPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           question: input,
-          filters: { studentId: student.id },
+          filters: {
+            klass: student.klass,
+            section: student.section,
+            subject: selectedSubject,
+            chapterId: selectedChapter,
+            subtopicId: selectedSubtopic || undefined,
+          },
         }),
       })
 
@@ -161,6 +169,9 @@ export default function AITutorPage() {
     { href: '/student/syllabus', label: 'Syllabus', icon: '📚' }
   ]
 
+  const selectedChapterObj = chapters.find(c => c.id === selectedChapter)
+  const selectedSubtopicObj = subtopics.find(s => s.id === selectedSubtopic)
+
   return (
     <div className="parent-shell">
       <div className="topbar topbar-parent">
@@ -201,68 +212,80 @@ export default function AITutorPage() {
           <div className="dash">
             <div style={{ height: 6, width: 64, borderRadius: 999, background: '#3b2c1a', marginBottom: 10 }} />
             <h2 className="title">🤖 AI Tutor</h2>
-            <p className="subtitle">Upload your study materials and ask questions</p>
+            <p className="subtitle">Ask questions about your study materials uploaded by teachers</p>
 
-            {/* Documents Section */}
             <section className="card" style={{ padding: 20, borderRadius: 8, marginTop: 20 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                <h3 style={{ fontWeight: 700, fontSize: 16 }}>📚 My Documents</h3>
+              <h3 style={{ fontWeight: 700, fontSize: 16, marginBottom: 16 }}>📚 Select Topic</h3>
+              
+              <div style={{ display: 'grid', gap: 12 }}>
                 <div>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="application/pdf"
-                    onChange={handleFileUpload}
-                    style={{ display: 'none' }}
-                  />
-                  <button
-                    className="btn"
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={uploading}
-                    style={{ fontSize: 14 }}
+                  <label className="label" style={{ fontSize: 13, marginBottom: 4 }}>Subject</label>
+                  <select
+                    className="input select"
+                    value={selectedSubject}
+                    onChange={e => setSelectedSubject(e.target.value)}
+                    style={{ width: '100%' }}
                   >
-                    {uploading ? '⏳ Uploading...' : '📤 Upload PDF'}
-                  </button>
+                    {subjects.length === 0 ? (
+                      <option>No subjects available</option>
+                    ) : (
+                      subjects.map(subject => (
+                        <option key={subject} value={subject}>{subject}</option>
+                      ))
+                    )}
+                  </select>
                 </div>
-              </div>
 
-              {documents.length === 0 ? (
-                <p className="note">No documents uploaded yet. Upload a PDF to get started!</p>
-              ) : (
-                <div style={{ display: 'grid', gap: 12 }}>
-                  {documents.map(doc => (
-                    <div
-                      key={doc.id}
-                      className="card"
-                      style={{
-                        padding: 12,
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'center',
-                        boxShadow: 'none',
-                        border: '1px solid var(--panel-border)',
-                      }}
-                    >
-                      <div>
-                        <div style={{ fontWeight: 600 }}>📄 {doc.filename}</div>
-                        <div className="note" style={{ fontSize: 12 }}>
-                          {doc.upload_status === 'completed' ? '✅ Ready' : '⏳ Processing...'}
-                        </div>
-                      </div>
-                      <button
-                        className="btn-ghost"
-                        onClick={() => handleDeleteDocument(doc.id)}
-                        style={{ color: '#ef4444', fontSize: 12 }}
-                      >
-                        🗑️ Delete
-                      </button>
-                    </div>
-                  ))}
+                <div>
+                  <label className="label" style={{ fontSize: 13, marginBottom: 4 }}>Chapter</label>
+                  <select
+                    className="input select"
+                    value={selectedChapter}
+                    onChange={e => setSelectedChapter(e.target.value)}
+                    disabled={chapters.length === 0}
+                    style={{ width: '100%' }}
+                  >
+                    {chapters.length === 0 ? (
+                      <option>No chapters available</option>
+                    ) : (
+                      chapters.map(chapter => (
+                        <option key={chapter.id} value={chapter.id}>{chapter.title}</option>
+                      ))
+                    )}
+                  </select>
                 </div>
-              )}
+
+                {subtopics.length > 0 && (
+                  <div>
+                    <label className="label" style={{ fontSize: 13, marginBottom: 4 }}>
+                      Subtopic (Optional)
+                    </label>
+                    <select
+                      className="input select"
+                      value={selectedSubtopic}
+                      onChange={e => setSelectedSubtopic(e.target.value)}
+                      style={{ width: '100%' }}
+                    >
+                      <option value="">All subtopics</option>
+                      {subtopics.map(subtopic => (
+                        <option key={subtopic.id} value={subtopic.id}>{subtopic.title}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {selectedSubject && selectedChapterObj && (
+                  <div className="note" style={{ padding: 12, background: 'var(--panel)', borderRadius: 6 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>📖 Current Context:</div>
+                    <div style={{ fontSize: 12 }}>
+                      {selectedSubject} → {selectedChapterObj.title}
+                      {selectedSubtopicObj && ` → ${selectedSubtopicObj.title}`}
+                    </div>
+                  </div>
+                )}
+              </div>
             </section>
 
-            {/* Chat Section */}
             <section className="card" style={{ padding: 20, borderRadius: 8, marginTop: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <h3 style={{ fontWeight: 700, fontSize: 16 }}>💬 Chat</h3>
@@ -273,7 +296,6 @@ export default function AITutorPage() {
                 )}
               </div>
 
-              {/* Messages */}
               <div
                 style={{
                   minHeight: 400,
@@ -288,7 +310,10 @@ export default function AITutorPage() {
                 {messages.length === 0 ? (
                   <div style={{ textAlign: 'center', padding: 40 }}>
                     <div style={{ fontSize: 48, marginBottom: 16 }}>🤖</div>
-                    <p className="note">Upload a PDF and start asking questions!</p>
+                    <p className="note">Select a subject and chapter, then start asking questions!</p>
+                    <p className="note" style={{ marginTop: 8, fontSize: 12 }}>
+                      I can help you with materials uploaded by your teachers.
+                    </p>
                   </div>
                 ) : (
                   messages.map((msg, idx) => (
@@ -320,15 +345,18 @@ export default function AITutorPage() {
                 <div ref={messagesEndRef} />
               </div>
 
-              {/* Input */}
               <div style={{ display: 'flex', gap: 8 }}>
                 <input
                   type="text"
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
-                  placeholder="Ask a question about your documents..."
-                  disabled={loading || documents.length === 0}
+                  placeholder={
+                    !selectedSubject || !selectedChapter
+                      ? 'Select a subject and chapter first...'
+                      : 'Ask a question about this topic...'
+                  }
+                  disabled={loading || !selectedSubject || !selectedChapter}
                   style={{
                     flex: 1,
                     padding: '12px 16px',
@@ -340,7 +368,7 @@ export default function AITutorPage() {
                 <button
                   className="btn"
                   onClick={handleSendMessage}
-                  disabled={loading || !input.trim() || documents.length === 0}
+                  disabled={loading || !input.trim() || !selectedSubject || !selectedChapter}
                   style={{ fontSize: 14, minWidth: 100 }}
                 >
                   {loading ? '⏳ Thinking...' : '📤 Send'}
