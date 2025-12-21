@@ -183,33 +183,81 @@ export default function ParentDashboard() {
         if (!raw) return
         const { phone } = JSON.parse(raw)
         if (!phone) return
+
         const fees = await (
           await fetch(`/api/local/parent/fees?phone=${encodeURIComponent(phone)}`)
         ).json()
-        if (fees && Array.isArray(fees.parts)) {
-          const paid = Array.isArray(fees.paidParts) ? fees.paidParts : []
-          const total = (fees.items || []).reduce(
-            (sum: number, it: any) => sum + Number(it.amount || 0),
-            0,
+
+        const itemsArr: any[] =
+          fees && Array.isArray(fees.items) ? (fees.items as any[]) : []
+        const partsArr: any[] =
+          fees && Array.isArray(fees.parts) ? (fees.parts as any[]) : []
+        const paidArr: any[] =
+          fees && Array.isArray(fees.paidParts) ? (fees.paidParts as any[]) : []
+
+        const scheduledTotal = itemsArr.reduce(
+          (sum: number, it: any) => sum + Number(it.amount || 0),
+          0,
+        )
+        const scheduledDue = partsArr.reduce(
+          (sum: number, p: any, idx: number) =>
+            sum + (!paidArr[idx] ? Number(p?.amount || 0) : 0),
+          0,
+        )
+
+        // Include adhoc bills (like exam / revaluation fees) so the dashboard
+        // matches the Payments page summary, even if there is no main fee schedule.
+        let adhocTotal = 0
+        let adhocPending = 0
+        try {
+          const adhocRes = await fetch(
+            `/api/local/parent/fees/adhoc?phone=${encodeURIComponent(phone)}`,
           )
-          const totalDue = fees.parts.reduce(
-            (sum: number, p: any, idx: number) =>
-              sum + (!paid[idx] ? Number(p?.amount || 0) : 0),
-            0,
-          )
-          setFeeTotal(total)
-          setFeeTotalDue(totalDue)
-          const startOfToday = new Date(); startOfToday.setHours(0,0,0,0)
-          const overdue = fees.parts.filter((p:any, i:number) => !paid[i] && p?.dueDate && (new Date(p.dueDate).setHours(0,0,0,0) < startOfToday.getTime())).length
+          const adhocJson = await adhocRes.json()
+          const adhocItems = Array.isArray(adhocJson.items) ? adhocJson.items : []
+          for (const bill of adhocItems) {
+            const amount = Number(bill.total || 0) || 0
+            adhocTotal += amount
+            const status = (bill.status || '').toLowerCase()
+            if (status !== 'paid') adhocPending += amount
+          }
+        } catch {
+          // best-effort; ignore adhoc failures on the dashboard
+        }
+
+        const summaryTotal = scheduledTotal + adhocTotal
+        const summaryDue = scheduledDue + adhocPending
+
+        setFeeTotal(summaryTotal)
+        setFeeTotalDue(summaryDue)
+
+        if (partsArr.length) {
+          const startOfToday = new Date()
+          startOfToday.setHours(0, 0, 0, 0)
+          const overdue = partsArr.filter((p: any, i: number) => {
+            if (paidArr[i]) return false
+            if (!p?.dueDate) return false
+            const d = new Date(p.dueDate)
+            if (Number.isNaN(d.getTime())) return false
+            return d.setHours(0, 0, 0, 0) < startOfToday.getTime()
+          }).length
           setOverdueCount(overdue)
-          if (typeof fees.nextIndex === 'number' && fees.nextIndex >= 0) {
-            const p = fees.parts[fees.nextIndex]
-            setNextDue({ amount: Number(p?.amount||0), dueDate: p?.dueDate })
+          if (typeof fees?.nextIndex === 'number' && fees.nextIndex >= 0) {
+            const p = partsArr[fees.nextIndex]
+            setNextDue(p ? { amount: Number(p?.amount || 0), dueDate: p?.dueDate } : null)
           } else {
             setNextDue(null)
           }
-        } else { setNextDue(null); setOverdueCount(0); setFeeTotal(0); setFeeTotalDue(0) }
-      } catch {}
+        } else {
+          setOverdueCount(0)
+          setNextDue(null)
+        }
+      } catch {
+        setFeeTotal(0)
+        setFeeTotalDue(0)
+        setOverdueCount(0)
+        setNextDue(null)
+      }
     }
     loadDue()
     const id = setInterval(loadDue, 5000)
@@ -465,26 +513,7 @@ export default function ParentDashboard() {
             <span className="dot" />
             <strong>Parent</strong>
           </div>
-          <nav className="tabs" aria-label="Parent quick actions">
-            {navLinks
-              .filter(link =>
-                link.href === '/parent/progress' ||
-                link.href === '/parent/attendance' ||
-                link.href === '/parent/payments'
-              )
-              .map(link => {
-                const active = pathname?.startsWith(link.href)
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={`tab ${active ? 'tab-active' : ''}`}
-                  >
-                    {link.label}
-                  </Link>
-                )
-              })}
-          </nav>
+          <nav className="tabs" aria-label="Parent quick actions" />
           <div className="actions" style={{ position: 'relative' }}>
             <button
               className="btn-ghost hamburger"
@@ -1146,131 +1175,27 @@ export default function ParentDashboard() {
                     }}
                   >
                     <div style={{ fontWeight: 700 }}>Circular / News</div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }}>
-                      {showCircularFilter && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: 26,
-                            right: 0,
-                            background: 'var(--panel)',
-                            borderRadius: 12,
-                            border: '1px solid var(--panel-border)',
-                            padding: '8px 10px',
-                            boxShadow: '0 16px 32px rgba(15,23,42,0.25)',
-                            zIndex: 30,
-                            minWidth: 140,
-                          }}
-                        >
-                          {(['today', 'week', 'month'] as CircularFilter[]).map(f => (
-                            <label
-                              key={f}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 6,
-                                fontSize: 11,
-                                marginBottom: 4,
-                                cursor: 'pointer',
-                              }}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={circularFilter.includes(f)}
-                                onChange={() =>
-                                  setCircularFilter(prev =>
-                                    prev.includes(f)
-                                      ? prev.filter(x => x !== f)
-                                      : [...prev, f],
-                                  )
-                                }
-                                style={{ width: 12, height: 12 }}
-                              />
-                              <span>
-                                {f === 'today'
-                                  ? 'Today'
-                                  : f === 'week'
-                                  ? 'This Week'
-                                  : 'This Month'}
-                              </span>
-                            </label>
-                          ))}
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              marginTop: 6,
-                              gap: 6,
-                            }}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => setCircularFilter([])}
-                              style={{
-                                borderRadius: 999,
-                                padding: '3px 8px',
-                                fontSize: 10,
-                                border: '1px solid rgba(148,163,184,0.7)',
-                                background: 'rgba(248,250,252,0.9)',
-                                cursor: 'pointer',
-                              }}
-                            >
-                              Clear
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => setShowCircularFilter(false)}
-                              style={{
-                                borderRadius: 999,
-                                padding: '3px 8px',
-                                fontSize: 10,
-                                border: '1px solid rgba(37,99,235,0.9)',
-                                background: 'rgba(219,234,254,0.95)',
-                                cursor: 'pointer',
-                              }}
-                            >
-                              Done
-                            </button>
-                          </div>
-                        </div>
-                      )}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <button
+                        type="button"
+                        className="btn-ghost"
+                        style={{
+                          fontSize: 12,
+                          padding: '6px 14px',
+                          borderRadius: 999,
+                          border: '1px solid #ea580c',
+                          background: showCircularFilter ? '#ea580c' : '#fff7ed',
+                          color: showCircularFilter ? '#ffffff' : '#9a3412',
+                          fontWeight: 700,
+                          whiteSpace: 'nowrap',
+                        }}
+                        onClick={() => setShowCircularFilter(true)}
+                      >
+                        Filter
+                      </button>
                       <Link className="back" href="/parent/circulars" style={{ fontSize: 12 }}>
                         View All
                       </Link>
-                      <button
-                        type="button"
-                        aria-label="Filter circulars"
-                        onClick={() => setShowCircularFilter(open => !open)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: 22,
-                          height: 22,
-                          borderRadius: 999,
-                          background: 'linear-gradient(135deg, #f97316, #8b5cf6)',
-                          color: '#ffffff',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: 0,
-                        }}
-                      >
-                        <span
-                          aria-hidden="true"
-                          style={{
-                            width: 12,
-                            height: 12,
-                            display: 'inline-block',
-                            borderTopLeftRadius: 2,
-                            borderTopRightRadius: 2,
-                            borderBottomRightRadius: 4,
-                            borderBottomLeftRadius: 4,
-                            position: 'relative',
-                            background: '#ffffff',
-                            clipPath: 'polygon(15% 0, 85% 0, 60% 40%, 60% 100%, 40% 100%, 40% 40%)',
-                          }}
-                        />
-                      </button>
                     </div>
                   </div>
                   {circularsFiltered.length === 0 && (
@@ -1493,9 +1418,14 @@ export default function ParentDashboard() {
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',
+                                        maxWidth: 240,
                                       }}
                                     >
-                                      {a.type === 'link' ? a.url : a.name}
+                                      {(() => {
+                                        if (!a) return 'Attachment'
+                                        if (a.type === 'link') return a.name || 'Link'
+                                        return a.name || 'File'
+                                      })()}
                                     </span>
                                   </div>
                                   {a.type === 'link' ? (
@@ -1525,13 +1455,143 @@ export default function ParentDashboard() {
             )}
 
             <div className="dash" style={{ marginTop: 24 }}>
-              <Link className="back" href="/">
-                &larr; Back to login
-              </Link>
             </div>
           </div>
         </div>
       </div>
+      {showCircularFilter && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15,23,42,0.55)',
+            zIndex: 60,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-end',
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 900,
+              maxHeight: '90vh',
+              background: '#ffffff',
+              borderTopLeftRadius: 18,
+              borderTopRightRadius: 18,
+              boxShadow: '0 -20px 40px rgba(15,23,42,0.35)',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <div
+              style={{
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottom: '1px solid #e5e7eb',
+              }}
+            >
+              <div style={{ fontWeight: 700, fontSize: 15 }}>Circular filters</div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 12 }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => setCircularFilter([])}
+                >
+                  Clear filters
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => setShowCircularFilter(false)}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div
+              style={{
+                padding: '14px 18px',
+                display: 'grid',
+                gridTemplateColumns: '200px minmax(0,1fr)',
+                gap: 16,
+                fontSize: 13,
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {(['today', 'week', 'month'] as CircularFilter[]).map((key) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className="btn-ghost"
+                    style={{
+                      justifyContent: 'flex-start',
+                      padding: '6px 10px',
+                      borderRadius: 999,
+                      background: circularFilter.includes(key) ? '#eff6ff' : 'transparent',
+                      fontWeight: circularFilter.includes(key) ? 600 : 500,
+                    }}
+                    onClick={() =>
+                      setCircularFilter((prev) =>
+                        prev.includes(key) ? prev.filter((x) => x !== key) : [...prev, key],
+                      )
+                    }
+                  >
+                    {key === 'today' ? 'Today' : key === 'week' ? 'This week' : 'This month'}
+                  </button>
+                ))}
+              </div>
+              <div>
+                <p className="note">
+                  Choose which circulars you want to see in the dashboard card — today, this week,
+                  or this month. You can combine them.
+                </p>
+              </div>
+            </div>
+            <div
+              style={{
+                padding: '10px 16px',
+                borderTop: '1px solid #e5e7eb',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: 12,
+              }}
+            >
+              <div>
+                <strong>{circularsFiltered.length}</strong> circular
+                {circularsFiltered.length === 1 ? '' : 's'} in view
+              </div>
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ padding: '6px 18px', borderRadius: 999 }}
+                onClick={() => setShowCircularFilter(false)}
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <button
+        type="button"
+        className="parent-logout-fab"
+        onClick={() => {
+          try {
+            sessionStorage.removeItem('parent')
+          } catch {}
+          try {
+            window.location.href = '/'
+          } catch {}
+        }}
+        aria-label="Logout"
+      >
+        ⏻
+      </button>
+      <span className="parent-logout-label">Logout</span>
     </div>
   )
 }

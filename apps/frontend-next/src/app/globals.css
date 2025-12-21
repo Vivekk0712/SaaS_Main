@@ -225,6 +225,13 @@ html[data-theme='dark'] .container.login-shell .auth-card {
   display: none;
 }
 
+.container.login-shell .signup-note,
+.container.login-shell .signup-message {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
 .container.login-shell .error {
   color: #b91c1c;
 }
@@ -1442,6 +1449,93 @@ html[data-theme='dark'] .student-shell {
   box-shadow: 0 10px 20px rgba(15, 23, 42, 0.6);
 }
 
+.student-logout-fab,
+.parent-logout-fab {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 46;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #f9fafb;
+  border: 1px solid rgba(15, 23, 42, 0.5);
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.6);
+  cursor: pointer;
+}
+
+.student-logout-fab:hover,
+.parent-logout-fab:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.75);
+}
+
+.student-logout-fab:active,
+.parent-logout-fab:active {
+  transform: translateY(0);
+  box-shadow: 0 8px 18px rgba(15, 23, 42, 0.7);
+}
+
+.student-logout-fab::before,
+.parent-logout-fab::before {
+  content: '';
+  position: absolute;
+  left: 9px;
+  top: 8px;
+  width: 10px;
+  height: 18px;
+  border-radius: 3px;
+  border: 2px solid #f9fafb;
+  border-right: 0;
+}
+
+.student-logout-fab::after,
+.parent-logout-fab::after {
+  content: '';
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  width: 12px;
+  height: 2px;
+  background: #f9fafb;
+  transform: translateY(-50%);
+  box-shadow:
+      -4px -4px 0 -1px #0f172a,
+      -4px 4px 0 -1px #0f172a;
+}
+
+.student-logout-label {
+  position: fixed;
+  right: 24px;
+  bottom: 4px;
+  z-index: 46;
+  font-size: 11px;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+html[data-theme='dark'] .student-logout-label {
+  color: #f9fafb;
+}
+
+.parent-logout-label {
+  position: fixed;
+  right: 24px;
+  bottom: 4px;
+  z-index: 46;
+  font-size: 11px;
+  font-weight: 500;
+  color: #0f172a;
+}
+
+html[data-theme='dark'] .parent-logout-label {
+  color: #f9fafb;
+}
+
 .chat-ai-icon {
   font-size: 18px;
 }
@@ -2423,11 +2517,5 @@ html[data-theme='dark'] .diary-note {
     width: 100%;
   }
 }
-
-
-
-
-
-
 
 

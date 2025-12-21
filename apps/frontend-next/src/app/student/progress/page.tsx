@@ -210,7 +210,14 @@ export default function StudentProgressPage() {
       <div className="dash-wrap student-main">
         <div className="dash-layout">
           <aside className="side-nav side-nav-student" aria-label="Student quick navigation">
-            {navLinks.map(link => {
+            {navLinks
+              .filter(link =>
+                link.href === '/student/dashboard' ||
+                link.href === '/student/diary' ||
+                link.href === '/student/calendar' ||
+                link.href === '/student/syllabus'
+              )
+              .map(link => {
               const active = pathname?.startsWith(link.href)
               return (
                 <Link
@@ -664,6 +671,22 @@ export default function StudentProgressPage() {
           </div>
         </div>
       </div>
+      <button
+        type="button"
+        className="student-logout-fab"
+        onClick={() => {
+          try {
+            sessionStorage.removeItem('student')
+          } catch {}
+          try {
+            window.location.href = '/'
+          } catch {}
+        }}
+        aria-label="Logout"
+      >
+        ⏻
+      </button>
+      <span className="student-logout-label">Logout</span>
     </div>
   )
 }

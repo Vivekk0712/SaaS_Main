@@ -3,7 +3,7 @@ import * as R from 'react'
 import Link from 'next/link'
 import type { Route } from 'next'
 import { usePathname } from 'next/navigation'
-import { readMarksByStudent, getSubjects, getClassSubjects, studentAttendanceSummaryBefore, studentAttendanceSummaryBetween, findStudent, rosterBy } from '../../teacher/data'
+import { readMarksByStudent, getSubjects, getClassSubjects, subjectForHourFor, findStudent, rosterBy } from '../../teacher/data'
 import { BarChart, type LineSeries } from '../../components/LineChart'
 import { subjectColor, type ColorTag } from '../../lib/colors'
 
@@ -12,7 +12,69 @@ export default function ParentProgressPage() {
   const [rows, setRows] = R.useState<Array<{ test: string; subject: string; score: number; max: number; ts?: number; date?: string }>>([])
 
   const [meInfo, setMeInfo] = R.useState<{ name: string; usn: string; klass: string; section: 'A'|'B' } | null>(null)
+  const [attStore, setAttStore] = R.useState<Record<string, Record<string, boolean>> | null>(null)
   // Ranks removed in parent progress per requirement
+
+  function attendanceSummaryBefore(
+    usn: string,
+    klass: string,
+    section: string,
+    uptoDate: string,
+    subject?: string,
+  ): { attended: number; total: number } {
+    const store = attStore
+    const out = { attended: 0, total: 0 }
+    if (!store) return out
+    const wantSub = typeof subject === 'string' && subject.trim() ? subject.toLowerCase() : ''
+    for (const [key, map] of Object.entries(store)) {
+      const parts = key.split('|')
+      if (parts.length < 4) continue
+      const [date, k, s, hourStr] = parts
+      if (k !== klass || s !== section) continue
+      if (date > uptoDate) continue
+      if (wantSub) {
+        const hour = Number(hourStr)
+        const actualSub = subjectForHourFor(klass, section as any, hour)
+        if (String(actualSub || '').toLowerCase() !== wantSub) continue
+      }
+      if (Object.prototype.hasOwnProperty.call(map, usn)) {
+        out.total += 1
+        if (map[usn]) out.attended += 1
+      }
+    }
+    return out
+  }
+
+  function attendanceSummaryBetween(
+    usn: string,
+    klass: string,
+    section: string,
+    fromDateExclusive: string,
+    toDateInclusive: string,
+    subject?: string,
+  ): { attended: number; total: number } {
+    const store = attStore
+    const out = { attended: 0, total: 0 }
+    if (!store) return out
+    const wantSub = typeof subject === 'string' && subject.trim() ? subject.toLowerCase() : ''
+    for (const [key, map] of Object.entries(store)) {
+      const parts = key.split('|')
+      if (parts.length < 4) continue
+      const [date, k, s, hourStr] = parts
+      if (k !== klass || s !== section) continue
+      if (!(date > fromDateExclusive && date <= toDateInclusive)) continue
+      if (wantSub) {
+        const hour = Number(hourStr)
+        const actualSub = subjectForHourFor(klass, section as any, hour)
+        if (String(actualSub || '').toLowerCase() !== wantSub) continue
+      }
+      if (Object.prototype.hasOwnProperty.call(map, usn)) {
+        out.total += 1
+        if (map[usn]) out.attended += 1
+      }
+    }
+    return out
+  }
 
   const recompute = R.useCallback(async () => {
     try {
@@ -93,6 +155,33 @@ export default function ParentProgressPage() {
       const disp: Record<string,string> = {}
       for (const ssub of list) disp[String(ssub).toLowerCase()] = ssub
       setRows(arr.map(r => ({ test: r.test, subject: disp[String(r.subject||'').toLowerCase()] || r.subject, score: r.score, max: r.max, ts: r.ts, date: r.date })))
+
+      // Fetch attendance for this class/section to power attendance overlays
+      let store: Record<string, Record<string, boolean>> = {}
+      try {
+        const res = await fetch(
+          `/api/mysql/teacher/attendance?klass=${encodeURIComponent(
+            info.klass,
+          )}&section=${encodeURIComponent(info.section)}`,
+        )
+        if (res.ok) {
+          const j = await res.json()
+          if (j && j.items && typeof j.items === 'object') {
+            store = j.items as Record<string, Record<string, boolean>>
+          }
+        }
+      } catch {
+        // ignore
+      }
+      if (!store || !Object.keys(store).length) {
+        try {
+          const raw = localStorage.getItem('school:attendance')
+          store = raw ? (JSON.parse(raw) as Record<string, Record<string, boolean>>) : {}
+        } catch {
+          store = {}
+        }
+      }
+      setAttStore(store)
     } catch {}
   }, [])
 
@@ -154,6 +243,8 @@ export default function ParentProgressPage() {
 
   // Selected tests filter (allows single-test or multi-test comparison)
   const [selectedTests, setSelectedTests] = R.useState<string[]>([])
+  const [showFilterPanel, setShowFilterPanel] = R.useState(false)
+  const [activeFilterTab, setActiveFilterTab] = R.useState<'tests' | 'subjects'>('tests')
 
   const filteredByTest = R.useMemo(() => {
     if (!selectedTests.length) return byTest
@@ -236,7 +327,6 @@ export default function ParentProgressPage() {
   }, [filteredByTest])
 
   const [selectedSubjectsFilter, setSelectedSubjectsFilter] = R.useState<string[]>([])
-  const [showSubjectFilter, setShowSubjectFilter] = R.useState(false)
 
   // Keep subject filter in sync with available subjects; default to all
   R.useEffect(() => {
@@ -401,44 +491,31 @@ export default function ParentProgressPage() {
         </div>
       )}
 
-      <div style={{display:'grid', gap:12, marginTop:12}}>
-        {byTest.length > 0 && (
-          <div className="card" style={{ padding: '8px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 600, fontSize: 13 }}>Filter by tests</span>
-              <div style={{ display: 'flex', gap: 6 }}>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  style={{ fontSize: 11, padding: '2px 8px' }}
-                  onClick={() => setSelectedTests(byTest.map(([name]) => name))}
-                >
-                  Select all
-                </button>
-                <button
-                  type="button"
-                  className="btn-ghost"
-                  style={{ fontSize: 11, padding: '2px 8px' }}
-                  onClick={() => setSelectedTests([])}
-                >
-                  Clear
-                </button>
-              </div>
+        <div style={{display:'grid', gap:12, marginTop:12}}>
+          {byTest.length > 0 && (
+            <div className="card" style={{ padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ fontWeight: 600, fontSize: 13 }}>Progress filters</div>
+              <button
+                type="button"
+                className="btn-ghost"
+                style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', fontSize: 12 }}
+                onClick={() => {
+                  setActiveFilterTab('tests')
+                  setShowFilterPanel(true)
+                }}
+              >
+                <span aria-hidden="true" style={{ display: 'inline-flex', flexDirection: 'column', gap: 3 }}>
+                  <span style={{ position: 'relative', width: 14, height: 2, borderRadius: 999, background: '#020617' }}>
+                    <span style={{ position: 'absolute', top: -3, right: -1, width: 6, height: 6, borderRadius: 999, border: '2px solid #020617', background: '#ffffff' }} />
+                  </span>
+                  <span style={{ position: 'relative', width: 14, height: 2, borderRadius: 999, background: '#020617' }}>
+                    <span style={{ position: 'absolute', top: -3, left: -1, width: 6, height: 6, borderRadius: 999, border: '2px solid #020617', background: '#ffffff' }} />
+                  </span>
+                </span>
+                <span style={{ fontWeight: 600 }}>Filter</span>
+              </button>
             </div>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-              {byTest.map(([testName]) => (
-                <label key={testName} style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13 }}>
-                  <input
-                    type="checkbox"
-                    checked={selectedTests.includes(testName)}
-                    onChange={() => toggleTest(testName)}
-                  />
-                  <span>{testName}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-        )}
+          )}
 
         {/* Marks & Attendance charts with subject filter (same as student) */}
         {filteredByTest.length > 0 && meInfo && (() => {
@@ -480,23 +557,23 @@ export default function ParentProgressPage() {
             const prev = idx > 0 ? chronological[idx - 1] : null
             const att = subjects.map((sub) => {
               try {
-                if (!current.d.date) return 0
-                if (!prev) {
-                  const a = studentAttendanceSummaryBefore(
-                    meInfo.usn,
-                    meInfo.klass,
-                    meInfo.section,
-                    current.d.date,
-                    sub,
-                  )
-                  return a.total ? Math.round((a.attended * 100) / a.total) : 0
-                }
-                if (prev.d.date) {
-                  const a = studentAttendanceSummaryBetween(
-                    meInfo.usn,
-                    meInfo.klass,
-                    meInfo.section,
-                    prev.d.date,
+                  if (!current.d.date) return 0
+                  if (!prev) {
+                    const a = attendanceSummaryBefore(
+                      meInfo.usn,
+                      meInfo.klass,
+                      meInfo.section,
+                      current.d.date,
+                      sub,
+                    )
+                    return a.total ? Math.round((a.attended * 100) / a.total) : 0
+                  }
+                  if (prev.d.date) {
+                    const a = attendanceSummaryBetween(
+                      meInfo.usn,
+                      meInfo.klass,
+                      meInfo.section,
+                      prev.d.date,
                     current.d.date,
                     sub,
                   )
@@ -507,11 +584,11 @@ export default function ParentProgressPage() {
             })
             const label =
               prev && prev.d.date
-                ? `${fmt(prev.d.date)} – ${fmt(current.d.date)}`
+                ? `${fmt(prev.d.date)} → ${fmt(current.d.date)}`
                 : `Up to ${fmt(current.d.date)}`
-            if (current.d.date) rangeNotes.push(label)
-            attendanceSeries.push({
-              name: `${current.t} Attendance % (${label})`,
+            if (current.d.date) rangeNotes.push(`${current.t}: ${label}`)
+              attendanceSeries.push({
+                name: `${current.t} Attendance %`,
               color: colorForSeries(tests.length + idx),
               data: att,
             })
@@ -548,157 +625,71 @@ export default function ParentProgressPage() {
                         </span>
                       )}
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, position: 'relative' }}>
-                      <button
-                        type="button"
-                        aria-label="Filter subjects"
-                        onClick={() => setShowSubjectFilter((open) => !open)}
-                        style={{
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          width: 22,
-                          height: 22,
-                          borderRadius: 999,
-                          background: 'linear-gradient(135deg, #f97316, #8b5cf6)',
-                          color: '#ffffff',
-                          border: 'none',
-                          cursor: 'pointer',
-                          padding: 0,
-                        }}
-                      >
-                        <span
-                          aria-hidden="true"
-                          style={{
-                            width: 12,
-                            height: 12,
-                            display: 'inline-block',
-                            borderTopLeftRadius: 2,
-                            borderTopRightRadius: 2,
-                            borderBottomRightRadius: 4,
-                            borderBottomLeftRadius: 4,
-                            position: 'relative',
-                            background: '#ffffff',
-                            clipPath:
-                              'polygon(15% 0, 85% 0, 60% 40%, 60% 100%, 40% 100%, 40% 40%)',
-                          }}
-                        />
-                      </button>
-                      {showSubjectFilter && (
-                        <div
-                          style={{
-                            position: 'absolute',
-                            top: 26,
-                            right: 0,
-                            background: 'var(--panel)',
-                            borderRadius: 12,
-                            border: '1px solid var(--panel-border)',
-                            padding: '8px 10px',
-                            boxShadow: '0 16px 32px rgba(15,23,42,0.25)',
-                            zIndex: 30,
-                            minWidth: 160,
-                          }}
-                        >
-                          {subjectList.map((sub) => (
-                            <label
-                              key={sub}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 6,
-                                fontSize: 11,
-                                marginBottom: 4,
-                                cursor: 'pointer',
-                              }}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={selectedSubjectsFilter.includes(sub)}
-                                onChange={() =>
-                                  setSelectedSubjectsFilter((prev) => {
-                                    const set = new Set(prev)
-                                    if (set.has(sub)) set.delete(sub)
-                                    else set.add(sub)
-                                    return Array.from(set)
-                                  })
-                                }
-                                style={{ width: 12, height: 12 }}
-                              />
-                              <span>{sub}</span>
-                            </label>
-                          ))}
-                          <div
-                            style={{
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              marginTop: 6,
-                              gap: 6,
-                            }}
-                          >
-                            <button
-                              type="button"
-                              onClick={() => setSelectedSubjectsFilter([])}
-                              style={{
-                                borderRadius: 999,
-                                padding: '3px 8px',
-                                fontSize: 10,
-                                border: '1px solid rgba(148,163,184,0.7)',
-                                background: 'rgba(248,250,252,0.9)',
-                                cursor: 'pointer',
-                              }}
-                            >
-                              Clear
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                if (!selectedSubjectsFilter.length)
-                                  setSelectedSubjectsFilter(subjectList)
-                                setShowSubjectFilter(false)
-                              }}
-                              style={{
-                                borderRadius: 999,
-                                padding: '3px 8px',
-                                fontSize: 10,
-                                border: '1px solid rgba(37,99,235,0.9)',
-                                background: 'rgba(219,234,254,0.95)',
-                                cursor: 'pointer',
-                              }}
-                            >
-                              Done
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }} />
                   </div>
                 </div>
               )}
-              <div style={{ display: 'grid', gap: 10 }}>
+              <div style={{ display: 'grid', gap: 10, position: 'relative' }}>
                 <BarChart
-                  title={`Marks — ${titleSuffix}`}
+                  title={`Marks & Attendance - ${titleSuffix}`}
                   categories={subjects}
-                  series={marksSeries}
+                  series={[...marksSeries, ...attendanceSeries]}
                   yMax={100}
                 />
+                {selectedTests.length === 1 && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      pointerEvents: 'none',
+                      fontSize: 20,
+                      fontWeight: 800,
+                      letterSpacing: 2,
+                      textTransform: 'uppercase',
+                      color: 'rgba(15,23,42,0.10)',
+                    }}
+                  >
+                    {selectedTests[0]}
+                  </div>
+                )}
+                  {/* <BarChart
+                  title={`Marks — ${titleSuffix}`}
+                  categories={subjects}
+                  series={[...marksSeries, ...attendanceSeries]}
+                  yMax={100}
+                  /> */}
                 <BarChart
                   title={`Attendance — ${titleSuffix}`}
                   categories={subjects}
                   series={attendanceSeries}
-                  yMax={100}
+                  yMax={100} height={0}
                 />
                 {rangeNotes.length > 0 && (
                   <div
                     style={{
-                      fontSize: 11,
-                      opacity: 0.8,
+                      fontSize: 10,
+                      opacity: 0.9,
                       display: 'flex',
                       flexWrap: 'wrap',
-                      gap: 10,
+                      gap: 6,
+                      marginTop: 2,
                     }}
                   >
                     {rangeNotes.map((r, idx) => (
-                      <span key={`${r}-${idx}`}>Range {idx + 1}: {r}</span>
+                      <span
+                        key={`${r}-${idx}`}
+                        style={{
+                          borderRadius: 999,
+                          padding: '2px 8px',
+                          background: 'rgba(15,23,42,0.04)',
+                          border: '1px solid rgba(148,163,184,0.5)',
+                        }}
+                      >
+                        {r}
+                      </span>
                     ))}
                   </div>
                 )}
@@ -755,6 +746,210 @@ export default function ParentProgressPage() {
           </div>
         </div>
       </div>
+      {showFilterPanel && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15,23,42,0.55)',
+            zIndex: 50,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-end',
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 900,
+              maxHeight: '90vh',
+              background: '#ffffff',
+              borderTopLeftRadius: 18,
+              borderTopRightRadius: 18,
+              boxShadow: '0 -20px 40px rgba(15,23,42,0.35)',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <div
+              style={{
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottom: '1px solid #e5e7eb',
+              }}
+            >
+              <div style={{ fontWeight: 700, fontSize: 15 }}>Filters</div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 12 }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => {
+                    // Clear all manual filters: show everything, uncheck boxes
+                    setSelectedTests([])
+                    setSelectedSubjectsFilter([])
+                  }}
+                >
+                  Clear filters
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => setShowFilterPanel(false)}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div style={{ display: 'flex', minHeight: 260 }}>
+              <div
+                style={{
+                  width: 140,
+                  borderRight: '1px solid #e5e7eb',
+                  padding: '12px 10px',
+                  fontSize: 13,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6,
+                }}
+              >
+                <button
+                  type="button"
+                  onClick={() => setActiveFilterTab('tests')}
+                  style={{
+                    textAlign: 'left',
+                    padding: '6px 8px',
+                    borderRadius: 999,
+                    border: 'none',
+                    background: activeFilterTab === 'tests' ? 'rgba(37,99,235,0.08)' : 'transparent',
+                    fontWeight: activeFilterTab === 'tests' ? 700 : 500,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Tests
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveFilterTab('subjects')}
+                  style={{
+                    textAlign: 'left',
+                    padding: '6px 8px',
+                    borderRadius: 999,
+                    border: 'none',
+                    background: activeFilterTab === 'subjects' ? 'rgba(37,99,235,0.08)' : 'transparent',
+                    fontWeight: activeFilterTab === 'subjects' ? 700 : 500,
+                    cursor: 'pointer',
+                  }}
+                >
+                  Subjects
+                </button>
+              </div>
+              <div
+                style={{
+                  flex: 1,
+                  padding: '12px 16px',
+                  overflowY: 'auto',
+                  fontSize: 13,
+                }}
+              >
+                {activeFilterTab === 'tests' && (
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    {byTest.map(([testName]) => (
+                      <label
+                        key={testName}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedTests.includes(testName)}
+                          onChange={() => toggleTest(testName)}
+                          style={{ width: 14, height: 14 }}
+                        />
+                        <span>{testName}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                {activeFilterTab === 'subjects' && (
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    {subjectList.map((sub) => (
+                      <label
+                        key={sub}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 8,
+                          cursor: 'pointer',
+                        }}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedSubjectsFilter.includes(sub)}
+                          onChange={() =>
+                            setSelectedSubjectsFilter((prev) => {
+                              const set = new Set(prev)
+                              if (set.has(sub)) set.delete(sub)
+                              else set.add(sub)
+                              return Array.from(set)
+                            })
+                          }
+                          style={{ width: 14, height: 14 }}
+                        />
+                        <span>{sub}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+            <div
+              style={{
+                padding: '10px 16px',
+                borderTop: '1px solid #e5e7eb',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                fontSize: 12,
+              }}
+            >
+              <span>
+                {selectedTests.length} test{selectedTests.length === 1 ? '' : 's'} •{' '}
+                {visibleSubjects.length} subject{visibleSubjects.length === 1 ? '' : 's'}
+              </span>
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ padding: '6px 18px', fontSize: 13 }}
+                onClick={() => setShowFilterPanel(false)}
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <button
+        type="button"
+        className="parent-logout-fab"
+        onClick={() => {
+          try {
+            sessionStorage.removeItem('parent')
+          } catch {}
+          try {
+            window.location.href = '/'
+          } catch {}
+        }}
+        aria-label="Logout"
+      >
+        ⏻
+      </button>
+      <span className="parent-logout-label">Logout</span>
     </div>
   )
 }

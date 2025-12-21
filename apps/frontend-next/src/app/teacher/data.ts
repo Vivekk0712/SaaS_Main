@@ -30,6 +30,71 @@ export const SECTIONS = ['A', 'B'] as const
 export const HOURS = [1, 2, 3, 4, 5] as const
 export const SUBJECTS = ['Kannada', 'English', 'Chemistry', 'Physics', 'Mathematics'] as const
 
+// Lightweight helper to seed dummy local attendance for last ~3 months
+function seedDummyAttendanceLocal() {
+  if (typeof window === 'undefined') return
+  try {
+    const already = localStorage.getItem('school:seed:attendanceDummy')
+    const rawAtt = localStorage.getItem('school:attendance')
+    const store = rawAtt ? JSON.parse(rawAtt) as Record<string, any> : {}
+    if (already === 'v1' || (store && Object.keys(store).length > 0)) return
+
+    const rawStudents = localStorage.getItem('school:students')
+    if (!rawStudents) return
+    const students = JSON.parse(rawStudents) as Student[]
+    if (!Array.isArray(students) || !students.length) return
+
+    type Group = { klass: string; section: string; usns: string[] }
+    const groups = new Map<string, Group>()
+    for (const s of students) {
+      const key = `${s.klass}|${s.section}`
+      const g = groups.get(key) || { klass: s.klass, section: s.section, usns: [] }
+      g.usns.push(s.usn)
+      groups.set(key, g)
+    }
+    if (!groups.size) return
+
+    const today = new Date()
+    const end = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+    const start = new Date(end)
+    start.setMonth(start.getMonth() - 3)
+
+    const fmt = (d: Date) => {
+      const y = d.getFullYear()
+      const m = String(d.getMonth() + 1).padStart(2, '0')
+      const day = String(d.getDate()).padStart(2, '0')
+      return `${y}-${m}-${day}`
+    }
+
+    const cursor = new Date(start)
+    while (cursor <= end) {
+      const dow = cursor.getDay() // 0=Sun,6=Sat
+      if (dow !== 0 && dow !== 6) {
+        const ymd = fmt(cursor)
+        for (const g of groups.values()) {
+          for (const hour of HOURS) {
+            const key = attendanceKey(ymd, g.klass, g.section, hour)
+            // Skip if something is already there
+            if (store[key]) continue
+            const map: Record<string, AttendanceMark> = {}
+            for (const usn of g.usns) {
+              const present = Math.random() < 0.9
+              map[usn] = present ? 'P' : 'A'
+            }
+            store[key] = { map }
+          }
+        }
+      }
+      cursor.setDate(cursor.getDate() + 1)
+    }
+
+    localStorage.setItem('school:attendance', JSON.stringify(store))
+    localStorage.setItem('school:seed:attendanceDummy', 'v1')
+  } catch {
+    // best-effort only; ignore failures
+  }
+}
+
 export function getClasses(): string[] {
   try {
     if (typeof fetch !== 'undefined' && shouldFetchOnce('academics:classes')) {
@@ -208,6 +273,8 @@ export function seedIfNeeded() {
     if (localStorage.getItem('school:circulars') === null) localStorage.setItem('school:circulars', JSON.stringify([]))
     if (localStorage.getItem('school:marks') === null) localStorage.setItem('school:marks', JSON.stringify([]))
     localStorage.setItem(versionKey, desired)
+    // Also seed dummy attendance once for local dashboards
+    seedDummyAttendanceLocal()
     return
   }
   if (!localStorage.getItem('school:teachers')) localStorage.setItem('school:teachers', JSON.stringify([]))
@@ -229,6 +296,8 @@ export function seedIfNeeded() {
   if (!localStorage.getItem('school:classSubjects')) localStorage.setItem('school:classSubjects', JSON.stringify({}))
   if (!localStorage.getItem('school:circulars')) localStorage.setItem('school:circulars', JSON.stringify([]))
   if (!localStorage.getItem('school:marks')) localStorage.setItem('school:marks', JSON.stringify([]))
+  // Ensure attendance has some data for local-only dashboards if still empty
+  seedDummyAttendanceLocal()
 }
 
 // ---- Class hours (per class) ----
@@ -463,7 +532,7 @@ export function findStudent(usn: string): Student | undefined {
   return all.find(s => s.usn === usn)
 }
 
-export type AttendanceMark = boolean | 'P' | 'A' | 'L'
+export type AttendanceMark = boolean | 'P' | 'A'
 
 export function attendanceKey(date: string, klass: string, section: string, hour: number) {
   return `${date}|${klass}|${section}|${hour}`
@@ -513,6 +582,20 @@ export function saveAttendance(
   store[key] = payload
   localStorage.setItem('school:attendance', JSON.stringify(store))
   try { if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('school:update', { detail: { key: 'school:attendance' } })) } catch {}
+  // Best-effort sync to shared MySQL attendance tables (similar to marks)
+  try {
+    if (typeof fetch !== 'undefined') {
+      const simple: Record<string, boolean> = {}
+      for (const [usn, mark] of Object.entries(map)) {
+        simple[usn] = mark === true || mark === 'P'
+      }
+      fetch('/api/mysql/teacher/attendance', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ date, klass, section, hour, map: simple, subject }),
+      }).catch(() => {})
+    }
+  } catch {}
 }
 
 export function readAttendance(date: string, klass: string, section: string, hour: number): Record<string, AttendanceMark> {

@@ -499,6 +499,7 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
               <select
                 id="role"
                 className="input select"
+                suppressHydrationWarning
                 value={role}
                 onChange={(e) => { const r = e.target.value as Role; setRole(r); resetFields(r) }}
               >
@@ -1051,9 +1052,8 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
                 </button>
               </div>
             )}
-            <p className="note">
-              Students and parents can sign in with phone + password or use Google with the same phone.
-              Teachers and HODs use their name + passcode or Google with the same name.
+            <p className="signup-note">
+              New parent? <a href="/signup">Create parent account</a>
             </p>
           </form>
         </div>

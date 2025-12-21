@@ -280,10 +280,10 @@ For detailed setup, see [RAZORPAY_SETUP_GUIDE.md](RAZORPAY_SETUP_GUIDE.md)
 ## 🧪 Testing
 
 ### Test Credentials
-
-**Parent Login:**
-- Phone: `9000000001`
-- OTP: Any 6 digits (in dev mode)
+  
+  **Parent Login:**
+- Phone: `8431536379`
+  - OTP: Any 6 digits (in dev mode)
 
 **Accountant Login:**
 - Use credentials from database

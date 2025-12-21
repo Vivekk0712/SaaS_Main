@@ -21,11 +21,59 @@ async function resolveIds(klass: string, section: string, subject?: string) {
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url)
-    const ymd = searchParams.get('date') || ''
     const klass = searchParams.get('klass') || ''
     const section = searchParams.get('section') || ''
+    const ymd = searchParams.get('date') || ''
     const hour = Number(searchParams.get('hour') || '0')
     const subject = searchParams.get('subject') || undefined
+
+    // Bulk mode: class + section only -> return all slots for that class/section
+    if (klass && section && !ymd && !hour) {
+      const { classId, sectionId } = await resolveIds(klass, section)
+      if (!classId || !sectionId) return NextResponse.json({ items: {} })
+
+      const slots = await query<{ id: number; ymd: any; hour_no: number }>(
+        'SELECT id, ymd, hour_no FROM attendance WHERE class_id=? AND section_id=? ORDER BY ymd, hour_no',
+        [classId, sectionId],
+      )
+      if (!slots.length) return NextResponse.json({ items: {} })
+
+      const attIds = slots.map((s) => s.id)
+      const placeholders = attIds.map(() => '?').join(',')
+      const entries = await query<{ attendance_id: number; usn: string; present: number }>(
+        `SELECT ae.attendance_id, s.usn, ae.present
+           FROM attendance_entries ae
+           JOIN students s ON s.id = ae.student_id
+          WHERE ae.attendance_id IN (${placeholders})`,
+        attIds as any,
+      )
+
+      const byId = new Map<number, { ymd: string; hour_no: number }>()
+      for (const s of slots) {
+        const raw = (s as any).ymd
+        let ymd: string
+        if (typeof raw === 'string') {
+          ymd = raw.slice(0, 10)
+        } else if (raw instanceof Date) {
+          ymd = raw.toISOString().slice(0, 10)
+        } else {
+          ymd = String(raw).slice(0, 10)
+        }
+        byId.set(s.id, { ymd, hour_no: s.hour_no })
+      }
+
+      const out: Record<string, Record<string, boolean>> = {}
+      for (const e of entries) {
+        const slot = byId.get(e.attendance_id)
+        if (!slot) continue
+        const key = `${slot.ymd}|${klass}|${section}|${slot.hour_no}`
+        const bucket = (out[key] ||= {})
+        bucket[e.usn] = !!e.present
+      }
+
+      return NextResponse.json({ items: out })
+    }
+
     if (!ymd || !klass || !section || !hour) return bad('missing params')
     const { classId, sectionId, subjectId } = await resolveIds(klass, section, subject)
     if (!classId || !sectionId) return NextResponse.json({ map: {} })
@@ -94,4 +142,3 @@ export async function POST(req: Request) {
     return bad('server_error', 500)
   }
 }
-

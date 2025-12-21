@@ -867,6 +867,21 @@ export default function AttendancePage() {
           </div>
         </div>
       </div>
+      <button
+        type="button"
+        className="student-logout-fab"
+        onClick={() => {
+          try {
+            sessionStorage.removeItem('student')
+          } catch {}
+          try {
+            window.location.href = '/'
+          } catch {}
+        }}
+        aria-label="Logout"
+      >
+        ⏻
+      </button>
     </div>
   )
 }

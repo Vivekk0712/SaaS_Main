@@ -15,6 +15,9 @@ function pickColor(title: string, idx: number): BannerColor {
 export default function ParentCircularsPage() {
   const pathname = usePathname()
   const [items, setItems] = React.useState<Array<any>>([])
+  const [showFilter, setShowFilter] = React.useState(false)
+  const [dateFilter, setDateFilter] = React.useState<'all' | 'today' | 'week' | 'month' | 'date'>('all')
+  const [dateFilterValue, setDateFilterValue] = React.useState<string>('')
 
   const recompute = React.useCallback(() => {
     try {
@@ -42,6 +45,62 @@ export default function ParentCircularsPage() {
       window.removeEventListener('school:update', onBus as EventListener)
     }
   }, [recompute])
+
+  const filteredItems = React.useMemo(() => {
+    if (!items.length) return []
+    const now = new Date()
+    const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    const endOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999)
+
+    const startOfWeek = new Date(startOfToday)
+    const weekday = (startOfWeek.getDay() + 6) % 7 // Monday=0
+    startOfWeek.setDate(startOfWeek.getDate() - weekday)
+    const endOfWeek = new Date(startOfWeek)
+    endOfWeek.setDate(startOfWeek.getDate() + 6)
+    endOfWeek.setHours(23, 59, 59, 999)
+
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1)
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999)
+
+    let customStart: Date | null = null
+    let customEnd: Date | null = null
+    if (dateFilter === 'date' && dateFilterValue) {
+      const d = new Date(dateFilterValue)
+      if (!Number.isNaN(d.getTime())) {
+        customStart = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+        customEnd = new Date(d.getFullYear(), d.getMonth(), d.getDate(), 23, 59, 59, 999)
+      }
+    }
+
+    const inRange = (c: any) => {
+      if (dateFilter === 'all') return true
+      let dt: Date | null = null
+      if (typeof c.ts === 'number') {
+        dt = new Date(c.ts)
+      } else if (c.date) {
+        const parsed = new Date(c.date)
+        if (!Number.isNaN(parsed.getTime())) dt = parsed
+      }
+      if (!dt) return true
+      const ms = dt.getTime()
+
+      switch (dateFilter) {
+        case 'today':
+          return ms >= startOfToday.getTime() && ms <= endOfToday.getTime()
+        case 'week':
+          return ms >= startOfWeek.getTime() && ms <= endOfWeek.getTime()
+        case 'month':
+          return ms >= startOfMonth.getTime() && ms <= endOfMonth.getTime()
+        case 'date':
+          if (!customStart || !customEnd) return true
+          return ms >= customStart.getTime() && ms <= customEnd.getTime()
+        default:
+          return true
+      }
+    }
+
+    return items.filter(inRange)
+  }, [items, dateFilter, dateFilterValue])
 
   const navLinks: Array<{ href: Route; label: string; icon: string }> = [
     { href: '/parent/dashboard', label: 'Dashboard', icon: '🏠' },
@@ -106,13 +165,37 @@ export default function ParentCircularsPage() {
                 marginBottom: 10,
               }}
             />
-            <h2 className="title">Circulars</h2>
-            <p className="subtitle">Latest announcements and notices for your child&apos;s class.</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
+              <div>
+                <h2 className="title">Circulars</h2>
+                <p className="subtitle">Latest announcements and notices for your child&apos;s class.</p>
+              </div>
+              <button
+                type="button"
+                className="btn-ghost"
+                style={{
+                  fontSize: 12,
+                  padding: '6px 14px',
+                  borderRadius: 999,
+                  border: '1px solid #ea580c',
+                  background: showFilter ? '#ea580c' : '#fff7ed',
+                  color: showFilter ? '#ffffff' : '#9a3412',
+                  fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                }}
+                onClick={() => setShowFilter(true)}
+              >
+                Filter
+              </button>
+            </div>
       <div style={{display:'grid', gap:12, marginTop:12}}>
         {items.length === 0 && (
           <div className="note">No circulars posted yet.</div>
         )}
-        {items.map((c: any, i: number) => {
+        {items.length > 0 && filteredItems.length === 0 && (
+          <div className="note">No circulars in this time range.</div>
+        )}
+        {filteredItems.map((c: any, i: number) => {
           const color: BannerColor = pickColor(c.title || '', i)
           return (
             <div key={i} style={{border:'1px solid var(--panel-border)', borderRadius:12, overflow:'hidden', background:'var(--panel)'}}>
@@ -148,6 +231,176 @@ export default function ParentCircularsPage() {
           </div>
         </div>
       </div>
+      {showFilter && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15,23,42,0.55)',
+            zIndex: 60,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-end',
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 900,
+              maxHeight: '90vh',
+              background: '#ffffff',
+              borderTopLeftRadius: 18,
+              borderTopRightRadius: 18,
+              boxShadow: '0 -20px 40px rgba(15,23,42,0.35)',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <div
+              style={{
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottom: '1px solid #e5e7eb',
+              }}
+            >
+              <div style={{ fontWeight: 700, fontSize: 15 }}>Circular filters</div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 12 }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => {
+                    setDateFilter('all')
+                    setDateFilterValue('')
+                  }}
+                >
+                  Clear filters
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => setShowFilter(false)}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div
+              style={{
+                padding: '14px 18px',
+                display: 'grid',
+                gridTemplateColumns: '200px minmax(0,1fr)',
+                gap: 16,
+                fontSize: 13,
+              }}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {([
+                  ['all', 'All circulars'],
+                  ['today', 'Today'],
+                  ['week', 'This week'],
+                  ['month', 'This month'],
+                  ['date', 'Select a date'],
+                ] as const).map(([key, label]) => (
+                  <button
+                    key={key}
+                    type="button"
+                    className="btn-ghost"
+                    style={{
+                      justifyContent: 'flex-start',
+                      padding: '6px 10px',
+                      borderRadius: 999,
+                      background: dateFilter === key ? '#eff6ff' : 'transparent',
+                      fontWeight: dateFilter === key ? 600 : 500,
+                    }}
+                    onClick={() => setDateFilter(key)}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+              <div>
+                {dateFilter === 'all' && (
+                  <p className="note">
+                    Showing every circular for this class and section.
+                  </p>
+                )}
+                {dateFilter === 'today' && (
+                  <p className="note">
+                    Only circulars posted today are shown.
+                  </p>
+                )}
+                {dateFilter === 'week' && (
+                  <p className="note">
+                    Circulars from the current Monday through Sunday.
+                  </p>
+                )}
+                {dateFilter === 'month' && (
+                  <p className="note">
+                    Circulars from this calendar month.
+                  </p>
+                )}
+                {dateFilter === 'date' && (
+                  <div style={{ display: 'grid', gap: 10, maxWidth: 260 }}>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>On date</div>
+                      <input
+                        className="input"
+                        type="date"
+                        value={dateFilterValue}
+                        onChange={(e) => setDateFilterValue(e.target.value)}
+                      />
+                    </div>
+                    <p className="note">
+                      Show circulars posted on the selected date.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div
+              style={{
+                padding: '10px 16px',
+                borderTop: '1px solid #e5e7eb',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: 12,
+              }}
+            >
+              <div>
+                <strong>{filteredItems.length}</strong> circular
+                {filteredItems.length === 1 ? '' : 's'} in view
+              </div>
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ padding: '6px 18px', borderRadius: 999 }}
+                onClick={() => setShowFilter(false)}
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <button
+        type="button"
+        className="parent-logout-fab"
+        onClick={() => {
+          try {
+            sessionStorage.removeItem('parent')
+          } catch {}
+          try {
+            window.location.href = '/'
+          } catch {}
+        }}
+        aria-label="Logout"
+      >
+        ⏻
+      </button>
+      <span className="parent-logout-label">Logout</span>
     </div>
   )
 }

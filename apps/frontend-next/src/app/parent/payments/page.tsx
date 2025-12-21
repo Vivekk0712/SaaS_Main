@@ -3,6 +3,7 @@ import React from 'react'
 import Link from 'next/link'
 import type { Route } from 'next'
 import { usePathname } from 'next/navigation'
+import { findStudent } from '../../teacher/data'
 
 type Part = { label?: string; amount: number; dueDate?: string }
 
@@ -17,6 +18,8 @@ export default function ParentPaymentsPage() {
   const [nextIndex, setNextIndex] = React.useState<number>(-1)
   const [updatedAt, setUpdatedAt] = React.useState<string>('')
   const [message, setMessage] = React.useState<string>('')
+  const [studentName, setStudentName] = React.useState<string>('')
+  const [studentClassSection, setStudentClassSection] = React.useState<string>('')
   const [adhoc, setAdhoc] = React.useState<Array<{ id:string; title:string; total:number; createdAt:string; status?:string }>>([])
   const [showPaidFilter, setShowPaidFilter] = React.useState(false)
   const [paidWhen, setPaidWhen] = React.useState<'all' | 'today' | 'week'>('all')
@@ -25,6 +28,20 @@ export default function ParentPaymentsPage() {
 
   const phone = React.useMemo(() => {
     try { return JSON.parse(sessionStorage.getItem('parent') || '{}').phone || '' } catch { return '' }
+  }, [])
+
+  React.useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('parent')
+      if (!raw) return
+      const { roll } = JSON.parse(raw)
+      if (!roll) return
+      const me = findStudent(String(roll))
+      if (!me) return
+      setStudentName(me.name || '')
+      const cs = [me.klass, me.section].filter(Boolean).join(' ')
+      setStudentClassSection(cs)
+    } catch {}
   }, [])
 
   const load = async (background = false) => {
@@ -47,9 +64,9 @@ export default function ParentPaymentsPage() {
 
   React.useEffect(() => { load(true); const id = setInterval(() => load(true), 4000); return () => clearInterval(id) }, [phone])
 
-  const total = items.reduce((s,it)=> s + Number(it.amount||0), 0)
-  const totalDue = parts.reduce((s, p, idx) => s + (!paid[idx] ? Number(p.amount||0) : 0), 0)
-  const totalPaid = total - totalDue
+  const scheduledTotal = items.reduce((s,it)=> s + Number(it.amount||0), 0)
+  const scheduledDue = parts.reduce((s, p, idx) => s + (!paid[idx] ? Number(p.amount||0) : 0), 0)
+  const scheduledPaid = scheduledTotal - scheduledDue
 
   // Razorpay integration
   const initializeRazorpay = () => {
@@ -267,6 +284,183 @@ export default function ParentPaymentsPage() {
     })
   }, [adhoc, transFilter])
 
+  const adhocTotals = React.useMemo(() => {
+    if (!adhoc.length) {
+      return { total: 0, paid: 0, pending: 0 }
+    }
+    let total = 0
+    let paid = 0
+    for (const bill of adhoc) {
+      const amt = Number(bill.total || 0) || 0
+      total += amt
+      if ((bill.status || '').toLowerCase() === 'paid') paid += amt
+    }
+    const pending = total - paid
+    return { total, paid, pending }
+  }, [adhoc])
+
+  const summaryTotal = scheduledTotal + adhocTotals.total
+  const summaryDue = scheduledDue + adhocTotals.pending
+  const summaryPaid = summaryTotal - summaryDue
+
+  const openReceiptWindow = (row: {
+    invoiceNo: string
+    title: string
+    receiptNo: string
+    transactionId: string
+    amount: number
+    date: string
+  }) => {
+    if (typeof window === 'undefined') return
+    const win = window.open('', '_blank', 'width=900,height=700')
+    if (!win) return
+    const formattedDate = new Date(row.date).toLocaleDateString('en-IN')
+    const amountStr = row.amount.toLocaleString('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+    })
+    const title = row.title || 'Fee payment'
+    const stuName = studentName || 'Student'
+    const cls = studentClassSection || 'Class / Section'
+
+    win.document.write(`
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Fee Receipt - ${row.receiptNo}</title>
+    <style>
+      body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 32px; color: #111827; }
+      .header { text-align: center; margin-bottom: 16px; }
+      .header h1 { margin: 0; font-size: 22px; text-transform: uppercase; }
+      .header h2 { margin: 4px 0 0; font-size: 14px; letter-spacing: 0.08em; }
+      .meta { display: flex; justify-content: space-between; font-size: 13px; margin-top: 16px; }
+      .meta div { line-height: 1.6; }
+      .table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+      .table th, .table td { border: 1px solid #111827; padding: 6px 8px; }
+      .table th { background: #f3f4f6; text-align: left; }
+      .totals { margin-top: 20px; font-size: 13px; }
+      .totals div { margin-bottom: 4px; }
+      .footer { margin-top: 32px; font-size: 11px; color: #4b5563; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Gopalan Group of Institutions</h1>
+      <h2>RECEIPT</h2>
+    </div>
+    <div class="meta">
+      <div>
+        <div><strong>Receipt No.</strong> : ${row.receiptNo}</div>
+        <div><strong>Student's Name</strong> : ${stuName}</div>
+        <div><strong>Class/Section</strong> : ${cls}</div>
+        <div><strong>Payment Mode</strong> : Online</div>
+      </div>
+      <div>
+        <div><strong>Date</strong> : ${formattedDate}</div>
+        <div><strong>Invoice No.</strong> : ${row.invoiceNo}</div>
+        <div><strong>Transaction ID</strong> : ${row.transactionId}</div>
+      </div>
+    </div>
+    <table class="table">
+      <thead>
+        <tr>
+          <th style="width: 60px;">Sl. No.</th>
+          <th>Particulars</th>
+          <th style="width: 120px;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>${title}</td>
+          <td>${amountStr}</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="totals">
+      <div><strong>Transaction Amount:</strong> ${amountStr}</div>
+      <div><strong>Fine Amount:</strong> 0.00</div>
+      <div><strong>Pending Amount:</strong> 0.00</div>
+      <div><strong>Total:</strong> ${amountStr}</div>
+    </div>
+    <div class="footer">
+      This is a computer-generated receipt. You may save it as PDF from the print dialog.
+    </div>
+    <script>
+      window.onload = function() { window.print(); };
+    </script>
+  </body>
+</html>`)
+    win.document.close()
+  }
+
+  const historyRows = React.useMemo(() => {
+    type Row = {
+      kind: 'installment' | 'adhoc'
+      key: string
+      invoiceNo: string
+      title: string
+      transactionId: string
+      receiptNo: string
+      invoiceAmount: number
+      amountPaid: number
+      date: string
+      mode: string
+      status: string
+      sourceIndex?: number
+      sourceId?: string
+    }
+    const rows: Row[] = []
+
+    filteredPaidParts.forEach(({ p, idx }, i) => {
+      const amount = Number(p.amount || 0)
+      const dateStr = p.dueDate || updatedAt || new Date().toISOString()
+      rows.push({
+        kind: 'installment',
+        key: `inst-${idx}`,
+        invoiceNo: appId ? `${appId}/INST/${idx + 1}` : `INST-${idx + 1}`,
+        title: p.label || `Installment ${idx + 1}`,
+        transactionId: `TXN-INST-${idx + 1}`,
+        receiptNo: `RCPT-INST-${idx + 1}`,
+        invoiceAmount: amount,
+        amountPaid: amount,
+        date: dateStr,
+        mode: 'Online',
+        status: 'Payment Received',
+        sourceIndex: idx,
+      })
+    })
+
+    const paidAdhoc = filteredAdhoc.filter(
+      (b) => (b.status || '').toLowerCase() === 'paid',
+    )
+    paidAdhoc.forEach((bill, i) => {
+      const amount = Number(bill.total || 0)
+      const dateStr = bill.createdAt || updatedAt || new Date().toISOString()
+      rows.push({
+        kind: 'adhoc',
+        key: `adhoc-${bill.id || i}`,
+        invoiceNo: bill.id ? `ADHOC/${String(bill.id).slice(-6)}` : `ADHOC-${i + 1}`,
+        title: bill.title || 'Additional Fee',
+        transactionId: bill.id || `TXN-ADHOC-${i + 1}`,
+        receiptNo: bill.id ? `RCPT-${String(bill.id).slice(-6)}` : `RCPT-ADHOC-${i + 1}`,
+        invoiceAmount: amount,
+        amountPaid: amount,
+        date: dateStr,
+        mode: 'Online',
+        status: 'Payment Received',
+        sourceId: bill.id,
+      })
+    })
+
+    return rows.sort((a, b) => {
+      const da = new Date(a.date).getTime()
+      const db = new Date(b.date).getTime()
+      return db - da
+    })
+  }, [filteredPaidParts, filteredAdhoc, appId, updatedAt])
+
   const navLinks: Array<{ href: Route; label: string; icon: string }> = [
     { href: '/parent/dashboard', label: 'Dashboard', icon: '🏠' },
     { href: '/parent/progress', label: 'Progress', icon: '📊' },
@@ -412,7 +606,7 @@ export default function ParentPaymentsPage() {
                       <span>Total Fee*</span>
                     </div>
                     <div style={{ fontWeight: 800, fontSize: 18, marginTop: 4 }}>
-                      {total.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
+                      {summaryTotal.toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
                     </div>
                   </div>
 
@@ -467,7 +661,7 @@ export default function ParentPaymentsPage() {
                         color: '#1d4ed8',
                       }}
                     >
-                      {totalPaid.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
+                      {summaryPaid.toLocaleString('en-IN', { maximumFractionDigits: 0 })}
                     </div>
                     <div
                       style={{
@@ -506,10 +700,10 @@ export default function ParentPaymentsPage() {
                         fontWeight: 800,
                         fontSize: 18,
                         marginTop: 4,
-                        color: totalDue ? '#b91c1c' : 'var(--success)',
+                        color: summaryDue ? '#b91c1c' : 'var(--success)',
                       }}
                     >
-                      {totalDue.toLocaleString('en-IN', {
+                      {summaryDue.toLocaleString('en-IN', {
                         style: 'currency',
                         currency: 'INR',
                       })}
@@ -553,7 +747,7 @@ export default function ParentPaymentsPage() {
                   textAlign: 'center',
                 }}
               >
-                {totalDue === 0 ? (
+                {summaryDue === 0 ? (
                   <>
                     <div style={{ fontSize: 36, marginBottom: 8 }}>✅</div>
                     <div style={{ fontWeight: 700, marginBottom: 4 }}>No dues available.</div>
@@ -565,6 +759,18 @@ export default function ParentPaymentsPage() {
                   <>
                     <div style={{ fontSize: 32, marginBottom: 8 }}>📅</div>
                     <div style={{ fontWeight: 700, marginBottom: 4 }}>Fees due</div>
+                    <div
+                      style={{
+                        fontWeight: 800,
+                        fontSize: 18,
+                        marginBottom: 4,
+                      }}
+                    >
+                      {summaryDue.toLocaleString('en-IN', {
+                        style: 'currency',
+                        currency: 'INR',
+                      })}
+                    </div>
                     <div className="note">
                       Please clear outstanding installments before their due dates.
                     </div>
@@ -638,7 +844,7 @@ export default function ParentPaymentsPage() {
           )}
 
           {/* Ad-hoc Fees Section */}
-          {adhoc.length > 0 && (
+          {false && adhoc.length > 0 && (
             <section className="card" style={{ padding: 20, borderRadius: 8, marginTop: 20 }}>
               <div style={{ fontWeight: 700, marginBottom: 12, fontSize: 18 }}>
                 📬 Additional Fees (Ad-hoc)
@@ -701,287 +907,200 @@ export default function ParentPaymentsPage() {
             </section>
           )}
 
-          {/* Bottom: Paid Fee & Online Recent Transactions */}
-          <section className="card" style={{ padding: 20, borderRadius: 8, marginTop: 20 }}>
-            <div
-              style={{
-                display: 'grid',
-                gridTemplateColumns: 'minmax(0, 2.2fr) minmax(0, 2.2fr)',
-                gap: 16,
-                alignItems: 'flex-start',
-              }}
-            >
-              {/* Paid Fee table */}
-              <div>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 8 }}>
-                  <div style={{ fontWeight: 700 }}>Paid Fee</div>
-                  <div style={{ position:'relative', display:'flex', alignItems:'center', gap:6 }}>
-                    <button
-                      type="button"
-                      aria-label="Filter paid fees"
-                      onClick={() => setShowPaidFilter(open => !open)}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: 22,
-                        height: 22,
-                        borderRadius: 999,
-                        background: 'linear-gradient(135deg, #f97316, #8b5cf6)',
-                        color: '#ffffff',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                      }}
-                    >
-                      <span
-                        aria-hidden="true"
-                        style={{
-                          width: 12,
-                          height: 12,
-                          display: 'inline-block',
-                          borderTopLeftRadius: 2,
-                          borderTopRightRadius: 2,
-                          borderBottomRightRadius: 4,
-                          borderBottomLeftRadius: 4,
-                          background: '#ffffff',
-                          clipPath:
-                            'polygon(15% 0, 85% 0, 60% 40%, 60% 100%, 40% 100%, 40% 40%)',
-                        }}
-                      />
-                    </button>
-                    {showPaidFilter && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: 26,
-                          right: 0,
-                          background: 'var(--panel)',
-                          borderRadius: 12,
-                          border: '1px solid var(--panel-border)',
-                          padding: '8px 10px',
-                          boxShadow: '0 16px 32px rgba(15,23,42,0.25)',
-                          zIndex: 30,
-                          minWidth: 160,
-                          fontSize: 11,
-                        }}
-                      >
-                        {[
-                          { key: 'all', label: 'All time' },
-                          { key: 'today', label: 'Paid today' },
-                          { key: 'week', label: 'Paid in last 7 days' },
-                        ].map(opt => (
-                          <button
-                            key={opt.key}
-                            type="button"
-                            onClick={() => {
-                              setPaidWhen(opt.key as any)
-                              setShowPaidFilter(false)
-                            }}
-                            style={{
-                              width: '100%',
-                              textAlign: 'left',
-                              padding: '4px 6px',
-                              borderRadius: 6,
-                              border: 'none',
-                              background:
-                                paidWhen === opt.key ? 'rgba(59,130,246,0.12)' : 'transparent',
-                              cursor: 'pointer',
-                              marginBottom: 2,
-                            }}
-                          >
-                            {opt.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="table" style={{ overflowX: 'auto' }}>
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>Receipt No.</th>
-                        <th>Paid Date</th>
-                        <th>Amount</th>
-                        <th>Receipt</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredPaidParts.length === 0 && (
-                        <tr>
-                          <td colSpan={4} style={{ padding: 12 }}>
-                            <span className="note">No fees have been marked as paid yet.</span>
-                          </td>
-                        </tr>
-                      )}
-                      {filteredPaidParts.map(({ p, idx }) => (
-                        <tr key={idx}>
-                          <td>{7247 + idx}</td>
-                          <td>
-                            {p.dueDate
-                              ? new Date(p.dueDate).toLocaleDateString()
-                              : updatedAt
-                                ? new Date(updatedAt).toLocaleDateString()
-                                : '-'}
-                          </td>
-                          <td>
-                            {Number(p.amount || 0).toLocaleString('en-IN', {
-                              style: 'currency',
-                              currency: 'INR',
-                            })}
-                          </td>
-                          <td>
-                            <button
-                              className="btn-ghost"
-                              type="button"
-                              style={{ fontSize: 12, padding: '2px 6px' }}
-                            >
-                              See Details
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              {/* Online Recent Transactions table (placeholder) */}
-              <div>
-                <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom: 8 }}>
+          {/* Invoices view for adhoc fees (exam / revaluation etc.) */}
+          {adhoc.length > 0 && (
+            <section className="card" style={{ padding: 20, borderRadius: 8, marginTop: 20 }}>
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: 8,
+                }}
+              >
+                <div>
+                  {studentName && (
+                    <div style={{ fontWeight: 700, marginBottom: 2 }}>Child Name : {studentName}</div>
+                  )}
                   <div style={{ fontWeight: 700 }}>
-                    Online Recent Transactions
+                    Total Pending Amount :{' '}
+                    {summaryDue.toLocaleString('en-IN', {
+                      maximumFractionDigits: 0,
+                    })}
                   </div>
-                  <div style={{ position:'relative', display:'flex', alignItems:'center', gap:6 }}>
-                    <button
-                      type="button"
-                      aria-label="Filter online transactions"
-                      onClick={() => setShowTransFilter(open => !open)}
-                      style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        width: 22,
-                        height: 22,
-                        borderRadius: 999,
-                        background: 'linear-gradient(135deg, #22c55e, #3b82f6)',
-                        color: '#ffffff',
-                        border: 'none',
-                        cursor: 'pointer',
-                        padding: 0,
-                      }}
-                    >
-                      <span
-                        aria-hidden="true"
-                        style={{
-                          width: 12,
-                          height: 12,
-                          display: 'inline-block',
-                          borderTopLeftRadius: 2,
-                          borderTopRightRadius: 2,
-                          borderBottomRightRadius: 4,
-                          borderBottomLeftRadius: 4,
-                          background: '#ffffff',
-                          clipPath:
-                            'polygon(15% 0, 85% 0, 60% 40%, 60% 100%, 40% 100%, 40% 40%)',
-                        }}
-                      />
-                    </button>
-                    {showTransFilter && (
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: 26,
-                          right: 0,
-                          background: 'var(--panel)',
-                          borderRadius: 12,
-                          border: '1px solid var(--panel-border)',
-                          padding: '8px 10px',
-                          boxShadow: '0 16px 32px rgba(15,23,42,0.25)',
-                          zIndex: 30,
-                          minWidth: 170,
-                          fontSize: 11,
-                        }}
-                      >
-                        {[
-                          { key: 'all', label: 'All' },
-                          { key: 'paid', label: 'Paid (all time)' },
-                          { key: 'pending', label: 'Pending' },
-                          { key: 'paid_today', label: 'Paid today' },
-                          { key: 'paid_week', label: 'Paid in last 7 days' },
-                        ].map(opt => (
-                          <button
-                            key={opt.key}
-                            type="button"
-                            onClick={() => {
-                              setTransFilter(opt.key as any)
-                              setShowTransFilter(false)
-                            }}
-                            style={{
-                              width: '100%',
-                              textAlign: 'left',
-                              padding: '4px 6px',
-                              borderRadius: 6,
-                              border: 'none',
-                              background:
-                                transFilter === opt.key
-                                  ? 'rgba(34,197,94,0.15)'
-                                  : 'transparent',
-                              cursor: 'pointer',
-                              marginBottom: 2,
-                            }}
-                          >
-                            {opt.label}
-                          </button>
-                        ))}
-                      </div>
-                    )}
-                  </div>
+                  <div style={{ fontWeight: 700, marginTop: 10 }}>Invoices</div>
                 </div>
-                <div className="table" style={{ overflowX: 'auto' }}>
-                  <table className="table">
-                    <thead>
-                      <tr>
-                        <th>Status</th>
-                        <th>Transaction No.</th>
-                        <th>Date</th>
-                        <th>Amount</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredAdhoc.length === 0 && (
-                        <tr>
-                          <td colSpan={4} style={{ padding: 12 }}>
-                            <span className="note">
-                              No online transactions recorded for this filter.
-                            </span>
-                          </td>
-                        </tr>
-                      )}
-                      {filteredAdhoc.map((bill, idx) => (
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{
+                    padding: '6px 14px',
+                    borderRadius: 6,
+                    border: '1px solid rgba(51,65,85,0.35)',
+                    fontSize: 12,
+                    fontWeight: 600,
+                  }}
+                  disabled
+                >
+                  Multiple Pay
+                </button>
+              </div>
+              <div className="table" style={{ fontSize: 12 }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: 32 }}>
+                        <input type="checkbox" disabled />
+                      </th>
+                      <th>INVOICE NO</th>
+                      <th>TITLE</th>
+                      <th>INVOICE AMOUNT</th>
+                      <th>PAID AMOUNT</th>
+                      <th>PENDING AMOUNT</th>
+                      <th>DUE DATE</th>
+                      <th>FINE</th>
+                      <th>VIEW BILL DETAILS</th>
+                      <th>ACTION</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {adhoc.map((bill, idx) => {
+                      const isPaid = (bill.status || '').toLowerCase() === 'paid'
+                      const amount = Number(bill.total || 0) || 0
+                      const paidAmount = isPaid ? amount : 0
+                      const pendingAmount = isPaid ? 0 : amount
+                      const invoiceNo = bill.id ? String(bill.id) : `ADHOC-${idx + 1}`
+                      return (
                         <tr key={bill.id || idx}>
-                          <td style={{ textTransform: 'capitalize' }}>
-                            {bill.status ? bill.status.toLowerCase() : 'pending'}
+                          <td>
+                            <input type="checkbox" disabled />
                           </td>
-                          <td>{bill.id}</td>
+                          <td>{invoiceNo}</td>
+                          <td style={{ fontWeight: 600 }}>{bill.title || 'Additional Fee'}</td>
+                          <td>{amount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                          <td>{paidAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
+                          <td>{pendingAmount.toLocaleString('en-IN', { maximumFractionDigits: 0 })}</td>
                           <td>
                             {bill.createdAt
                               ? new Date(bill.createdAt).toLocaleDateString()
                               : '-'}
                           </td>
+                          <td>0</td>
                           <td>
-                            {Number(bill.total || 0).toLocaleString('en-IN', {
-                              style: 'currency',
-                              currency: 'INR',
-                            })}
+                            <button
+                              type="button"
+                              className="btn-ghost"
+                              style={{ fontSize: 11, padding: '4px 10px' }}
+                              disabled
+                            >
+                              View Bill Details
+                            </button>
+                          </td>
+                          <td>
+                            {!isPaid ? (
+                              <button
+                                className="btn"
+                                style={{ fontSize: 12, padding: '6px 14px' }}
+                                onClick={() => payAdhoc(bill.id)}
+                              >
+                                Pay
+                              </button>
+                            ) : (
+                              <span className="note">Payment Received</span>
+                            )}
                           </td>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      )
+                    })}
+                  </tbody>
+                </table>
               </div>
+            </section>
+          )}
+
+          {/* Bottom: Payment history with receipts */}
+          <section className="card" style={{ padding: 20, borderRadius: 8, marginTop: 20 }}>
+            <div style={{ marginBottom: 12 }}>
+              <div style={{ fontWeight: 700, fontSize: 18 }}>
+                Payment History{studentName ? ` for ${studentName}` : ''}
+              </div>
+              <p className="note" style={{ marginTop: 4 }}>
+                View all completed payments and download receipts.
+              </p>
+            </div>
+            <div className="table" style={{ fontSize: 12 }}>
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>S. No</th>
+                    <th>Invoice No</th>
+                    <th>Invoice Title</th>
+                    <th>Transaction ID</th>
+                    <th>Receipt No</th>
+                    <th>Invoice Amount</th>
+                    <th>Amount Paid</th>
+                    <th>Payment Date</th>
+                    <th>Payment Mode</th>
+                    <th>Status</th>
+                    <th>View Receipt</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historyRows.length === 0 && (
+                    <tr>
+                      <td colSpan={11} style={{ padding: 12 }}>
+                        <span className="note">
+                          No payments have been recorded yet. Receipts will appear here after
+                          successful payments.
+                        </span>
+                      </td>
+                    </tr>
+                  )}
+                  {historyRows.map((row, idx) => (
+                    <tr key={row.key}>
+                      <td>{idx + 1}</td>
+                      <td>{row.invoiceNo}</td>
+                      <td>{row.title}</td>
+                      <td>{row.transactionId}</td>
+                      <td>{row.receiptNo}</td>
+                      <td>
+                        {row.invoiceAmount.toLocaleString('en-IN', {
+                          style: 'currency',
+                          currency: 'INR',
+                        })}
+                      </td>
+                      <td>
+                        {row.amountPaid.toLocaleString('en-IN', {
+                          style: 'currency',
+                          currency: 'INR',
+                        })}
+                      </td>
+                      <td>{new Date(row.date).toLocaleDateString()}</td>
+                      <td>{row.mode}</td>
+                      <td>{row.status}</td>
+                      <td>
+                        <button
+                          type="button"
+                          className="btn-ghost"
+                          style={{ fontSize: 12, padding: '4px 8px' }}
+                          onClick={() =>
+                            openReceiptWindow({
+                              invoiceNo: row.invoiceNo,
+                              title: row.title,
+                              receiptNo: row.receiptNo,
+                              transactionId: row.transactionId,
+                              amount: row.amountPaid,
+                              date: row.date,
+                            })
+                          }
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </section>
         </>
@@ -989,6 +1108,22 @@ export default function ParentPaymentsPage() {
           </div>
         </div>
       </div>
+      <button
+        type="button"
+        className="parent-logout-fab"
+        onClick={() => {
+          try {
+            sessionStorage.removeItem('parent')
+          } catch {}
+          try {
+            window.location.href = '/'
+          } catch {}
+        }}
+        aria-label="Logout"
+      >
+        ⏻
+      </button>
+      <span className="parent-logout-label">Logout</span>
     </div>
   )
 }

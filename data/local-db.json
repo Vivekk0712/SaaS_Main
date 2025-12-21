@@ -247,6 +247,60 @@
         "parentPhone": ""
       },
       "createdAt": "2025-12-01T16:29:47.443Z"
+    },
+    {
+      "id": "adhoc_mja45i4c",
+      "title": "Exam fee",
+      "purpose": "",
+      "items": [
+        {
+          "label": "Exam fee",
+          "amount": 10000
+        }
+      ],
+      "total": 10000,
+      "target": {
+        "type": "student",
+        "studentName": "Aditya Kumar",
+        "parentPhone": ""
+      },
+      "createdAt": "2025-12-17T14:35:11.484Z"
+    },
+    {
+      "id": "adhoc_mja4ab7c",
+      "title": "Exam fee",
+      "purpose": "",
+      "items": [
+        {
+          "label": "Exam fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "target": {
+        "type": "student",
+        "studentName": "Aditya Kumar",
+        "parentPhone": ""
+      },
+      "createdAt": "2025-12-17T14:38:55.800Z"
+    },
+    {
+      "id": "adhoc_mja4dc2e",
+      "title": "School fee",
+      "purpose": "",
+      "items": [
+        {
+          "label": "School fee",
+          "amount": 100000
+        }
+      ],
+      "total": 100000,
+      "target": {
+        "type": "student",
+        "studentName": "Aditya Kumar",
+        "parentPhone": ""
+      },
+      "createdAt": "2025-12-17T14:41:16.886Z"
     }
   ],
   "attendance": {},
@@ -255,8 +309,8 @@
   "circulars": [],
   "calendar": {},
   "meta": {
-    "version": 31,
-    "updatedAt": "2025-12-07T13:48:45.143Z"
+    "version": 43,
+    "updatedAt": "2025-12-20T15:33:31.126Z"
   },
   "adhocBills": [
     {
@@ -353,7 +407,7 @@
       "id": "adhoc_bill_mim0mjiz_ou6d",
       "adhocId": "adhoc_mim0mano",
       "appId": "1A01",
-      "parentPhone": "9000000001",
+      "parentPhone": "8431536379",
       "name": "Aditya Kumar",
       "title": "EXAM FEE",
       "items": [
@@ -371,7 +425,7 @@
       "id": "adhoc_bill_minbgyec_chmm",
       "adhocId": "adhoc_minbf8rh",
       "appId": "1A01",
-      "parentPhone": "9000000001",
+      "parentPhone": "8431536379",
       "name": "Aditya Kumar",
       "title": "sports",
       "items": [
@@ -440,7 +494,7 @@
       "id": "adhoc_bill_mind7iil_lnss",
       "adhocId": "adhoc_mind78z7",
       "appId": "1A01",
-      "parentPhone": "9000000001",
+      "parentPhone": "8431536379",
       "name": "Aditya Kumar",
       "title": "exam fee",
       "items": [
@@ -503,6 +557,213 @@
       ],
       "total": 100,
       "createdAt": "2025-12-01T16:29:59.805Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mja4ai6c_7j4t",
+      "adhocId": "adhoc_mja4ab7c",
+      "appId": "1A01",
+      "parentPhone": "918431536379",
+      "name": "Aditya Kumar",
+      "title": "Exam fee",
+      "items": [
+        {
+          "label": "Exam fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-17T14:39:04.836Z",
+      "status": "paid",
+      "paidAt": "2025-12-17T14:39:51.134Z"
+    },
+    {
+      "id": "adhoc_bill_mja4ai6c_fos8",
+      "adhocId": "adhoc_mja4ab7c",
+      "appId": "1A21",
+      "parentPhone": "9000000021",
+      "name": "Aditya Kumar",
+      "title": "Exam fee",
+      "items": [
+        {
+          "label": "Exam fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-17T14:39:04.836Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mja4ai6c_otm9",
+      "adhocId": "adhoc_mja4ab7c",
+      "appId": "3B06",
+      "parentPhone": "9000000156",
+      "name": "Aditya Kumar",
+      "title": "Exam fee",
+      "items": [
+        {
+          "label": "Exam fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-17T14:39:04.836Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mja4ai6c_ukii",
+      "adhocId": "adhoc_mja4ab7c",
+      "appId": "3B26",
+      "parentPhone": "9000000176",
+      "name": "Aditya Kumar",
+      "title": "Exam fee",
+      "items": [
+        {
+          "label": "Exam fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-17T14:39:04.836Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mja4dhj0_omni",
+      "adhocId": "adhoc_mja4dc2e",
+      "appId": "1A01",
+      "parentPhone": "918431536379",
+      "name": "Aditya Kumar",
+      "title": "School fee",
+      "items": [
+        {
+          "label": "School fee",
+          "amount": 100000
+        }
+      ],
+      "total": 100000,
+      "createdAt": "2025-12-17T14:41:23.964Z",
+      "status": "paid",
+      "paidAt": "2025-12-20T15:33:31.125Z"
+    },
+    {
+      "id": "adhoc_bill_mja4dhj0_xpos",
+      "adhocId": "adhoc_mja4dc2e",
+      "appId": "1A21",
+      "parentPhone": "9000000021",
+      "name": "Aditya Kumar",
+      "title": "School fee",
+      "items": [
+        {
+          "label": "School fee",
+          "amount": 100000
+        }
+      ],
+      "total": 100000,
+      "createdAt": "2025-12-17T14:41:23.964Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mja4dhj0_cvgk",
+      "adhocId": "adhoc_mja4dc2e",
+      "appId": "3B06",
+      "parentPhone": "9000000156",
+      "name": "Aditya Kumar",
+      "title": "School fee",
+      "items": [
+        {
+          "label": "School fee",
+          "amount": 100000
+        }
+      ],
+      "total": 100000,
+      "createdAt": "2025-12-17T14:41:23.964Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mja4dhj0_lohn",
+      "adhocId": "adhoc_mja4dc2e",
+      "appId": "3B26",
+      "parentPhone": "9000000176",
+      "name": "Aditya Kumar",
+      "title": "School fee",
+      "items": [
+        {
+          "label": "School fee",
+          "amount": 100000
+        }
+      ],
+      "total": 100000,
+      "createdAt": "2025-12-17T14:41:23.964Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mja5mnlf_b5j9",
+      "adhocId": "adhoc_mja45i4c",
+      "appId": "1A01",
+      "parentPhone": "918431536379",
+      "name": "Aditya Kumar",
+      "title": "Exam fee",
+      "items": [
+        {
+          "label": "Exam fee",
+          "amount": 10000
+        }
+      ],
+      "total": 10000,
+      "createdAt": "2025-12-17T15:16:31.347Z",
+      "status": "paid",
+      "paidAt": "2025-12-17T16:10:52.292Z"
+    },
+    {
+      "id": "adhoc_bill_mja5mnlf_kknd",
+      "adhocId": "adhoc_mja45i4c",
+      "appId": "1A21",
+      "parentPhone": "9000000021",
+      "name": "Aditya Kumar",
+      "title": "Exam fee",
+      "items": [
+        {
+          "label": "Exam fee",
+          "amount": 10000
+        }
+      ],
+      "total": 10000,
+      "createdAt": "2025-12-17T15:16:31.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mja5mnlf_qm9z",
+      "adhocId": "adhoc_mja45i4c",
+      "appId": "3B06",
+      "parentPhone": "9000000156",
+      "name": "Aditya Kumar",
+      "title": "Exam fee",
+      "items": [
+        {
+          "label": "Exam fee",
+          "amount": 10000
+        }
+      ],
+      "total": 10000,
+      "createdAt": "2025-12-17T15:16:31.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mja5mnlf_bdvv",
+      "adhocId": "adhoc_mja45i4c",
+      "appId": "3B26",
+      "parentPhone": "9000000176",
+      "name": "Aditya Kumar",
+      "title": "Exam fee",
+      "items": [
+        {
+          "label": "Exam fee",
+          "amount": 10000
+        }
+      ],
+      "total": 10000,
+      "createdAt": "2025-12-17T15:16:31.347Z",
       "status": "unpaid"
     }
   ],

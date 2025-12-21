@@ -4,18 +4,17 @@ import Link from 'next/link'
 import type { Route } from 'next'
 import { usePathname } from 'next/navigation'
 import { findStudent, getSubjects, subjectForHourFor } from '../../teacher/data'
-import { BarChart, type LineSeries } from '../../components/LineChart'
+import { BarChart, LineChart, type LineSeries } from '../../components/LineChart'
 import { subjectColor, type ColorTag } from '../../lib/colors'
 
-type LogEntry = { date: string; hour: number; status: 'Present' | 'Absent' | 'Leave'; topic?: string }
+type LogEntry = { date: string; hour: number; status: 'Present' | 'Absent'; topic?: string }
 type SubjectStats = { total: number; present: number; absent: number; logs: LogEntry[] }
 type DailySummary = {
   date: string
   total: number
   present: number
   absent: number
-  leave: number
-  items: Array<{ hour: number; status: 'Present' | 'Absent' | 'Leave' }>
+  items: Array<{ hour: number; status: 'Present' | 'Absent'; subject?: string }>
 }
 
 type MonthlySummary = {
@@ -23,21 +22,15 @@ type MonthlySummary = {
   label: string
   present: number
   absent: number
-  leave: number
   total: number
 }
 
-type DayStatus = 'present' | 'absent' | 'leave' | 'none'
+type DayStatus = 'present' | 'absent' | 'none'
 
 type MonthCalendarView = {
   monthKey: string
   label: string
   weeks: Array<Array<{ day: number | null; status: DayStatus }>>
-}
-
-function parseAttendance() {
-  const raw = localStorage.getItem('school:attendance')
-  return raw ? JSON.parse(raw) : {}
 }
 
 function parseTopics() {
@@ -68,12 +61,10 @@ function buildMonthlyFromDaily(daily: Record<string, DailySummary>): MonthlySumm
       label: formatMonthLabelFromKey(monthKey),
       present: 0,
       absent: 0,
-      leave: 0,
       total: 0,
     }
     existing.present += day.present
     existing.absent += day.absent
-    existing.leave += day.leave
     existing.total += day.total
     map[monthKey] = existing
   }
@@ -85,10 +76,9 @@ function computeAnnualTotals(months: MonthlySummary[]) {
     (acc, m) => ({
       present: acc.present + m.present,
       absent: acc.absent + m.absent,
-      leave: acc.leave + m.leave,
       total: acc.total + m.total,
     }),
-    { present: 0, absent: 0, leave: 0, total: 0 },
+    { present: 0, absent: 0, total: 0 },
   )
 }
 
@@ -101,9 +91,7 @@ function buildCalendarFromDaily(daily: Record<string, DailySummary>, maxMonths =
     const bucket = (byMonth[monthKey] ||= { label, days: {} })
     const dom = Number(day.date.slice(8, 10))
     let status: DayStatus
-    if (day.leave > 0 && day.present === 0 && day.absent === 0) {
-      status = 'leave'
-    } else if (day.present === 0 && day.absent === 0) {
+    if (day.present === 0 && day.absent === 0) {
       status = 'none'
     } else {
       if (day.present >= day.absent && day.present > 0) status = 'present'
@@ -137,14 +125,14 @@ function buildCalendarFromDaily(daily: Record<string, DailySummary>, maxMonths =
   })
 }
 
-function AttendanceDonut({ present, absent, leave }: { present: number; absent: number; leave: number }) {
-  const total = present + absent + leave
+function AttendanceDonut({ present, absent }: { present: number; absent: number }) {
+  const total = present + absent
   if (!total) {
     return <div className="note" style={{ fontSize: 12 }}>No attendance recorded yet.</div>
   }
-  const values = [present, absent, leave]
-  const colors = ['#22c55e', '#ef4444', '#f97316']
-  const labels = ['Present', 'Absent', 'Leave']
+  const values = [present, absent]
+  const colors = ['#22c55e', '#ef4444']
+  const labels = ['Present', 'Absent']
   const r = 32
   const c = 2 * Math.PI * r
   let offset = 0
@@ -202,15 +190,41 @@ export default function ParentAttendancePage() {
   const [daily, setDaily] = React.useState<Record<string, DailySummary>>(() => ({}))
   const [calendarFilter, setCalendarFilter] = React.useState<string | 'all'>('all')
   const [selectedDay, setSelectedDay] = React.useState<string | null>(null)
+  const [showSubjectChart, setShowSubjectChart] = React.useState(false)
+  const [showSubjectFilter, setShowSubjectFilter] = React.useState(false)
+  const [chartSubjects, setChartSubjects] = React.useState<string[]>([])
+  const [chartFrom, setChartFrom] = React.useState<string | null>(null)
+  const [chartTo, setChartTo] = React.useState<string | null>(null)
+  const [subjectFilterTab, setSubjectFilterTab] = React.useState<'range' | 'subjects'>('range')
 
-  const recompute = React.useCallback(() => {
+  const recompute = React.useCallback(async () => {
     try {
       const sraw = sessionStorage.getItem('parent')
       if (!sraw) return
       const { roll } = JSON.parse(sraw)
       const me = findStudent(roll)
       if (!me) return
-      const store = parseAttendance() as Record<string, Record<string, any>>
+      // Prefer DB-backed attendance; fall back to any local seed if needed
+      let store: Record<string, Record<string, any>> = {}
+      try {
+        const res = await fetch(
+          `/api/mysql/teacher/attendance?klass=${encodeURIComponent(
+            me.klass,
+          )}&section=${encodeURIComponent(me.section)}`,
+        )
+        if (res.ok) {
+          const j = await res.json()
+          if (j && j.items && typeof j.items === 'object') {
+            store = j.items as Record<string, Record<string, any>>
+          }
+        }
+      } catch {
+        // ignore; we'll try local fallback
+      }
+      if (!store || !Object.keys(store).length) {
+        const raw = localStorage.getItem('school:attendance')
+        store = raw ? (JSON.parse(raw) as Record<string, Record<string, any>>) : {}
+      }
       const topicStore = parseTopics()
       const init: Record<string, SubjectStats> = {}
       const dailyMap: Record<string, DailySummary> = {}
@@ -236,7 +250,6 @@ export default function ParentAttendancePage() {
         const raw = m[me.usn]
         let status: LogEntry['status']
         if (raw === true || raw === 'P') status = 'Present'
-        else if (raw === 'L') status = 'Leave'
         else status = 'Absent'
 
         const topic = topicStore[k] || ''
@@ -246,12 +259,11 @@ export default function ParentAttendancePage() {
         else bucket.absent += 1
         bucket.logs.push({ date, hour, status, topic: topic || undefined })
 
-        const day = (dailyMap[date] ||= { date, total: 0, present: 0, absent: 0, leave: 0, items: [] })
+        const day = (dailyMap[date] ||= { date, total: 0, present: 0, absent: 0, items: [] })
         day.total += 1
         if (status === 'Present') day.present += 1
-        else if (status === 'Leave') day.leave += 1
         else day.absent += 1
-        day.items.push({ hour, status })
+        day.items.push({ hour, status, subject: subjKey })
       }
 
       for (const s of Object.keys(init)) {
@@ -268,6 +280,113 @@ export default function ParentAttendancePage() {
       setDaily(dailyMap)
     } catch {}
   }, [])
+
+  const allDates = React.useMemo(
+    () => Object.keys(daily).sort((a, b) => a.localeCompare(b)),
+    [daily],
+  )
+
+  React.useEffect(() => {
+    if (!allDates.length) return
+    setChartFrom((prev) => prev || allDates[0])
+    setChartTo((prev) => prev || allDates[allDates.length - 1])
+  }, [allDates])
+
+  const subjectList = React.useMemo(
+    () => Object.keys(stats).sort((a, b) => a.localeCompare(b)),
+    [stats],
+  )
+
+  const subjectChart = React.useMemo(() => {
+    if (!subjectList.length || !allDates.length) return null
+    const from = chartFrom || allDates[0]
+    const to = chartTo || allDates[allDates.length - 1]
+    if (!from || !to || from > to) return null
+    const rangeDates = allDates.filter((d) => d >= from && d <= to)
+    if (!rangeDates.length) return null
+
+    // For long ranges, group days into buckets so the chart stays readable.
+    const maxBuckets = 10
+    const bucketSize = Math.max(1, Math.ceil(rangeDates.length / maxBuckets))
+
+    type Bucket = { key: string; dates: string[] }
+    const buckets: Bucket[] = []
+    for (let i = 0; i < rangeDates.length; i += bucketSize) {
+      const slice = rangeDates.slice(i, i + bucketSize)
+      if (!slice.length) continue
+      const first = slice[0]
+      const last = slice[slice.length - 1]
+      const key = first === last ? formatDMY(first) : `${formatDMY(first)}–${formatDMY(last)}`
+      buckets.push({ key, dates: slice })
+    }
+
+    const chosen = chartSubjects.length ? chartSubjects : subjectList
+    const palette = ['#2563eb', '#f97316', '#10b981', '#a855f7', '#06b6d4', '#e11d48', '#22c55e', '#facc15']
+
+    const series: LineSeries[] = chosen.map((sub, idx) => {
+      const s = stats[sub]
+      if (!s || !s.logs || !s.logs.length) {
+        return {
+          name: sub,
+          color: palette[idx % palette.length],
+          data: buckets.map(() => null),
+        }
+      }
+      // Pre-index logs by date for quick lookup
+      const perDay: Record<string, { present: number; total: number }> = {}
+      for (const log of s.logs) {
+        if (log.date < from || log.date > to) continue
+        const bucket = (perDay[log.date] ||= { present: 0, total: 0 })
+        bucket.total += 1
+        if (log.status === 'Present') bucket.present += 1
+      }
+      const data = buckets.map((b) => {
+        let present = 0
+        let total = 0
+        for (const d of b.dates) {
+          const e = perDay[d]
+          if (!e) continue
+          present += e.present
+          total += e.total
+        }
+        if (!total) return null
+        return Math.round((present * 100) / total)
+      })
+      return {
+        name: sub,
+        color: palette[idx % palette.length],
+        data,
+      }
+    })
+
+    const categories = buckets.map((b) => b.key)
+    return { categories, series }
+  }, [subjectList, allDates, chartFrom, chartTo, chartSubjects, stats])
+
+  const subjectRange = React.useMemo(() => {
+    if (!subjectList.length || !allDates.length) return null
+    const from = chartFrom || allDates[0]
+    const to = chartTo || allDates[allDates.length - 1]
+    if (!from || !to || from > to) return null
+    const chosen = chartSubjects.length ? chartSubjects : subjectList
+    let present = 0
+    let absent = 0
+    let total = 0
+    for (const sub of chosen) {
+      const s = stats[sub]
+      if (!s || !s.logs) continue
+      for (const log of s.logs) {
+        if (log.date < from || log.date > to) continue
+        total += 1
+        if (log.status === 'Present') present += 1
+        else absent += 1
+      }
+    }
+    if (!total) return null
+    const label =
+      from === to ? formatDMY(from) : `${formatDMY(from)} – ${formatDMY(to)}`
+    return { present, absent, total, label, subjectCount: chosen.length }
+  }, [subjectList, allDates, chartFrom, chartTo, chartSubjects, stats])
 
   React.useEffect(() => {
     setMounted(true)
@@ -297,7 +416,14 @@ export default function ParentAttendancePage() {
   const annual = computeAnnualTotals(monthly)
   const maxMonthlyTotal = monthly.length ? Math.max(...monthly.map(m => m.total)) : 0
   const yMaxMonthly = Math.max(5, Math.ceil(maxMonthlyTotal / 5) * 5)
-  const yTicksMonthly = Array.from({ length: Math.floor(yMaxMonthly / 5) + 1 }, (_, i) => i * 5)
+  // Use a limited number of Y ticks so labels don't overlap (about 6 steps)
+  const approxTicks = 6
+  const rawStep = yMaxMonthly / approxTicks || 5
+  const step = Math.max(5, Math.ceil(rawStep / 5) * 5)
+  const yTicksMonthly = Array.from(
+    { length: Math.floor(yMaxMonthly / step) + 1 },
+    (_, i) => i * step,
+  )
   const [monthlyIndex, setMonthlyIndex] = React.useState(0)
   React.useEffect(() => {
     if (!monthly.length) {
@@ -518,31 +644,48 @@ export default function ParentAttendancePage() {
                 </div>
               )}
             </div>
-            <BarChart
-              title="Attendance by month (periods)"
-              categories={monthlyVisible.map((m) => m.label)}
-              series={[
-                { name: 'Present', color: '#16a34a', data: monthlyVisible.map((m) => m.present) } as LineSeries,
-                { name: 'Absent', color: '#ef4444', data: monthlyVisible.map((m) => m.absent) } as LineSeries,
-                { name: 'Leave', color: '#f97316', data: monthlyVisible.map((m) => m.leave) } as LineSeries,
-              ]}
-              height={220}
-              yMax={yMaxMonthly}
-              yTicks={yTicksMonthly}
-            />
+              <BarChart
+                title="Attendance by month (periods)"
+                categories={monthlyVisible.map((m) => m.label)}
+                series={[
+                  { name: 'Present', color: '#16a34a', data: monthlyVisible.map((m) => m.present) } as LineSeries,
+                  { name: 'Absent', color: '#ef4444', data: monthlyVisible.map((m) => m.absent) } as LineSeries,
+                ]}
+                height={220}
+                yMax={yMaxMonthly}
+                yTicks={yTicksMonthly}
+              />
           </div>
           <div className="card" style={{ padding: '12px 14px', borderRadius: 16 }}>
             <div style={{ fontWeight: 700, marginBottom: 6 }}>Annual attendance details</div>
-            <AttendanceDonut present={annual.present} absent={annual.absent} leave={annual.leave} />
+            <AttendanceDonut present={annual.present} absent={annual.absent} />
           </div>
         </div>
       )}
 
       {calendarMonths.length > 0 && activeMonth && (
         <div className="card" style={{ marginTop: 12, padding: '12px 14px', borderRadius: 16 }}>
-          <div style={{ fontWeight: 700, marginBottom: 4 }}>Monthly attendance calendar</div>
+          <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:4}}>
+            <div style={{ fontWeight: 700 }}>Monthly attendance calendar</div>
+            <button
+              type="button"
+              className="btn-ghost"
+              style={{
+                fontSize: 12,
+                padding: '6px 14px',
+                borderRadius: 999,
+                border: '1px solid #ea580c',
+                background: showSubjectChart ? '#ea580c' : '#fff7ed',
+                color: showSubjectChart ? '#ffffff' : '#9a3412',
+                fontWeight: 700,
+              }}
+              onClick={() => setShowSubjectChart(prev => !prev)}
+            >
+              {showSubjectChart ? 'Hide subject-wise summary' : 'Subject-wise attendance'}
+            </button>
+          </div>
           <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 8 }}>
-            Colored dots show days marked present, absent, or on partial leave.
+            Colored dots show days marked present or absent.
           </div>
           <div style={{display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:8, fontSize:11}}>
             <button
@@ -584,7 +727,6 @@ export default function ParentAttendancePage() {
                   let eventColor: string | undefined
                   if (cell.status === 'present') eventColor = 'green'
                   else if (cell.status === 'absent') eventColor = 'red'
-                  else if (cell.status === 'leave') eventColor = 'orange'
                   return (
                     <div
                       key={idx}
@@ -610,8 +752,61 @@ export default function ParentAttendancePage() {
           <div style={{ marginTop: 8, fontSize: 11, display: 'flex', gap: 12 }}>
             <span><span style={{ width: 8, height: 8, borderRadius: 999, background: '#16a34a', display: 'inline-block', marginRight: 4 }} />Present</span>
             <span><span style={{ width: 8, height: 8, borderRadius: 999, background: '#ef4444', display: 'inline-block', marginRight: 4 }} />Absent</span>
-            <span><span style={{ width: 8, height: 8, borderRadius: 999, background: '#f97316', display: 'inline-block', marginRight: 4 }} />Leave</span>
           </div>
+          {showSubjectChart && subjectRange && (
+            <div
+              style={{
+                marginTop: 12,
+                borderTop: '1px dashed #e5e7eb',
+                paddingTop: 10,
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: 6,
+                }}
+              >
+                <div style={{ fontWeight: 700, fontSize: 14 }}>Attendance in selected range</div>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{
+                    fontSize: 12,
+                    padding: '6px 14px',
+                    borderRadius: 999,
+                    background: '#ea580c',
+                    color: '#ffffff',
+                    border: '1px solid #ea580c',
+                    fontWeight: 600,
+                  }}
+                  onClick={() => setShowSubjectFilter(true)}
+                >
+                  Filter
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'row', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
+                <AttendanceDonut present={subjectRange.present} absent={subjectRange.absent} />
+                <div style={{ fontSize: 12 }}>
+                  <div style={{ fontSize: 20, fontWeight: 800, marginBottom: 4 }}>
+                    Present — {Math.round((subjectRange.present * 100) / subjectRange.total)}%
+                  </div>
+                  <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 8 }}>
+                    Absent — {Math.round((subjectRange.absent * 100) / subjectRange.total)}%
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 4 }}>
+                    {subjectRange.label}
+                  </div>
+                  <div style={{ marginBottom: 2 }}>
+                    <strong>{subjectRange.total}</strong> periods across{' '}
+                    <strong>{(chartSubjects.length ? chartSubjects : subjectList).join(', ')}</strong>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -665,7 +860,7 @@ export default function ParentAttendancePage() {
                         <div key={`${entry.date}-${entry.hour}-${idx}`} style={{display:'grid', gridTemplateColumns:'1.2fr 0.8fr 0.8fr 2fr', gap:6, alignItems:'center', border:'1px solid var(--panel-border)', borderRadius:8, padding:'8px 10px'}}>
                           <span>{formatDMY(entry.date)}</span>
                           <span>Hour {entry.hour}</span>
-                          <span style={{fontWeight:700, color: entry.status === 'Present' ? 'var(--success)' : entry.status === 'Leave' ? '#f97316' : 'var(--danger)'}}>{entry.status}</span>
+                          <span style={{fontWeight:700, color: entry.status === 'Present' ? 'var(--success)' : 'var(--danger)'}}>{entry.status}</span>
                           <span style={{ fontSize: 11, opacity: entry.topic ? 0.95 : 0.6 }}>
                             {entry.topic || '—'}
                           </span>
@@ -692,7 +887,7 @@ export default function ParentAttendancePage() {
               const prevKey = idx > 0 ? sortedKeys[idx - 1] : null
               const nextKey = idx >= 0 && idx < sortedKeys.length - 1 ? sortedKeys[idx + 1] : null
               const day = hasDay ? daily[selectedDay] : null
-              const allPresent = !!day && day.absent === 0 && day.leave === 0 && day.total > 0
+                const allPresent = !!day && day.absent === 0 && day.total > 0
               const bg = allPresent
                 ? 'linear-gradient(135deg, rgba(22,163,74,0.08), rgba(22,163,74,0.02))'
                 : 'linear-gradient(135deg, rgba(148,163,184,0.12), rgba(241,245,249,0.9))'
@@ -747,7 +942,7 @@ export default function ParentAttendancePage() {
                   {day ? (
                     <>
                       <div style={{fontSize:12, fontWeight:600}}>
-                        Present: {day.present}, Absent: {day.absent}, Leave: {day.leave}, Total: {day.total}
+                        Present: {day.present}, Absent: {day.absent}, Total: {day.total}
                       </div>
                       <div style={{ display: 'grid', gap: 4 }}>
                         {day.items.map((it, idx) => (
@@ -762,12 +957,13 @@ export default function ParentAttendancePage() {
                               background:
                                 it.status === 'Present'
                                   ? 'rgba(16,185,129,0.06)'
-                                  : it.status === 'Leave'
-                                    ? 'rgba(249,115,22,0.08)'
-                                    : 'rgba(248,113,113,0.10)',
+                                  : 'rgba(248,113,113,0.10)',
                             }}
                           >
-                            <span style={{ fontSize: 12 }}>Hour {it.hour}</span>
+                            <span style={{ fontSize: 12 }}>
+                              Hour {it.hour}
+                              {it.subject ? ` — ${it.subject}` : ''}
+                            </span>
                             <span
                               style={{
                                 fontSize: 12,
@@ -777,15 +973,11 @@ export default function ParentAttendancePage() {
                                 color:
                                   it.status === 'Present'
                                     ? '#065f46'
-                                    : it.status === 'Leave'
-                                      ? '#9a3412'
-                                      : '#b91c1c',
+                                    : '#b91c1c',
                                 background:
                                   it.status === 'Present'
                                     ? 'rgba(16,185,129,0.12)'
-                                    : it.status === 'Leave'
-                                      ? 'rgba(249,115,22,0.18)'
-                                      : 'rgba(248,113,113,0.18)',
+                                    : 'rgba(248,113,113,0.18)',
                               }}
                             >
                               {it.status}
@@ -808,6 +1000,308 @@ export default function ParentAttendancePage() {
           </div>
         </div>
       </div>
+      {showSubjectChart && subjectRange && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15,23,42,0.55)',
+            zIndex: 55,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 720,
+              background: '#ffffff',
+              borderRadius: 24,
+              boxShadow: '0 24px 60px rgba(15,23,42,0.45)',
+              padding: '18px 20px 20px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 12,
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 4,
+              }}
+            >
+              <div style={{ fontWeight: 800, fontSize: 18 }}>Attendance in selected range</div>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{
+                    fontSize: 12,
+                    padding: '6px 14px',
+                    borderRadius: 999,
+                    background: '#ea580c',
+                    color: '#ffffff',
+                    border: '1px solid #ea580c',
+                    fontWeight: 600,
+                  }}
+                  onClick={() => setShowSubjectFilter(true)}
+                >
+                  Filter
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{ fontSize: 16, padding: '2px 8px' }}
+                  onClick={() => setShowSubjectChart(false)}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 24, alignItems: 'center', flexWrap: 'wrap' }}>
+              <AttendanceDonut present={subjectRange.present} absent={subjectRange.absent} />
+              <div style={{ fontSize: 13 }}>
+                <div style={{ fontSize: 22, fontWeight: 800, marginBottom: 4 }}>
+                  Present — {Math.round((subjectRange.present * 100) / subjectRange.total)}%
+                </div>
+                <div style={{ fontSize: 18, fontWeight: 700, marginBottom: 10 }}>
+                  Absent — {Math.round((subjectRange.absent * 100) / subjectRange.total)}%
+                </div>
+                <div style={{ fontWeight: 700, fontSize: 15, marginBottom: 6 }}>
+                  {subjectRange.label}
+                </div>
+                <div>
+                  <strong>{subjectRange.total}</strong> periods across{' '}
+                  <strong>{(chartSubjects.length ? chartSubjects : subjectList).join(', ')}</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {showSubjectFilter && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15,23,42,0.55)',
+            zIndex: 60,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'flex-end',
+          }}
+        >
+          <div
+            style={{
+              width: '100%',
+              maxWidth: 900,
+              maxHeight: '90vh',
+              background: '#ffffff',
+              borderTopLeftRadius: 18,
+              borderTopRightRadius: 18,
+              boxShadow: '0 -20px 40px rgba(15,23,42,0.35)',
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <div
+              style={{
+                padding: '12px 16px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                borderBottom: '1px solid #e5e7eb',
+              }}
+            >
+              <div style={{ fontWeight: 700, fontSize: 15 }}>Subject-wise filters</div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center', fontSize: 12 }}>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => {
+                    setChartSubjects([])
+                    setChartFrom(null)
+                    setChartTo(null)
+                  }}
+                >
+                  Clear filters
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  onClick={() => setShowSubjectFilter(false)}
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: '160px minmax(0,1fr)',
+                minHeight: 260,
+              }}
+            >
+              <div
+                style={{
+                  borderRight: '1px solid #e5e7eb',
+                  padding: '10px 12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: 6,
+                  fontSize: 13,
+                }}
+              >
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{
+                    justifyContent: 'flex-start',
+                    padding: '6px 10px',
+                    borderRadius: 999,
+                    background: subjectFilterTab === 'range' ? '#eff6ff' : 'transparent',
+                    fontWeight: subjectFilterTab === 'range' ? 600 : 500,
+                  }}
+                  onClick={() => setSubjectFilterTab('range')}
+                >
+                  Date range
+                </button>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{
+                    justifyContent: 'flex-start',
+                    padding: '6px 10px',
+                    borderRadius: 999,
+                    background: subjectFilterTab === 'subjects' ? '#eff6ff' : 'transparent',
+                    fontWeight: subjectFilterTab === 'subjects' ? 600 : 500,
+                  }}
+                  onClick={() => setSubjectFilterTab('subjects')}
+                >
+                  Subjects
+                </button>
+              </div>
+              <div style={{ padding: '12px 16px', fontSize: 13, overflowY: 'auto' }}>
+                {subjectFilterTab === 'range' && (
+                  <div style={{ display: 'grid', gap: 12, maxWidth: 360 }}>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>From</div>
+                      <input
+                        className="input"
+                        type="date"
+                        value={chartFrom || (allDates[0] || '')}
+                        min={allDates[0]}
+                        max={allDates[allDates.length - 1]}
+                        onChange={(e) => setChartFrom(e.target.value || null)}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>To</div>
+                      <input
+                        className="input"
+                        type="date"
+                        value={chartTo || (allDates[allDates.length - 1] || '')}
+                        min={allDates[0]}
+                        max={allDates[allDates.length - 1]}
+                        onChange={(e) => setChartTo(e.target.value || null)}
+                      />
+                    </div>
+                    <p className="note">
+                      Pick any window inside the available attendance dates. The chart will show daily %
+                      for the chosen subjects.
+                    </p>
+                  </div>
+                )}
+                {subjectFilterTab === 'subjects' && (
+                  <div style={{ display: 'grid', gap: 8 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 4 }}>Subjects</div>
+                    {subjectList.length === 0 && (
+                      <p className="note">No subjects detected yet.</p>
+                    )}
+                    {subjectList.map((sub) => {
+                      const checked = chartSubjects.includes(sub)
+                      return (
+                        <label
+                          key={sub}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 8,
+                            padding: '4px 2px',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => {
+                              setChartSubjects((prev) => {
+                                const has = prev.includes(sub)
+                                if (has) return prev.filter((s) => s !== sub)
+                                return [...prev, sub]
+                              })
+                            }}
+                          />
+                          <span>{sub}</span>
+                        </label>
+                      )
+                    })}
+                    <p className="note">
+                      Leave everything selected to see all subjects together.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div
+              style={{
+                padding: '10px 16px',
+                borderTop: '1px solid #e5e7eb',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                fontSize: 12,
+              }}
+            >
+              <div>
+                {subjectChart && (
+                  <>
+                    <strong>{subjectChart.series.length}</strong> subjects •{' '}
+                    <strong>{subjectChart.categories.length}</strong> days
+                  </>
+                )}
+              </div>
+              <button
+                type="button"
+                className="btn-primary"
+                style={{ padding: '6px 18px', borderRadius: 999 }}
+                onClick={() => setShowSubjectFilter(false)}
+              >
+                Apply
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <button
+        type="button"
+        className="parent-logout-fab"
+        onClick={() => {
+          try {
+            sessionStorage.removeItem('parent')
+          } catch {}
+          try {
+            window.location.href = '/'
+          } catch {}
+        }}
+        aria-label="Logout"
+      >
+        ⏻
+      </button>
+      <span className="parent-logout-label">Logout</span>
     </div>
   )
 }

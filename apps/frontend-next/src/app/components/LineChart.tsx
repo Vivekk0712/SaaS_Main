@@ -52,6 +52,10 @@ export function LineChart({
   }
   const yPos = (v: number) => PAD_TOP + innerH - (clamp(v) * innerH) / yMax
 
+  const maxXTicks = 10
+  const labelStep =
+    categories.length <= maxXTicks ? 1 : Math.ceil(categories.length / maxXTicks)
+
   const grid = (
     <g>
       {yTicks.map((t, i) => {
@@ -67,9 +71,23 @@ export function LineChart({
       <line x1={PAD_LEFT} y1={PAD_TOP} x2={PAD_LEFT} y2={PAD_TOP + innerH} stroke="#94a3b8" strokeWidth={1.5} />
       {/* X axis */}
       <line x1={PAD_LEFT} y1={PAD_TOP + innerH} x2={PAD_LEFT + innerW} y2={PAD_TOP + innerH} stroke="#94a3b8" strokeWidth={1.5} />
-      {categories.map((c, i) => (
-        <text key={i} x={xPos(i)} y={PAD_TOP + innerH + 14} textAnchor="middle" fontSize="10" fill="#64748b">{c}</text>
-      ))}
+      {categories.map((c, i) => {
+        const isEdge = i === 0 || i === categories.length - 1
+        const shouldLabel = isEdge || i % labelStep === 0
+        if (!shouldLabel) return null
+        return (
+          <text
+            key={i}
+            x={xPos(i)}
+            y={PAD_TOP + innerH + 14}
+            textAnchor="middle"
+            fontSize="10"
+            fill="#64748b"
+          >
+            {c}
+          </text>
+        )
+      })}
     </g>
   )
 

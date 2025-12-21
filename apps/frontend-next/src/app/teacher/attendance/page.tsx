@@ -28,7 +28,7 @@ export default function TeacherAttendancePage() {
   const [section, setSection] = React.useState<string>('')
   const [date, setDate] = React.useState<string>(() => new Date().toISOString().slice(0, 10))
   const [hour, setHour] = React.useState<number>(1)
-  const [present, setPresent] = React.useState<Record<string, 'P' | 'A' | 'L'>>({})
+  const [present, setPresent] = React.useState<Record<string, 'P' | 'A'>>({})
   const [attSubject, setAttSubject] = React.useState<string>('')
   const [attendanceTopic, setAttendanceTopic] = React.useState('')
   const [message, setMessage] = React.useState('')
@@ -84,11 +84,10 @@ export default function TeacherAttendancePage() {
 
   React.useEffect(() => {
     const map = readAttendance(date, klass, section, hour)
-    const next: Record<string, 'P' | 'A' | 'L'> = {}
+    const next: Record<string, 'P' | 'A'> = {}
     for (const key of Object.keys(map || {})) {
       const v = (map as any)[key]
       if (v === true || v === 'P') next[key] = 'P'
-      else if (v === 'L') next[key] = 'L'
       else next[key] = 'A'
     }
     setPresent(next)
@@ -114,7 +113,7 @@ export default function TeacherAttendancePage() {
   ]
 
   const onSaveAttendance = () => {
-    const full: Record<string, 'P' | 'A' | 'L'> = {}
+    const full: Record<string, 'P' | 'A'> = {}
     for (const s of students) {
       const v = present[s.usn] || 'A'
       full[s.usn] = v
@@ -379,27 +378,7 @@ export default function TeacherAttendancePage() {
                           >
                             A
                           </button>
-                          <button
-                            type="button"
-                            className="btn-tiny"
-                            style={{
-                              padding: '2px 8px',
-                              minWidth: 30,
-                              background:
-                                mark === 'L'
-                                  ? 'rgba(249,115,22,0.18)'
-                                  : 'rgba(148,163,184,0.10)',
-                              color: mark === 'L' ? '#9a3412' : 'inherit',
-                            }}
-                            onClick={() =>
-                              setPresent(prev => ({
-                                ...prev,
-                                [s.usn]: 'L',
-                              }))
-                            }
-                          >
-                            L
-                          </button>
+                          {/* Leave option removed: only Present / Absent */}
                         </div>
                       </label>
                     )
@@ -468,4 +447,3 @@ export default function TeacherAttendancePage() {
     </div>
   )
 }
-

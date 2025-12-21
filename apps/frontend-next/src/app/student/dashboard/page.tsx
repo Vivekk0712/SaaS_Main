@@ -1079,51 +1079,33 @@ export default function StudentDashboard() {
                   </span>
                 </div>
               </div>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns: 'repeat(2, minmax(0,1fr))',
-                  gap: 10,
-                  fontSize: 12,
-                }}
-              >
                 <div
                   style={{
-                    borderRadius: 20,
-                    padding: '10px 12px',
-                    background: '#3b2c1a',
-                    color: '#fef3c7',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    gap: 4,
+                    display: 'grid',
+                    gridTemplateColumns: 'minmax(0,1fr)',
+                    gap: 10,
+                    fontSize: 12,
                   }}
                 >
-                  <div style={{ fontSize: 11, opacity: 0.8 }}>Attendance</div>
-                  <div style={{ fontWeight: 800, fontSize: 18 }} suppressHydrationWarning>
-                    {attendanceSummary?.present ?? '--'}%
+                  <div
+                    style={{
+                      borderRadius: 20,
+                      padding: '10px 12px',
+                      background: '#2563eb',
+                      color: '#eff6ff',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      gap: 4,
+                    }}
+                  >
+                    <div style={{ fontSize: 11, opacity: 0.9 }}>Today</div>
+                    <div style={{ fontWeight: 800, fontSize: 18 }}>
+                      {selectedDay ? formatDMYFromYMD(selectedDay) : 'Welcome'}
+                    </div>
+                    <div style={{ opacity: 0.9 }}>your learning snapshot</div>
                   </div>
-                  <div style={{ opacity: 0.85 }}>of classes attended</div>
                 </div>
-                <div
-                  style={{
-                    borderRadius: 20,
-                    padding: '10px 12px',
-                    background: '#2563eb',
-                    color: '#eff6ff',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    gap: 4,
-                  }}
-                >
-                  <div style={{ fontSize: 11, opacity: 0.9 }}>Today</div>
-                  <div style={{ fontWeight: 800, fontSize: 18 }}>
-                    {selectedDay ? formatDMYFromYMD(selectedDay) : 'Welcome'}
-                  </div>
-                  <div style={{ opacity: 0.9 }}>your learning snapshot</div>
-                </div>
-              </div>
             </MotionSection>
 
             {/* ROW: Circular / News and Homework / Assignments */}
@@ -1131,7 +1113,7 @@ export default function StudentDashboard() {
               style={{
                 marginTop: 18,
                 display: 'grid',
-                gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 2fr)',
+                gridTemplateColumns: 'minmax(0, 1fr)',
                 gap: 16,
                 alignItems: 'flex-start',
               }}
@@ -1333,7 +1315,7 @@ export default function StudentDashboard() {
               {/* Homework / Assignments (from diaryEntries) */}
               <MotionSection
                 className="card"
-                style={{ padding: 16, borderRadius: 16 }}
+                style={{ padding: 16, borderRadius: 16, marginTop: 18 }}
                 variants={cardVariants}
                 whileHover={{ y: -4, transition: { duration: 0.2 } }}
               >
@@ -1630,6 +1612,58 @@ export default function StudentDashboard() {
                               {ev.description}
                             </div>
                           )}
+                          {Array.isArray((ev as any).attachments) && (ev as any).attachments.length > 0 && (
+                            <div
+                              style={{
+                                display: 'grid',
+                                gap: 4,
+                                marginTop: 8,
+                              }}
+                            >
+                              {(ev as any).attachments.map((a: any, j: number) => (
+                                <div
+                                  key={j}
+                                  style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    border: '1px dashed rgba(15,23,42,0.5)',
+                                    borderRadius: 10,
+                                    padding: '6px 8px',
+                                    background: 'rgba(15,23,42,0.04)',
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                    <span className="note">{a.type === 'link' ? 'Link' : 'File'}</span>
+                                    <span
+                                      style={{
+                                        fontWeight: 600,
+                                        overflow: 'hidden',
+                                        textOverflow: 'ellipsis',
+                                        whiteSpace: 'nowrap',
+                                        maxWidth: 240,
+                                      }}
+                                    >
+                                      {(() => {
+                                        if (!a) return 'Attachment'
+                                        if (a.type === 'link') return a.name || 'Link'
+                                        return a.name || 'File'
+                                      })()}
+                                    </span>
+                                  </div>
+                                  {a.type === 'link' ? (
+                                    <a className="back" href={a.url} target="_blank" rel="noopener noreferrer">
+                                      Open
+                                    </a>
+                                  ) : (
+                                    <a className="back" href={a.dataUrl} download={a.name}>
+                                      Download
+                                    </a>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       )
                     })}
@@ -1638,23 +1672,35 @@ export default function StudentDashboard() {
               </div>
             )}
 
-            <div className="dash" style={{ marginTop: 24 }}>
-              <Link className="back" href="/">
-                &larr; Back to login
-              </Link>
-            </div>
           </div>
         </div>
       </div>
 
-      <Link
-        href="/student/ai-tutor"
-        className="chat-ai-fab"
-        aria-label="Chat with AI tutor"
-      >
+        <Link
+          href="/student/ai-tutor"
+          className="chat-ai-fab"
+          style={{ display: 'none' }}
+          aria-label="Chat with AI tutor"
+        >
         <span className="chat-ai-icon">🤖</span>
         <span className="chat-ai-label">Chat with AI</span>
       </Link>
+      <button
+        type="button"
+        className="student-logout-fab"
+        onClick={() => {
+          try {
+            sessionStorage.removeItem('student')
+          } catch {}
+          try {
+            window.location.href = '/'
+          } catch {}
+        }}
+        aria-label="Logout"
+      >
+        ⏻
+      </button>
+      <span className="student-logout-label">Logout</span>
     </MotionDiv>
   )
 }

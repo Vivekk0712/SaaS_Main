@@ -6,17 +6,23 @@ function sha256Hex(input: string): string {
   return crypto.createHash('sha256').update(input, 'utf8').digest('hex')
 }
 
+function canonicalPhone(input: string): string {
+  // Normalize basic formatting (remove spaces); do not remap to any other number.
+  return String(input || '').replace(/\s+/g, '')
+}
+
 export async function POST(req: Request) {
   const { name, fatherPhone, password } = await req.json().catch(() => ({}))
   if (!fatherPhone || !password) return NextResponse.json({ error: 'missing_fields' }, { status: 400 })
+  const phoneForAuth = canonicalPhone(String(fatherPhone))
   // Verify parent credentials against auth_users
-  const users = await query<{ id:number; password_hash: Buffer }>('SELECT id, password_hash FROM auth_users WHERE email=? LIMIT 1', [fatherPhone])
+  const users = await query<{ id:number; password_hash: Buffer }>('SELECT id, password_hash FROM auth_users WHERE email=? LIMIT 1', [phoneForAuth])
   if (!users.length) return NextResponse.json({ error: 'invalid_credentials' }, { status: 401 })
   const provided = sha256Hex(String(password))
   const stored = Buffer.isBuffer(users[0].password_hash) ? users[0].password_hash.toString('hex') : String(users[0].password_hash || '')
   if (provided !== stored) return NextResponse.json({ error: 'invalid_credentials' }, { status: 401 })
   // Locate parent and their students
-  const pr = await query<{ id:number; name:string }>('SELECT id,name FROM parents WHERE phone=? LIMIT 1', [fatherPhone])
+  const pr = await query<{ id:number; name:string }>('SELECT id,name FROM parents WHERE phone=? LIMIT 1', [phoneForAuth])
   if (!pr.length) return NextResponse.json({ error: 'not_found' }, { status: 404 })
   const parentId = pr[0].id
   const rows = await query<{ sname:string; cname:string; sec:string; usn:string }>(
