@@ -421,7 +421,36 @@ export default function TeacherChapterDetailPage() {
     }
   }
 
-  const removeAttachment = (subId: string, index: number) => {
+  const removeAttachment = async (subId: string, index: number) => {
+    const subtopic = chapter?.subtopics.find(st => st.id === subId)
+    if (!subtopic) return
+    
+    const attachment = subtopic.attachments?.[index]
+    if (!attachment) return
+    
+    // If it's a file with B2 key, delete from B2
+    if (attachment.type === 'file') {
+      const file = attachment as AttachmentFile
+      const isB2File = !file.dataUrl.startsWith('data:')
+      
+      if (isB2File) {
+        try {
+          setMessage("Deleting file from storage...")
+          const response = await fetch('/api/storage/delete', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ b2Key: file.dataUrl })
+          })
+          
+          if (!response.ok) {
+            console.error('Failed to delete from B2')
+          }
+        } catch (error) {
+          console.error('Error deleting from B2:', error)
+        }
+      }
+    }
+    
     updateAttachments(subId, prev => prev.filter((_, i) => i !== index))
     setMessage("Attachment removed.")
     setTimeout(() => setMessage(""), 1000)

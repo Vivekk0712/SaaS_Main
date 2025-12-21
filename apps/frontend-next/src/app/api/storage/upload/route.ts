@@ -69,6 +69,9 @@ export async function POST(req: NextRequest) {
 
         const ragResponse = await fetch(`${RAG_PLUGIN_URL}/api/upload`, {
           method: 'POST',
+          headers: {
+            'Authorization': 'Bearer test-token', // Development token for teacher uploads
+          },
           body: ragFormData,
         })
 

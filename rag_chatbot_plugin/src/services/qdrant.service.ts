@@ -76,7 +76,14 @@ export class QdrantService {
   
   async search(
     queryVector: number[],
-    filters: { classId?: number; studentId?: number },
+    filters: { 
+      classId?: number; 
+      studentId?: number;
+      klass?: string;
+      section?: string;
+      subject?: string;
+      chapterId?: string;
+    },
     topK: number = config.processing.topK
   ): Promise<SearchResult[]> {
     try {
@@ -90,6 +97,27 @@ export class QdrantService {
       if (filters.studentId) {
         filter.must = filter.must || [];
         filter.must.push({ key: 'studentId', match: { value: filters.studentId } });
+      }
+      
+      // Add teacher material filters
+      if (filters.klass) {
+        filter.must = filter.must || [];
+        filter.must.push({ key: 'klass', match: { value: filters.klass } });
+      }
+      
+      if (filters.section) {
+        filter.must = filter.must || [];
+        filter.must.push({ key: 'section', match: { value: filters.section } });
+      }
+      
+      if (filters.subject) {
+        filter.must = filter.must || [];
+        filter.must.push({ key: 'subject', match: { value: filters.subject } });
+      }
+      
+      if (filters.chapterId) {
+        filter.must = filter.must || [];
+        filter.must.push({ key: 'chapterId', match: { value: filters.chapterId } });
       }
       
       const results = await this.client.search(this.collection, {

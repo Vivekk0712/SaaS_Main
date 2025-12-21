@@ -18,13 +18,21 @@ export class QueryController {
         return res.status(400).json({ error: 'Question is required' });
       }
       
-      // Apply user-based filters
+      // Apply filters based on context
       const searchFilters: any = { ...filters };
-      if (user.role === 'student') {
-        searchFilters.studentId = user.id;
-      } else if (user.role === 'teacher' && user.classId) {
-        searchFilters.classId = user.classId;
+      
+      // If querying teacher materials (has klass/section/subject), don't filter by studentId
+      const isTeacherMaterialQuery = !!(filters.klass && filters.section && filters.subject);
+      
+      if (!isTeacherMaterialQuery) {
+        // Student's own uploads - filter by studentId
+        if (user.role === 'student') {
+          searchFilters.studentId = user.id;
+        } else if (user.role === 'teacher' && user.classId) {
+          searchFilters.classId = user.classId;
+        }
       }
+      // For teacher materials, use the provided filters (klass, section, subject, chapterId)
       
       // Embed question
       const queryVector = await this.embeddingService.embedSingle(question);
@@ -34,7 +42,7 @@ export class QueryController {
       
       if (searchResults.length === 0) {
         return res.json({
-          answer: "I don't have any relevant information in the uploaded notes to answer that question.",
+          answer: "I don't have enough information in the uploaded notes to answer that.",
           citations: []
         });
       }

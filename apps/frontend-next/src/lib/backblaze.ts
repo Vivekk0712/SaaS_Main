@@ -111,12 +111,17 @@ export async function getSignedUrlForB2(b2Key: string, expiresIn: number = 3600)
   }
 }
 
+export interface DeleteResult {
+  success: boolean
+  error?: string
+}
+
 /**
  * Delete a file from B2
  * @param b2Key The B2 key of the file to delete
- * @returns Success status
+ * @returns Delete result with success status
  */
-export async function deleteFromB2(b2Key: string): Promise<boolean> {
+export async function deleteFromB2(b2Key: string): Promise<DeleteResult> {
   try {
     const command = new DeleteObjectCommand({
       Bucket: B2_BUCKET,
@@ -124,10 +129,13 @@ export async function deleteFromB2(b2Key: string): Promise<boolean> {
     })
 
     await s3Client.send(command)
-    return true
+    return { success: true }
   } catch (error) {
     console.error('Error deleting from B2:', error)
-    return false
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Delete failed'
+    }
   }
 }
 

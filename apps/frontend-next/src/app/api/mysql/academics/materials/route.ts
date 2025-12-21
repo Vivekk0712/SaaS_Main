@@ -31,7 +31,7 @@ export async function GET(req: Request) {
       params.push(subtopicId)
     }
     const rows = await query<any>(
-      `SELECT type, name, url, mime, data_url AS dataUrl, uploaded_at
+      `SELECT type, name, url, mime, data_url AS dataUrl, b2_key AS b2Key, file_size AS fileSize, b2_path AS b2Path, uploaded_at
          FROM materials
         WHERE ${where}
         ORDER BY uploaded_at DESC`,
@@ -59,13 +59,20 @@ export async function POST(req: Request) {
     if (!sec.length) return bad('section_not_found', 404)
     const sub = await query<{ id:number }>('SELECT id FROM subjects WHERE LOWER(name)=LOWER(?)', [subject])
     if (!sub.length) return bad('subject_not_found', 404)
+    
+    // Check if dataUrl is a B2 key (doesn't start with 'data:')
+    const isB2File = item.dataUrl && !item.dataUrl.startsWith('data:')
+    const b2Key = isB2File ? item.dataUrl : null
+    const dataUrl = isB2File ? null : item.dataUrl
+    
     await query(
-      `INSERT INTO materials (class_id, section_id, subject_id, chapter_id, subtopic_id, type, name, url, mime, data_url)
-       VALUES (?,?,?,?,?,?,?,?,?,?)`,
-      [cls[0].id, sec[0].id, sub[0].id, chapterId, subtopicId, item.type, item.name || null, item.url || null, item.mime || null, item.dataUrl || null]
+      `INSERT INTO materials (class_id, section_id, subject_id, chapter_id, subtopic_id, type, name, url, mime, data_url, b2_key)
+       VALUES (?,?,?,?,?,?,?,?,?,?,?)`,
+      [cls[0].id, sec[0].id, sub[0].id, chapterId, subtopicId, item.type, item.name || null, item.url || null, item.mime || null, dataUrl, b2Key]
     )
     return NextResponse.json({ ok: true })
-  } catch {
+  } catch (err) {
+    console.error('Materials POST error:', err)
     return bad('server_error', 500)
   }
 }
