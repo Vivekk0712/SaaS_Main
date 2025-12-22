@@ -14,6 +14,63 @@ type DiaryViewEntry = {
   attachments?: any[]
 }
 
+// File Download Button Component - handles B2 signed URLs
+function FileDownloadButton({ file }: { file: any }) {
+  const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState(false)
+
+  const handleDownload = async () => {
+    setLoading(true)
+    setError(false)
+    
+    try {
+      // Check if dataUrl is a B2 key or base64
+      const isB2Key = file.dataUrl && !file.dataUrl.startsWith('data:')
+      
+      if (isB2Key) {
+        // Get signed URL from B2
+        const { getSignedUrl } = await import('@/lib/uploadToBackblaze')
+        const signedUrl = await getSignedUrl(file.dataUrl)
+        
+        if (signedUrl) {
+          // Open in new tab or trigger download
+          window.open(signedUrl, '_blank')
+        } else {
+          setError(true)
+        }
+      } else {
+        // Legacy base64 - direct download
+        const link = document.createElement('a')
+        link.href = file.dataUrl
+        link.download = file.name
+        link.click()
+      }
+    } catch (err) {
+      console.error('Download error:', err)
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <button
+      className="btn-ghost"
+      type="button"
+      onClick={handleDownload}
+      disabled={loading}
+      style={{ 
+        cursor: loading ? 'wait' : 'pointer',
+        padding: '6px 12px',
+        fontSize: '13px',
+        fontWeight: 600
+      }}
+    >
+      {loading ? '⏳ Loading...' : error ? '❌ Error - Retry' : '📥 Download'}
+    </button>
+  )
+}
+
 export default function StudentDiaryPage() {
   const pathname = usePathname()
   const [name, setName] = React.useState('Student')
@@ -304,7 +361,9 @@ export default function StudentDiaryPage() {
               </div>
               {Array.isArray(entry.attachments) && entry.attachments.length > 0 && (
                 <div style={{ display: 'grid', gap: 6, padding: '10px 14px' }}>
-                  {entry.attachments.map((a: any, i: number) => (
+                  {entry.attachments.map((a: any, i: number) => {
+                    console.log('Attachment:', a) // Debug log
+                    return (
                     <div
                       key={i}
                       style={{
@@ -316,19 +375,21 @@ export default function StudentDiaryPage() {
                         padding: '8px 10px'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
                         <span className="note">{a.type === 'link' ? 'Link' : 'File'}</span>
-                        <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {a.type === 'link' ? a.url : a.name}
                         </span>
                       </div>
-                      {a.type === 'link' ? (
-                        <a className="back" href={a.url} target="_blank" rel="noopener noreferrer">Open</a>
-                      ) : (
-                        <a className="back" href={a.dataUrl} download={a.name}>Download</a>
-                      )}
+                      <div style={{ flexShrink: 0 }}>
+                        {a.type === 'link' ? (
+                          <a className="back" href={a.url} target="_blank" rel="noopener noreferrer">Open</a>
+                        ) : (
+                          <FileDownloadButton file={a} />
+                        )}
+                      </div>
                     </div>
-                  ))}
+                  )})}
                 </div>
               )}
               <div className="paper-view">{entry.note}</div>

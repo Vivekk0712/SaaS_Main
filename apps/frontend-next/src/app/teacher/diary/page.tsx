@@ -29,6 +29,57 @@ const navLinks: Array<{ href: Route; label: string; icon: string }> = [
   { href: '/teacher/circulars', label: 'Circulars', icon: '📣' },
 ]
 
+// File Download Button Component - handles B2 signed URLs
+function FileDownloadButton({ file }: { file: any }) {
+  const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState(false)
+
+  const handleDownload = async () => {
+    setLoading(true)
+    setError(false)
+    
+    try {
+      // Check if dataUrl is a B2 key or base64
+      const isB2Key = file.dataUrl && !file.dataUrl.startsWith('data:')
+      
+      if (isB2Key) {
+        // Get signed URL from B2
+        const { getSignedUrl } = await import('@/lib/uploadToBackblaze')
+        const signedUrl = await getSignedUrl(file.dataUrl)
+        
+        if (signedUrl) {
+          // Open in new tab or trigger download
+          window.open(signedUrl, '_blank')
+        } else {
+          setError(true)
+        }
+      } else {
+        // Legacy base64 - direct download
+        const link = document.createElement('a')
+        link.href = file.dataUrl
+        link.download = file.name
+        link.click()
+      }
+    } catch (err) {
+      console.error('Download error:', err)
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <button
+      className="btn-ghost"
+      type="button"
+      onClick={handleDownload}
+      disabled={loading}
+    >
+      {loading ? 'Loading...' : error ? 'Error' : 'Download'}
+    </button>
+  )
+}
+
 export default function TeacherDiaryPage() {
   const pathname = usePathname()
   const router = useRouter()
@@ -46,6 +97,7 @@ export default function TeacherDiaryPage() {
   const [linkInput, setLinkInput] = React.useState('')
   const [attachments, setAttachments] = React.useState<Array<any>>([])
   const [message, setMessage] = React.useState('')
+  const [uploading, setUploading] = React.useState(false)
 
   React.useEffect(() => {
     try {
@@ -122,22 +174,54 @@ export default function TeacherDiaryPage() {
 
   const addFiles = async (files?: FileList | null) => {
     if (!files) return
+    
+    setUploading(true)
+    setMessage('Uploading files to cloud storage...')
+    const { uploadFileToB2 } = await import('@/lib/uploadToBackblaze')
+    
     const items: any[] = []
+    let successCount = 0
+    let failCount = 0
+    
     for (const f of Array.from(files)) {
-      const dataUrl = await new Promise<string>((res, rej) => {
-        const r = new FileReader()
-        r.onerror = () => rej('read-error')
-        r.onload = () => res(String(r.result))
-        r.readAsDataURL(f)
+      // Upload to Backblaze B2
+      const result = await uploadFileToB2(f, {
+        klass: diaryKlass,
+        section: diarySection,
+        subject: diarySubject || teacher?.subject || 'General',
+        type: 'material',
+        chapterId: `diary-${diaryDate}`, // Use diary date as chapter ID
+      }, (progress) => {
+        setMessage(`Uploading ${f.name}... ${progress.percentage}%`)
       })
-      items.push({
-        type: 'file',
-        name: f.name,
-        mime: f.type || 'application/octet-stream',
-        dataUrl,
-      })
+      
+      if (result.success) {
+        // Store B2 reference instead of base64
+        items.push({
+          type: 'file',
+          name: f.name,
+          mime: f.type || 'application/octet-stream',
+          dataUrl: result.b2Key, // Store B2 key instead of base64
+          b2Key: result.b2Key,
+          fileSize: result.fileSize,
+        })
+        successCount++
+      } else {
+        failCount++
+        console.error(`Failed to upload ${f.name}:`, result.error)
+      }
     }
-    if (items.length) setAttachments(prev => [...prev, ...items])
+    
+    if (items.length) {
+      setAttachments(prev => [...prev, ...items])
+      setMessage(`${successCount} file(s) uploaded${failCount > 0 ? `, ${failCount} failed` : ''}.`)
+      setTimeout(() => setMessage(''), 2000)
+    } else if (failCount > 0) {
+      setMessage(`Failed to upload ${failCount} file(s).`)
+      setTimeout(() => setMessage(''), 2000)
+    }
+    
+    setUploading(false)
   }
 
   const onSaveDiary = () => {
@@ -148,6 +232,9 @@ export default function TeacherDiaryPage() {
       setTimeout(() => setMessage(''), 1500)
       return
     }
+    
+    console.log('Saving diary with attachments:', attachments) // Debug log
+    
     const subj = (diarySubject || teacher.subject || '').trim()
     const entry = {
       subject: subj,
@@ -157,6 +244,9 @@ export default function TeacherDiaryPage() {
       section: diarySection as any,
       attachments,
     }
+    
+    console.log('Diary entry:', entry) // Debug log
+    
     saveDiary(diaryDate, entry)
     try {
       const list = rosterBy(diaryKlass, diarySection as any)
@@ -346,29 +436,49 @@ export default function TeacherDiaryPage() {
                           padding: '6px 10px',
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
                           <span className="note">{a.type === 'link' ? 'Link' : 'File'}</span>
-                          <span style={{ fontWeight: 600 }}>
+                          <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {a.type === 'link' ? a.url : a.name}
                           </span>
                         </div>
-                        <button
-                          className="btn-ghost"
-                          type="button"
-                          onClick={() =>
-                            setAttachments(prev => prev.filter((_, idx) => idx !== i))
-                          }
-                        >
-                          Remove
-                        </button>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          {a.type === 'file' && (
+                            <FileDownloadButton file={a} />
+                          )}
+                          {a.type === 'link' && (
+                            <a
+                              className="btn-ghost"
+                              href={a.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              Open
+                            </a>
+                          )}
+                          <button
+                            className="btn-ghost"
+                            type="button"
+                            onClick={() =>
+                              setAttachments(prev => prev.filter((_, idx) => idx !== i))
+                            }
+                          >
+                            Remove
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
                 )}
 
                 <div className="actions" style={{ marginTop: 4 }}>
-                  <button className="btn" type="button" onClick={onSaveDiary}>
-                    Publish for selected date
+                  <button 
+                    className="btn" 
+                    type="button" 
+                    onClick={onSaveDiary}
+                    disabled={uploading}
+                  >
+                    {uploading ? '⏳ Uploading files...' : 'Publish for selected date'}
                   </button>
                   <button
                     className="btn-ghost"

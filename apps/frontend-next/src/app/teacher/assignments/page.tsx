@@ -14,6 +14,54 @@ import {
   type AssignmentStatus
 } from '../data'
 
+// File Download Button Component
+function FileDownloadButton({ file }: { file: any }) {
+  const [loading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState(false)
+
+  const handleDownload = async () => {
+    setLoading(true)
+    setError(false)
+    
+    try {
+      const isB2Key = file.dataUrl && !file.dataUrl.startsWith('data:')
+      
+      if (isB2Key) {
+        const { getSignedUrl } = await import('@/lib/uploadToBackblaze')
+        const signedUrl = await getSignedUrl(file.dataUrl)
+        
+        if (signedUrl) {
+          window.open(signedUrl, '_blank')
+        } else {
+          setError(true)
+        }
+      } else {
+        const link = document.createElement('a')
+        link.href = file.dataUrl
+        link.download = file.name
+        link.click()
+      }
+    } catch (err) {
+      console.error('Download error:', err)
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <button
+      className="btn-ghost"
+      type="button"
+      onClick={handleDownload}
+      disabled={loading}
+      style={{ fontSize: 12, padding: '4px 8px' }}
+    >
+      {loading ? '⏳' : error ? '❌' : '📥'}
+    </button>
+  )
+}
+
 const navLinks: Array<{ href: Route; label: string; icon: string }> = [
   { href: '/teacher/dashboard', label: 'Dashboard', icon: '🏠' },
   { href: '/teacher/attendance', label: 'Attendance', icon: '✅' },
@@ -37,6 +85,7 @@ export default function TeacherAssignmentsPage() {
   const [rows, setRows] = React.useState<Array<{ usn: string; name: string; status: AssignmentStatus }>>([])
   const [message, setMessage] = React.useState<string>('')
   const [ready, setReady] = React.useState(false)
+  const [deletingAttachment, setDeletingAttachment] = React.useState(false)
   const detailRef = React.useRef<HTMLDivElement | null>(null)
 
   React.useEffect(() => {
@@ -153,6 +202,63 @@ export default function TeacherAssignmentsPage() {
     setTimeout(() => setMessage(''), 1500)
   }
 
+  const deleteAttachment = async (attachmentIndex: number) => {
+    if (!selected) return
+    
+    const attachment = selected.attachments?.[attachmentIndex]
+    if (!attachment) return
+    
+    if (!confirm(`Delete ${attachment.name || 'this attachment'}?`)) return
+    
+    setDeletingAttachment(true)
+    setMessage('Deleting file...')
+    
+    try {
+      // If it's a B2 file, delete from storage
+      if (attachment.type === 'file' && attachment.dataUrl && !attachment.dataUrl.startsWith('data:')) {
+        const response = await fetch('/api/storage/delete', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ b2Key: attachment.dataUrl })
+        })
+        
+        if (!response.ok) {
+          console.error('Failed to delete from B2')
+        }
+      }
+      
+      // Update selected assignment
+      const updatedAttachments = selected.attachments?.filter((_, i) => i !== attachmentIndex) || []
+      const updatedSelected = { ...selected, attachments: updatedAttachments }
+      setSelected(updatedSelected)
+      
+      // Save updated assignment to all class/section combinations
+      saveAssignment({
+        date: selected.date,
+        deadline: selected.deadline || selected.date,
+        note: selected.note,
+        attachments: updatedAttachments,
+        subject: selected.subject,
+        klass,
+        section,
+        items: rows,
+        createdBy: teacherName || 'Teacher'
+      })
+      
+      // Refresh cards list
+      setCards(listStudentAssignments(teacherName))
+      
+      setMessage('Attachment deleted successfully.')
+      setTimeout(() => setMessage(''), 2000)
+    } catch (error) {
+      console.error('Delete error:', error)
+      setMessage('Failed to delete attachment.')
+      setTimeout(() => setMessage(''), 2000)
+    } finally {
+      setDeletingAttachment(false)
+    }
+  }
+
   return (
     <div className="teacher-shell">
       <div className="topbar topbar-teacher">
@@ -245,6 +351,69 @@ export default function TeacherAssignmentsPage() {
                     : ''}
                 </div>
               </div>
+
+              {/* Assignment Note */}
+              {selected.note && (
+                <div className="paper-view" style={{ padding: 12, background: 'var(--panel)', borderRadius: 8 }}>
+                  {selected.note}
+                </div>
+              )}
+
+              {/* Attachments Section */}
+              {Array.isArray(selected.attachments) && selected.attachments.length > 0 && (
+                <div style={{ display: 'grid', gap: 6 }}>
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>📎 Attachments</div>
+                  {selected.attachments.map((a: any, i: number) => (
+                    <div
+                      key={i}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        border: '1px dashed var(--panel-border)',
+                        borderRadius: 8,
+                        padding: '8px 10px',
+                        background: 'var(--panel)'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+                        <span className="note">{a.type === 'link' ? '🔗' : '📄'}</span>
+                        <span style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {a.type === 'link' ? a.url : a.name}
+                        </span>
+                      </div>
+                      <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
+                        {a.type === 'link' ? (
+                          <a
+                            className="btn-ghost"
+                            href={a.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ fontSize: 12, padding: '4px 8px' }}
+                          >
+                            Open
+                          </a>
+                        ) : (
+                          <FileDownloadButton file={a} />
+                        )}
+                        <button
+                          className="btn-ghost"
+                          type="button"
+                          onClick={() => deleteAttachment(i)}
+                          disabled={deletingAttachment}
+                          style={{ 
+                            fontSize: 12, 
+                            padding: '4px 8px',
+                            color: '#dc2626'
+                          }}
+                        >
+                          {deletingAttachment ? '⏳' : '🗑️'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               <div className="table" style={{ overflow: 'hidden' }}>
                 <table className="table">
