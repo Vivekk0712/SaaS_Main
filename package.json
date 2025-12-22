@@ -32,7 +32,12 @@
     "db:apply": "node apps/frontend-next/scripts/apply-schema-from-doc.mjs",
     "db:seed": "node apps/frontend-next/scripts/seed-master.mjs && node apps/frontend-next/scripts/seed-dummy.mjs && node apps/frontend-next/scripts/seed-academics.mjs && node apps/onboarding-next/scripts/seed-parent-auth.mjs",
     "db:all": "bash scripts/setup-and-seed.sh",
-    "db:backfill-guardians": "node apps/frontend-next/scripts/backfill-guardians.mjs"
+    "db:backfill-guardians": "node apps/frontend-next/scripts/backfill-guardians.mjs",
+    "install:all": "npm install",
+    "install:frontend": "npm install -w frontend-next",
+    "install:plugins": "npm install -w razorpay_plugin -w rag_chatbot_plugin -w whatsapp_plugin",
+    "clean": "npm run clean -ws --if-present",
+    "clean:modules": "rm -rf node_modules apps/*/node_modules *_plugin/node_modules"
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.8"
