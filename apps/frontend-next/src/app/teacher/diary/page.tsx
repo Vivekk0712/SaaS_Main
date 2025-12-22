@@ -98,6 +98,8 @@ export default function TeacherDiaryPage() {
   const [attachments, setAttachments] = React.useState<Array<any>>([])
   const [message, setMessage] = React.useState('')
   const [uploading, setUploading] = React.useState(false)
+  const [sendingNotifications, setSendingNotifications] = React.useState(false)
+  const [showNotifyButton, setShowNotifyButton] = React.useState(false)
 
   React.useEffect(() => {
     try {
@@ -266,11 +268,51 @@ export default function TeacherDiaryPage() {
       // ignore
     }
     setMessage('Diary updated for the selected date.')
+    setShowNotifyButton(true) // Show notification button after publishing
     setDiaryNote('')
     setDiaryDueDate(diaryDate)
     setAttachments([])
     setLinkInput('')
     setTimeout(() => setMessage(''), 1500)
+  }
+
+  const sendNotifications = async () => {
+    if (!teacher) return
+    
+    setSendingNotifications(true)
+    setMessage('Sending WhatsApp notifications...')
+    
+    try {
+      const response = await fetch('/api/diary/notify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          klass: diaryKlass,
+          section: diarySection,
+          subject: diarySubject || teacher.subject || '',
+          date: diaryDate,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setMessage(
+          `✓ Notifications sent! Sent: ${data.sent}, Skipped: ${data.skipped}, Failed: ${data.failed}`
+        )
+        setShowNotifyButton(false)
+      } else {
+        setMessage(`✗ Failed to send notifications: ${data.error}`)
+      }
+    } catch (error) {
+      console.error('Notification error:', error)
+      setMessage('✗ Error sending notifications. Please try again.')
+    } finally {
+      setSendingNotifications(false)
+      setTimeout(() => setMessage(''), 4000)
+    }
   }
 
   return (
@@ -480,6 +522,21 @@ export default function TeacherDiaryPage() {
                   >
                     {uploading ? '⏳ Uploading files...' : 'Publish for selected date'}
                   </button>
+                  {showNotifyButton && (
+                    <button
+                      className="btn"
+                      type="button"
+                      onClick={sendNotifications}
+                      disabled={sendingNotifications}
+                      style={{
+                        background: '#10b981',
+                        borderColor: '#059669',
+                        marginLeft: 8
+                      }}
+                    >
+                      {sendingNotifications ? '⏳ Sending...' : '📱 Send WhatsApp Notifications'}
+                    </button>
+                  )}
                   <button
                     className="btn-ghost"
                     type="button"

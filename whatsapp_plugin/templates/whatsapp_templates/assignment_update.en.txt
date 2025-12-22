@@ -1,0 +1,7 @@
+New assignment has been published.
+
+Subject: {{1}}
+Class: {{2}}
+Date: {{3}}
+
+Please check the assignment details in the ERP.
