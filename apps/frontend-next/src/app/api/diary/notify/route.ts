@@ -10,7 +10,7 @@ const pool = mysql.createPool({
   connectionLimit: 10,
 })
 
-const WHATSAPP_PLUGIN_URL = process.env.WHATSAPP_PLUGIN_URL || 'http://localhost:3002'
+const WHATSAPP_PLUGIN_URL = process.env.WHATSAPP_PLUGIN_URL || 'http://localhost:4100'
 
 export async function POST(request: NextRequest) {
   try {
@@ -92,6 +92,13 @@ export async function POST(request: NextRequest) {
     for (const student of students) {
       if (!student.parent_phone) {
         console.log(`Skipping ${student.student_name} - no parent phone`)
+        skippedCount++
+        continue
+      }
+
+      // Skip demo/fake numbers (starting with 900)
+      if (student.parent_phone.startsWith('900')) {
+        console.log(`Skipping ${student.student_name} - demo number (${student.parent_phone})`)
         skippedCount++
         continue
       }
