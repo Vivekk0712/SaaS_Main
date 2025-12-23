@@ -121,20 +121,26 @@ export async function POST(request: NextRequest) {
 
     for (const notification of notifications) {
       try {
-        const response = await fetch(`${WHATSAPP_PLUGIN_URL}/api/whatsapp/send-template`, {
+        const response = await fetch(`${WHATSAPP_PLUGIN_URL}/api/v1/message-jobs`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            to: notification.phone,
-            template: 'assignment_update',
+            tenantId: 'school-erp',
+            type: 'transactional',
+            templateName: 'assignment_update',
             language: 'en',
-            parameters: [
-              subject,                    // {{1}} Subject
-              `${klass} - ${section}`,   // {{2}} Class
-              date                        // {{3}} Date
-            ]
+            payload: {
+              '1': subject,
+              '2': `${klass} - ${section}`,
+              '3': date
+            },
+            recipients: [{
+              phone: notification.phone,
+              name: notification.parentName
+            }],
+            priority: 'normal'
           })
         })
 
