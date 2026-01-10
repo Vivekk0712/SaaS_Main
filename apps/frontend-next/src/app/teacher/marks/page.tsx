@@ -12,6 +12,7 @@ import {
   readMarks,
   saveMarks,
   listTestsBySubject,
+  listTestsForClass,
   getAssignedClassesForTeacher,
   getAssignedSectionsForTeacher,
   getAssignedSubjectsForTeacher,
@@ -44,6 +45,7 @@ export default function TeacherMarks() {
   const [marks, setMarks] = React.useState<Record<string, number>>({})
   const [message, setMessage] = React.useState("")
   const [suggestedTests, setSuggestedTests] = React.useState<string[]>([])
+  const [availableTests, setAvailableTests] = React.useState<string[]>([])
   const [totals, setTotals] = React.useState<
     Array<{ usn: string; sum: number; total: number; pct: number }>
   >([])
@@ -105,8 +107,10 @@ export default function TeacherMarks() {
     const refreshTests = () => {
       try {
         setSuggestedTests(listTestsBySubject(klass, section as any, subject))
+        setAvailableTests(listTestsForClass(klass, section as any))
       } catch {
         setSuggestedTests([])
+        setAvailableTests([])
       }
     }
     const onBus = (e: Event) => {
@@ -140,8 +144,10 @@ export default function TeacherMarks() {
   React.useEffect(() => {
     try {
       setSuggestedTests(listTestsBySubject(klass, section as any, subject))
+      setAvailableTests(listTestsForClass(klass, section as any))
     } catch {
       setSuggestedTests([])
+      setAvailableTests([])
     }
   }, [klass, section, subject])
 
@@ -301,6 +307,16 @@ export default function TeacherMarks() {
               </div>
 
               <div className="row">
+                <select
+                  className="input select"
+                  value={availableTests.includes(test) ? test : ""}
+                  onChange={e => setTest(e.target.value)}
+                >
+                  <option value="">Select test</option>
+                  {availableTests.map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
                 <input
                   className="input"
                   placeholder="Test name e.g. UT-1"

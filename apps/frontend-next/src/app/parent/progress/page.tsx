@@ -531,6 +531,12 @@ export default function ParentProgressPage() {
           const attendanceSeries: LineSeries[] = []
           const fmt = (ymd?: string) =>
             ymd && ymd.length >= 10 ? `${ymd.slice(8, 10)}/${ymd.slice(5, 7)}/${ymd.slice(0, 4)}` : ''
+          const shiftYMD = (ymd: string, days: number) => {
+            const d = new Date(ymd)
+            if (Number.isNaN(d.getTime())) return ymd
+            d.setDate(d.getDate() + days)
+            return d.toISOString().slice(0, 10)
+          }
 
           // Marks series per test
           tests.forEach(([t, d], idx) => {
@@ -550,7 +556,7 @@ export default function ParentProgressPage() {
           const chronological = [...tests]
             .map(([t, d]) => ({ t, d }))
             .filter((x) => x.d.date)
-            .sort((a, b) => (a.d.ts || 0) - (b.d.ts || 0))
+            .sort((a, b) => String(a.d.date || '').localeCompare(String(b.d.date || '')))
           const rangeNotes: string[] = []
           chronological.forEach((entry, idx) => {
             const current = entry
@@ -558,27 +564,26 @@ export default function ParentProgressPage() {
             const att = subjects.map((sub) => {
               try {
                   if (!current.d.date) return 0
-                  if (!prev) {
-                    const a = attendanceSummaryBefore(
-                      meInfo.usn,
-                      meInfo.klass,
-                      meInfo.section,
-                      current.d.date,
-                      sub,
-                    )
-                    return a.total ? Math.round((a.attended * 100) / a.total) : 0
-                  }
-                  if (prev.d.date) {
-                    const a = attendanceSummaryBetween(
-                      meInfo.usn,
-                      meInfo.klass,
-                      meInfo.section,
-                      prev.d.date,
+                  const end = attendanceSummaryBefore(
+                    meInfo.usn,
+                    meInfo.klass,
+                    meInfo.section,
                     current.d.date,
                     sub,
                   )
-                  return a.total ? Math.round((a.attended * 100) / a.total) : 0
-                }
+                  if (!prev || !prev.d.date) {
+                    return end.total ? Math.round((end.attended * 100) / end.total) : 0
+                  }
+                  const start = attendanceSummaryBefore(
+                    meInfo.usn,
+                    meInfo.klass,
+                    meInfo.section,
+                    shiftYMD(prev.d.date, -1),
+                    sub,
+                  )
+                  const attended = Math.max(0, end.attended - start.attended)
+                  const total = Math.max(0, end.total - start.total)
+                  return total ? Math.round((attended * 100) / total) : 0
               } catch {}
               return 0
             })

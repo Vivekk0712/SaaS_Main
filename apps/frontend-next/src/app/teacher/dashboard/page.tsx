@@ -3,8 +3,7 @@ import React from 'react'
 import Link from 'next/link'
 import type { Route } from 'next'
 import { usePathname, useRouter } from 'next/navigation'
-import { seedIfNeeded, getClasses, getSectionsForClass, rosterBy, saveAttendance, readAttendance, readAttendanceTopic, saveAttendanceTopic, saveDiary, addCalendarEvent, readCalendarByMonth, getAssignedClassesForTeacher, getAssignedSectionsForTeacher, hourOptionsForClass, getHoursForClass, getAssignedSubjectsForTeacher, getSubjects, getClassSubjects, listTestsForClass, subjectAveragesForTest, getMarkSheet, classAttendanceAverageBefore, classAttendanceAverageBetween, saveAssignment } from '../data'
-import { BarChart, type BarSeries } from '../../components/BarChart'
+import { seedIfNeeded, getClasses, getSectionsForClass, rosterBy, saveAttendance, readAttendance, readAttendanceTopic, saveAttendanceTopic, saveDiary, addCalendarEvent, readCalendarByMonth, getAssignedClassesForTeacher, getAssignedSectionsForTeacher, hourOptionsForClass, getHoursForClass, getAssignedSubjectsForTeacher, getSubjects, getClassSubjects, listTestsForClass, subjectAveragesForTest, saveAssignment } from '../data'
 
 type EventColor = 'blue' | 'green' | 'orange'
 type Event = { date: string; title: string; color: EventColor; description: string; tag: string }
@@ -108,6 +107,7 @@ export default function TeacherDashboard() {
   const avatarRef = React.useRef<HTMLElement | null>(null)
   const menuRef = React.useRef<HTMLDivElement | null>(null)
   const [teacherKey, setTeacherKey] = React.useState<string>('')
+  const [showInsights, setShowInsights] = React.useState(false)
   // Calendar state
   const [calDate, setCalDate] = React.useState<string>(() => new Date().toISOString().slice(0,10))
   const [calTitle, setCalTitle] = React.useState('')
@@ -315,51 +315,8 @@ export default function TeacherDashboard() {
     reader.readAsDataURL(file)
   }
 
-  const graphData = React.useMemo(() => {
-    const tests = listTestsForClass(calScopeClass || '', (calScopeSection || '') as any).slice(0, 2)
-    const classSubs = getClassSubjects(calScopeClass || '', calScopeSection || '')
-    const subjects = classSubs.length ? [...classSubs] : getSubjects()
-    if (!subjects.length || !tests.length) return { subjects: [] as string[], series: [] as BarSeries[] }
-    const palette = ['#2563eb', '#10b981', '#60a5fa', '#34d399']
-    const series: BarSeries[] = []
-    tests.forEach((t, idx) => {
-      const avgs = subjectAveragesForTest(calScopeClass || '', calScopeSection || '', t)
-      const map = new Map(avgs.map(x => [x.subject.toLowerCase(), x.pct]))
-      const data = subjects.map(sub => map.get(sub.toLowerCase()) ?? null)
-      series.push({ name: `${t} Marks %`, color: palette[idx % palette.length], data })
-    })
-    const chronological = tests
-      .map(t => {
-        let date = ''
-        for (const sub of subjects) {
-          const ms = getMarkSheet(calScopeClass || '', calScopeSection || '', sub, t)
-          if (ms?.date) {
-            date = ms.date
-            break
-          }
-        }
-        return {
-          t,
-          date,
-        }
-      })
-      .filter(e => e.date)
-      .sort((a, b) => a.date.localeCompare(b.date))
-    const first = chronological[0]
-    const second = chronological[1]
-    if (first && first.date) {
-      const att = subjects.map(sub => classAttendanceAverageBefore(calScopeClass || '', calScopeSection || '', first.date, sub))
-      series.push({ name: `${first.t} Attendance %`, color: palette[2], data: att })
-    }
-    if (first && second && first !== second && first.date && second?.date) {
-      const att = subjects.map(sub => classAttendanceAverageBetween(calScopeClass || '', calScopeSection || '', first.date, second.date, sub))
-      series.push({ name: `${second.t} Attendance %`, color: palette[3], data: att })
-    }
-    return { subjects, series }
-  }, [calScopeClass, calScopeSection])
-
   const teacherClassSections = React.useMemo(() => {
-    if (!teacher) return [] as Array<{ klass: string; section: string }>
+    if (!showInsights || !teacher) return [] as Array<{ klass: string; section: string }>
     const classes = getAssignedClassesForTeacher(teacher.name)
     const baseClasses = classes.length ? classes : getClasses()
     const out: Array<{ klass: string; section: string }> = []
@@ -372,10 +329,10 @@ export default function TeacherDashboard() {
       }
     }
     return out
-  }, [teacher])
+  }, [showInsights, teacher])
 
   const subjectPerformance = React.useMemo(() => {
-    if (!teacher) return [] as Array<{ key: string; klass: string; section: string; subject: string; pct: number | null }>
+    if (!showInsights || !teacher) return [] as Array<{ key: string; klass: string; section: string; subject: string; pct: number | null }>
     const combos: Array<{ key: string; klass: string; section: string; subject: string; pct: number | null }> = []
     for (const { klass, section } of teacherClassSections) {
       const assigned = getAssignedSubjectsForTeacher(teacher.name, klass, section)
@@ -406,7 +363,7 @@ export default function TeacherDashboard() {
       }
     }
     return combos
-  }, [teacher, teacherClassSections, teacherSubjects])
+  }, [showInsights, teacher, teacherClassSections, teacherSubjects])
 
   const filteredSubjectPerformance = React.useMemo(() => {
     if (!selectedClassSections.length) return subjectPerformance
@@ -930,14 +887,6 @@ export default function TeacherDashboard() {
                   <div style={{ fontWeight: 800, fontSize: 16 }}>
                     {calScopeClass || 'Class'} {calScopeSection}
                   </div>
-                  <button
-                    type="button"
-                    className="btn-tiny"
-                    style={{ marginTop: 4, alignSelf: 'flex-start' }}
-                    onClick={() => router.push('/teacher/analytics')}
-                  >
-                    View analytics
-                  </button>
                 </div>
                 <div
                   style={{
@@ -996,6 +945,20 @@ export default function TeacherDashboard() {
                   padding: '12px 14px',
                 }}
               >
+                {!showInsights ? (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <div style={{ fontWeight: 700 }}>My subjects &amp; classes</div>
+                    <button
+                      type="button"
+                      className="btn-ghost"
+                      style={{ fontSize: 12, paddingInline: 10 }}
+                      onClick={() => setShowInsights(true)}
+                    >
+                      Load insights
+                    </button>
+                  </div>
+                ) : (
+                  <>
                 <div
                   style={{
                     display: 'flex',
@@ -1138,6 +1101,8 @@ export default function TeacherDashboard() {
                     </div>
                   ))}
                 </div>
+                  </>
+                )}
               </div>
             )}
 

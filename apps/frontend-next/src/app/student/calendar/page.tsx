@@ -62,6 +62,23 @@ function formatDMYFromYMD(ymd: string) {
   return `${d}/${m}/${y}`
 }
 
+function formatAttachmentLabel(a: any) {
+  if (!a) return 'Attachment'
+  if (a.type === 'link') {
+    if (a.name) return a.name
+    if (a.url) {
+      try {
+        const u = new URL(a.url)
+        return u.hostname
+      } catch {
+        return a.url
+      }
+    }
+    return 'Link'
+  }
+  return a.name || 'File'
+}
+
 export default function StudentCalendarPage() {
   const pathname = usePathname()
   const [month, setMonth] = React.useState(() => new Date())
@@ -284,10 +301,7 @@ export default function StudentCalendarPage() {
 
               <aside className="events">
                 <div className="events-head">Events in {MONTHS[month.getMonth()]}</div>
-                <div
-                  className="note-list"
-                  style={{ maxHeight: 480, minHeight: 320, overflowY: 'auto' }}
-                >
+                <div className="note-list">
                   {eventsThisMonth.length === 0 && (
                     <div className="note-card note-blue">No events planned this month.</div>
                   )}
@@ -321,9 +335,11 @@ export default function StudentCalendarPage() {
                                     overflow: 'hidden',
                                     textOverflow: 'ellipsis',
                                     whiteSpace: 'nowrap',
+                                    display: 'inline-block',
+                                    maxWidth: 180,
                                   }}
                                 >
-                                  {a.type === 'link' ? a.url : a.name}
+                                  {formatAttachmentLabel(a)}
                                 </span>
                               </div>
                               {a.type === 'link' ? (
@@ -457,9 +473,11 @@ export default function StudentCalendarPage() {
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',
+                                        display: 'inline-block',
+                                        maxWidth: 180,
                                       }}
                                     >
-                                      {a.type === 'link' ? a.url : a.name}
+                                      {formatAttachmentLabel(a)}
                                     </span>
                                   </div>
                                   {a.type === 'link' ? (

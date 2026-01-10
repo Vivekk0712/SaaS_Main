@@ -21,6 +21,8 @@ export default function ParentPaymentsPage() {
   const [studentName, setStudentName] = React.useState<string>('')
   const [studentClassSection, setStudentClassSection] = React.useState<string>('')
   const [adhoc, setAdhoc] = React.useState<Array<{ id:string; title:string; total:number; createdAt:string; status?:string }>>([])
+  const [selectedAdhocIds, setSelectedAdhocIds] = React.useState<string[]>([])
+  const [billDetails, setBillDetails] = React.useState<any | null>(null)
   const [showPaidFilter, setShowPaidFilter] = React.useState(false)
   const [paidWhen, setPaidWhen] = React.useState<'all' | 'today' | 'week'>('all')
   const [showTransFilter, setShowTransFilter] = React.useState(false)
@@ -221,6 +223,48 @@ export default function ParentPaymentsPage() {
     })
   }
 
+  const selectedAdhocBills = React.useMemo(() => {
+    if (!selectedAdhocIds.length) return []
+    return adhoc.filter(b => selectedAdhocIds.includes(String(b.id)))
+  }, [adhoc, selectedAdhocIds])
+
+  const canMultiPay = selectedAdhocBills.some(
+    b => (b.status || '').toLowerCase() !== 'paid'
+  )
+  const selectedTotal = selectedAdhocBills.reduce(
+    (sum, b) => sum + (Number(b.total || 0) || 0),
+    0
+  )
+
+  const payMultipleAdhoc = async () => {
+    const unpaid = selectedAdhocBills.filter(
+      b => (b.status || '').toLowerCase() !== 'paid'
+    )
+    if (!unpaid.length) {
+      alert('Select at least one pending invoice.')
+      return
+    }
+    const amount = unpaid.reduce((sum, b) => sum + (Number(b.total || 0) || 0), 0)
+    const description = unpaid.length > 1 ? `Multiple invoices (${unpaid.length})` : (unpaid[0].title || 'Additional Fee')
+    const invoiceId = `ADHOC_MULTI_${Date.now()}`
+
+    await payWithRazorpay(amount, description, invoiceId, async () => {
+      try {
+        for (const bill of unpaid) {
+          await fetch('/api/local/parent/fees/adhoc/pay', {
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
+            body: JSON.stringify({ billId: bill.id }),
+          })
+        }
+        setSelectedAdhocIds([])
+        await load(true)
+      } catch (error) {
+        console.error('Failed to update multi-payment status:', error)
+      }
+    })
+  }
+
   const startOfToday = new Date(); startOfToday.setHours(0,0,0,0)
   const byDue = [...parts.map((p, i) => ({ p, i }))].sort((a,b) => {
     const ad = a.p.dueDate ? new Date(a.p.dueDate).getTime() : Number.MAX_SAFE_INTEGER
@@ -390,6 +434,128 @@ export default function ParentPaymentsPage() {
     <script>
       window.onload = function() { window.print(); };
     </script>
+  </body>
+</html>`)
+    win.document.close()
+  }
+
+  const openAdhocBillWindow = (bill: any) => {
+    if (typeof window === 'undefined') return
+    const win = window.open('', '_blank', 'width=980,height=720')
+    if (!win) return
+    const created = bill?.createdAt ? new Date(bill.createdAt) : null
+    const paidAt = bill?.paidAt ? new Date(bill.paidAt) : null
+    const fmtDate = (d: Date | null) => (d && !Number.isNaN(d.getTime()) ? d.toLocaleString('en-IN') : '—')
+    const fmtAmt = (n: any) =>
+      Number(n || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })
+
+    const title = String(bill?.title || 'Additional Fee')
+    const billId = String(bill?.id || '')
+    const status = String(bill?.status || 'pending')
+    const items: Array<{ label?: string; amount?: number }> = Array.isArray(bill?.items) ? bill.items : []
+    const total = items.reduce((s, it) => s + Number(it?.amount || 0), 0) || Number(bill?.total || 0) || 0
+
+    const stuName = studentName || String(bill?.name || 'Student')
+    const cls = studentClassSection || 'Class / Section'
+    const invoiceNo = billId ? `ADHOC/${billId.slice(-6)}` : 'ADHOC'
+
+    win.document.write(`
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Bill - ${invoiceNo}</title>
+    <style>
+      body { font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; margin: 28px; color: #111827; }
+      .header { display:flex; justify-content:space-between; align-items:flex-start; gap: 16px; }
+      .brand h1 { margin: 0; font-size: 18px; text-transform: uppercase; letter-spacing: 0.04em; }
+      .brand div { margin-top: 4px; font-size: 12px; color: #4b5563; }
+      .pill { display:inline-block; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; }
+      .paid { background: #dcfce7; color: #166534; border: 1px solid #86efac; }
+      .pending { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+      .grid { margin-top: 16px; display:grid; grid-template-columns: 1fr 1fr; gap: 12px; font-size: 13px; }
+      .card { border: 1px solid #11182722; border-radius: 14px; padding: 10px 12px; background: #ffffff; }
+      .label { font-size: 11px; color: #6b7280; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+      .value { margin-top: 4px; font-weight: 700; }
+      table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 13px; }
+      th, td { border: 1px solid #11182733; padding: 8px 10px; }
+      th { background: #f3f4f6; text-align: left; }
+      .right { text-align: right; }
+      .totals { margin-top: 14px; display:flex; justify-content:flex-end; }
+      .totals .card { width: min(420px, 100%); }
+      .footer { margin-top: 24px; font-size: 11px; color: #4b5563; text-align:center; }
+      @media print { .no-print { display:none; } body { margin: 0; } }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <div class="brand">
+        <h1>School SAS</h1>
+        <div>Bill / Invoice</div>
+      </div>
+      <div>
+        <div class="pill ${status.toLowerCase()==='paid' ? 'paid' : 'pending'}">${status.toUpperCase()}</div>
+        <div style="margin-top:8px; font-size:12px; color:#4b5563;">Invoice: <strong>${invoiceNo}</strong></div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="label">Student</div>
+        <div class="value">${stuName}</div>
+        <div style="margin-top:6px; color:#4b5563;">${cls}</div>
+      </div>
+      <div class="card">
+        <div class="label">Title</div>
+        <div class="value">${title}</div>
+        <div style="margin-top:6px; color:#4b5563;">Bill ID: ${billId || '—'}</div>
+      </div>
+      <div class="card">
+        <div class="label">Created</div>
+        <div class="value">${fmtDate(created)}</div>
+      </div>
+      <div class="card">
+        <div class="label">Paid At</div>
+        <div class="value">${fmtDate(paidAt)}</div>
+      </div>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th style="width:60px;">S. No</th>
+          <th>Particulars</th>
+          <th class="right" style="width:160px;">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${
+          items.length
+            ? items
+                .map(
+                  (it, idx) => `<tr>
+          <td>${idx + 1}</td>
+          <td>${String(it?.label || 'Fee')}</td>
+          <td class="right">${fmtAmt(it?.amount || 0)}</td>
+        </tr>`
+                )
+                .join('')
+            : `<tr><td>1</td><td>${title}</td><td class="right">${fmtAmt(total)}</td></tr>`
+        }
+      </tbody>
+    </table>
+
+    <div class="totals">
+      <div class="card">
+        <div class="label">Total</div>
+        <div class="value" style="font-size:16px;">${fmtAmt(total)}</div>
+      </div>
+    </div>
+
+    <div class="footer">
+      This is a computer-generated invoice. You may save it as PDF from the print dialog.
+      <div class="no-print" style="margin-top:10px;"><button onclick="window.print()">Print / Save as PDF</button></div>
+    </div>
   </body>
 </html>`)
     win.document.close()
@@ -940,9 +1106,10 @@ export default function ParentPaymentsPage() {
                     fontSize: 12,
                     fontWeight: 600,
                   }}
-                  disabled
+                  disabled={!canMultiPay}
+                  onClick={payMultipleAdhoc}
                 >
-                  Multiple Pay
+                  Multiple Pay{selectedTotal > 0 ? ` (${selectedTotal.toLocaleString('en-IN')})` : ''}
                 </button>
               </div>
               <div className="table" style={{ fontSize: 12 }}>
@@ -950,7 +1117,24 @@ export default function ParentPaymentsPage() {
                   <thead>
                     <tr>
                       <th style={{ width: 32 }}>
-                        <input type="checkbox" disabled />
+                        <input
+                          type="checkbox"
+                          checked={
+                            adhoc.some(b => (b.status || '').toLowerCase() !== 'paid') &&
+                            adhoc
+                              .filter(b => (b.status || '').toLowerCase() !== 'paid')
+                              .every(b => selectedAdhocIds.includes(String(b.id)))
+                          }
+                          onChange={(e) => {
+                            const pending = adhoc.filter(b => (b.status || '').toLowerCase() !== 'paid')
+                            if (!pending.length) return
+                            if (e.target.checked) {
+                              setSelectedAdhocIds(pending.map(b => String(b.id)))
+                            } else {
+                              setSelectedAdhocIds([])
+                            }
+                          }}
+                        />
                       </th>
                       <th>INVOICE NO</th>
                       <th>TITLE</th>
@@ -970,10 +1154,22 @@ export default function ParentPaymentsPage() {
                       const paidAmount = isPaid ? amount : 0
                       const pendingAmount = isPaid ? 0 : amount
                       const invoiceNo = bill.id ? String(bill.id) : `ADHOC-${idx + 1}`
+                      const isChecked = selectedAdhocIds.includes(String(bill.id))
                       return (
                         <tr key={bill.id || idx}>
                           <td>
-                            <input type="checkbox" disabled />
+                            <input
+                              type="checkbox"
+                              disabled={isPaid}
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const id = String(bill.id)
+                                setSelectedAdhocIds(prev => {
+                                  if (e.target.checked) return prev.includes(id) ? prev : [...prev, id]
+                                  return prev.filter(x => x !== id)
+                                })
+                              }}
+                            />
                           </td>
                           <td>{invoiceNo}</td>
                           <td style={{ fontWeight: 600 }}>{bill.title || 'Additional Fee'}</td>
@@ -991,7 +1187,7 @@ export default function ParentPaymentsPage() {
                               type="button"
                               className="btn-ghost"
                               style={{ fontSize: 11, padding: '4px 10px' }}
-                              disabled
+                              onClick={() => setBillDetails(bill)}
                             >
                               View Bill Details
                             </button>
@@ -1108,6 +1304,160 @@ export default function ParentPaymentsPage() {
           </div>
         </div>
       </div>
+
+      {billDetails && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          onClick={() => setBillDetails(null)}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15,23,42,0.55)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 80,
+            padding: 16,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              width: 'min(920px, 96vw)',
+              maxHeight: 'min(86vh, 720px)',
+              overflow: 'auto',
+              background: 'var(--panel)',
+              borderRadius: 18,
+              padding: 16,
+              boxShadow: '0 24px 60px rgba(0,0,0,0.45)',
+              border: '1px solid rgba(148,163,184,0.25)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12, alignItems: 'center' }}>
+              <div style={{ fontWeight: 800, fontSize: 14 }}>Bill Details</div>
+              <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
+                {(billDetails.status || '').toLowerCase() !== 'paid' && billDetails.id ? (
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{ fontSize: 12, padding: '6px 14px' }}
+                    onClick={async () => {
+                      const id = String(billDetails.id || '')
+                      setBillDetails(null)
+                      await payAdhoc(id)
+                    }}
+                  >
+                    Pay Now
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{ fontSize: 12 }}
+                  onClick={() => setBillDetails(null)}
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 12, display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 12 }}>
+              <div className="card" style={{ padding: 12, borderRadius: 14, boxShadow: 'none' }}>
+                <div className="label">Invoice</div>
+                <div style={{ fontWeight: 800, marginTop: 4 }}>{String(billDetails.id || '')}</div>
+                <div className="note" style={{ marginTop: 6 }}>
+                  Status: {(billDetails.status || 'pending').toString()}
+                </div>
+              </div>
+              <div className="card" style={{ padding: 12, borderRadius: 14, boxShadow: 'none' }}>
+                <div className="label">Amount</div>
+                <div style={{ fontWeight: 800, marginTop: 4 }}>
+                  {Number(billDetails.total || 0).toLocaleString('en-IN', { style: 'currency', currency: 'INR' })}
+                </div>
+                <div className="note" style={{ marginTop: 6 }}>
+                  Date:{' '}
+                  {billDetails.createdAt ? new Date(billDetails.createdAt).toLocaleString() : '—'}
+                </div>
+              </div>
+            </div>
+
+            <div className="card" style={{ padding: 12, borderRadius: 14, boxShadow: 'none', marginTop: 12 }}>
+              <div className="label">Title</div>
+              <div style={{ fontWeight: 800, marginTop: 4 }}>{billDetails.title || 'Additional Fee'}</div>
+              {billDetails.description ? (
+                <div className="note" style={{ marginTop: 6 }}>
+                  {String(billDetails.description)}
+                </div>
+              ) : null}
+            </div>
+
+            <div className="card" style={{ padding: 12, borderRadius: 14, boxShadow: 'none', marginTop: 12 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10 }}>
+                <div className="label">Bill Items</div>
+                <button
+                  type="button"
+                  className="btn-ghost"
+                  style={{ fontSize: 12, padding: '4px 10px', borderRadius: 999 }}
+                  onClick={() => openAdhocBillWindow(billDetails)}
+                >
+                  Print / Save PDF
+                </button>
+              </div>
+              <div className="table" style={{ marginTop: 8, fontSize: 12 }}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: 60 }}>S. No</th>
+                      <th>Particulars</th>
+                      <th style={{ width: 140, textAlign: 'right' }}>Amount</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(Array.isArray(billDetails.items) ? billDetails.items : []).length ? (
+                      (billDetails.items as any[]).map((it, idx) => (
+                        <tr key={idx}>
+                          <td>{idx + 1}</td>
+                          <td>{String(it?.label || 'Fee')}</td>
+                          <td style={{ textAlign: 'right' }}>
+                            {Number(it?.amount || 0).toLocaleString('en-IN', {
+                              style: 'currency',
+                              currency: 'INR',
+                            })}
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td>1</td>
+                        <td>{billDetails.title || 'Additional Fee'}</td>
+                        <td style={{ textAlign: 'right' }}>
+                          {Number(billDetails.total || 0).toLocaleString('en-IN', {
+                            style: 'currency',
+                            currency: 'INR',
+                          })}
+                        </td>
+                      </tr>
+                    )}
+                    <tr>
+                      <td colSpan={2} style={{ textAlign: 'right', fontWeight: 800 }}>
+                        Total
+                      </td>
+                      <td style={{ textAlign: 'right', fontWeight: 800 }}>
+                        {Number(billDetails.total || 0).toLocaleString('en-IN', {
+                          style: 'currency',
+                          currency: 'INR',
+                        })}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <button
         type="button"
         className="parent-logout-fab"

@@ -62,6 +62,23 @@ function formatDMYFromYMD(ymd: string) {
   return `${d}/${m}/${y}`
 }
 
+function formatAttachmentLabel(a: any) {
+  if (!a) return 'Attachment'
+  if (a.type === 'link') {
+    if (a.name) return a.name
+    if (a.url) {
+      try {
+        const u = new URL(a.url)
+        return u.hostname
+      } catch {
+        return a.url
+      }
+    }
+    return 'Link'
+  }
+  return a.name || 'File'
+}
+
 export default function ParentCalendarPage() {
   const pathname = usePathname()
   const [month, setMonth] = React.useState(() => new Date())
@@ -69,6 +86,8 @@ export default function ParentCalendarPage() {
   const [klass, setKlass] = React.useState('')
   const [section, setSection] = React.useState<'A' | 'B' | ''>('')
   const [events, setEvents] = React.useState<Event[]>([])
+  const [eventPopupDate, setEventPopupDate] = React.useState<string | null>(null)
+  const [eventPopupItems, setEventPopupItems] = React.useState<Event[]>([])
 
   const days = React.useMemo(() => getMonthMatrix(month), [month])
   const isSameMonth = (d: Date) => d.getMonth() === month.getMonth()
@@ -237,12 +256,22 @@ export default function ParentCalendarPage() {
                     dots.length ? 'cal-has-event' : ''
                   } ${isSelected ? 'cal-selected' : ''}`}
                   data-eventcolor={primaryColor || undefined}
-                  role={isMobile ? 'button' : undefined}
-                  aria-pressed={isMobile ? isSelected : undefined}
+                  role="button"
+                  aria-pressed={isSelected}
                   onClick={() => {
-                    if (!isMobile) return
-                    if (!dots.length) return setSelectedDay(null)
-                    setSelectedDay(prev => (prev === ymd ? null : ymd))
+                    if (!dots.length) {
+                      setSelectedDay(null)
+                      setEventPopupDate(null)
+                      setEventPopupItems([])
+                      return
+                    }
+                    if (isMobile) {
+                      setSelectedDay(prev => (prev === ymd ? null : ymd))
+                    } else {
+                      setSelectedDay(ymd)
+                    }
+                    setEventPopupDate(ymd)
+                    setEventPopupItems(dots)
                   }}
                 >
                   <div className="cal-num">{d.getDate()}</div>
@@ -287,7 +316,7 @@ export default function ParentCalendarPage() {
 
         <aside className="events">
           <div className="events-head">Events in {MONTHS[month.getMonth()]}</div>
-          <div className="note-list" style={{ maxHeight: 480, minHeight: 320, overflowY: 'auto' }}>
+          <div className="note-list">
             {eventsThisMonth.length === 0 && <div className="note-card note-blue">No events planned this month.</div>}
             {eventsThisMonth.map((e, idx) => (
               <div key={idx} className={`note-card note-${e.color}`}>
@@ -317,9 +346,11 @@ export default function ParentCalendarPage() {
                               overflow: 'hidden',
                               textOverflow: 'ellipsis',
                               whiteSpace: 'nowrap',
+                              display: 'inline-block',
+                              maxWidth: 180,
                             }}
                           >
-                            {a.type === 'link' ? a.url : a.name}
+                            {formatAttachmentLabel(a)}
                           </span>
                         </div>
                         {a.type === 'link' ? (
@@ -345,6 +376,146 @@ export default function ParentCalendarPage() {
           </div>
         </aside>
       </div>
+
+      {eventPopupDate && eventPopupItems.length > 0 && (
+        <div
+          onClick={() => {
+            setEventPopupDate(null)
+            setEventPopupItems([])
+          }}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(15,23,42,0.55)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 60,
+          }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              maxWidth: 420,
+              width: '90%',
+              background: 'var(--panel)',
+              borderRadius: 18,
+              padding: 16,
+              boxShadow: '0 24px 60px rgba(0,0,0,0.45)',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div style={{ fontWeight: 700, fontSize: 14 }}>
+                Events on {formatDMYFromYMD(eventPopupDate)}
+              </div>
+              <button
+                type="button"
+                className="btn-ghost"
+                style={{ fontSize: 12, padding: '2px 8px' }}
+                onClick={() => {
+                  setEventPopupDate(null)
+                  setEventPopupItems([])
+                }}
+              >
+                Close
+              </button>
+            </div>
+            <div style={{ display: 'grid', gap: 8 }}>
+              {eventPopupItems.map((ev, idx) => {
+                const color =
+                  ev.color === 'blue'
+                    ? 'linear-gradient(135deg, #2563eb, #60a5fa)'
+                    : ev.color === 'green'
+                    ? 'linear-gradient(135deg, #16a34a, #4ade80)'
+                    : ev.color === 'orange'
+                    ? 'linear-gradient(135deg, #f97316, #fdba74)'
+                    : 'linear-gradient(135deg, #8b5cf6, #c4b5fd)'
+                return (
+                  <div
+                    key={idx}
+                    style={{
+                      borderRadius: 14,
+                      padding: '10px 12px',
+                      border: '1px solid rgba(15,23,42,0.18)',
+                      background: color,
+                      color: '#0f172a',
+                      boxShadow: '0 14px 32px rgba(15,23,42,0.28)',
+                    }}
+                  >
+                    <div style={{ fontWeight: 800, fontSize: 13 }}>{ev.title}</div>
+                    {ev.tag && (
+                      <div style={{ fontSize: 11, opacity: 0.9, marginTop: 2 }}>
+                        {ev.tag}
+                      </div>
+                    )}
+                    {ev.description && (
+                      <div style={{ fontSize: 12, marginTop: 6 }}>
+                        {ev.description}
+                      </div>
+                    )}
+                    {Array.isArray(ev.attachments) && ev.attachments.length > 0 && (
+                      <div
+                        style={{
+                          display: 'grid',
+                          gap: 4,
+                          marginTop: 8,
+                        }}
+                      >
+                        {ev.attachments.map((a: any, j: number) => (
+                          <div
+                            key={j}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              border: '1px dashed rgba(15,23,42,0.5)',
+                              borderRadius: 10,
+                              padding: '6px 8px',
+                              background: 'rgba(15,23,42,0.04)',
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <span className="note">
+                                {a.type === 'link' ? 'Link' : 'File'}
+                              </span>
+                              <span
+                                style={{
+                                  fontWeight: 600,
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  display: 'inline-block',
+                                  maxWidth: 180,
+                                }}
+                              >
+                                {formatAttachmentLabel(a)}
+                              </span>
+                            </div>
+                            {a.type === 'link' ? (
+                              <a
+                                className="back"
+                                href={a.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                Open
+                              </a>
+                            ) : (
+                              <a className="back" href={a.dataUrl} download={a.name}>
+                                Download
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="dash" style={{ marginTop: 24 }}>
         <Link className="back" href="/parent/dashboard">

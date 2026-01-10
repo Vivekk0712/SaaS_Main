@@ -22,7 +22,7 @@
 ### Section A
 USN | Student | Parent | Parent Phone
 ---|---|---|---
-1A01 | Aditya Kumar | Ananya Gupta | 8431536379
+1A01 | Aditya Kumar | Ananya Gupta | 9000000001
 1A02 | Nisha Naik | Rahul Nair | 9000000002
 1A03 | Manoj Sharma | Priya Shetty | 9000000003
 1A04 | Pooja Patil | Vikram Kulkarni | 9000000004

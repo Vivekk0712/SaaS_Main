@@ -288,6 +288,10 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
     }
   }, [role, phone, name])
 
+  const notifyOtpDisabled = React.useCallback(() => {
+    alert('OTP is temporarily disabled on this login page.')
+  }, [])
+
   const resetFields = (r: Role) => {
     setError('')
     setPass('')
@@ -315,7 +319,6 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
         case 'student': {
           const ph = phone.trim()
           if (!ph) throw new Error('Enter phone number')
-          if (otp.trim() && !otpVerified) throw new Error('Please verify OTP before signing in')
           if (!pass.trim()) throw new Error('Enter password')
           const r = await fetch('/api/local/profiles/student/resolve', {
             method: 'POST',
@@ -340,7 +343,6 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
         case 'parent': {
           const ph = phone.trim()
           if (!ph || !pass.trim()) throw new Error('Enter phone and password')
-          if (otp.trim() && !otpVerified) throw new Error('Please verify OTP before signing in')
           const r = await fetch('/api/local/profiles/parent/resolve', {
             method: 'POST',
             headers: { 'content-type': 'application/json' },
@@ -358,7 +360,6 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
           const nm = name.trim()
           if (!nm) throw new Error('Enter teacher name')
           if (!phone.trim()) throw new Error('Enter verification phone')
-          if (!otpVerified) throw new Error('Please verify OTP before signing in')
           if (pass !== '12345') throw new Error('Teacher password must be 12345 (temporary)')
           let raw = localStorage.getItem('school:teachers')
           let teachers = raw ? JSON.parse(raw) : []
@@ -395,7 +396,6 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
           const nm = name.trim()
           if (!nm) throw new Error('Enter name')
           if (!phone.trim()) throw new Error('Enter verification phone')
-          if (!otpVerified) throw new Error('Please verify OTP before signing in')
           if (pass !== '12345') throw new Error('Passcode must be 12345 (temporary)')
           const dept = 'General'
           sessionStorage.setItem('admin', JSON.stringify({ user: nm, dept }))
@@ -538,57 +538,14 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
                     <button
                       type="button"
                       className="button"
-                      onClick={async () => {
-                        try {
-                          const ph = phone.trim()
-                          if (!ph) {
-                            alert('Enter phone number before requesting OTP')
-                            return
-                          }
-                          const r = await fetch('/api/otp/send', {
-                            method: 'POST',
-                            headers: { 'content-type': 'application/json' },
-                            body: JSON.stringify({ phone: ph }),
-                          })
-                          if (!r.ok) {
-                            alert('Could not send OTP. Please try again.')
-                            return
-                          }
-                          alert('OTP sent to your phone number.')
-                          setOtpVerified(false)
-                        } catch {
-                          alert('Could not send OTP. Please try again.')
-                        }
-                      }}
+                      onClick={notifyOtpDisabled}
                     >
                       Send OTP
                     </button>
                     <button
                       type="button"
                       className="button secondary"
-                      onClick={async () => {
-                        try {
-                          const ph = phone.trim()
-                          if (!ph || !otp.trim()) {
-                            alert('Enter phone and OTP before verifying')
-                            return
-                          }
-                          const r = await fetch('/api/otp/verify', {
-                            method: 'POST',
-                            headers: { 'content-type': 'application/json' },
-                            body: JSON.stringify({ phone: ph, code: otp.trim() }),
-                          })
-                          if (!r.ok) {
-                            alert('Invalid or expired OTP')
-                            setOtpVerified(false)
-                            return
-                          }
-                          setOtpVerified(true)
-                        } catch {
-                          alert('Could not verify OTP. Please try again.')
-                          setOtpVerified(false)
-                        }
-                      }}
+                      onClick={notifyOtpDisabled}
                     >
                       Verify OTP
                     </button>
@@ -650,57 +607,14 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
                     <button
                       type="button"
                       className="button"
-                      onClick={async () => {
-                        try {
-                          const ph = phone.trim()
-                          if (!ph) {
-                            alert('Enter phone number before requesting OTP')
-                            return
-                          }
-                          const r = await fetch('/api/otp/send', {
-                            method: 'POST',
-                            headers: { 'content-type': 'application/json' },
-                            body: JSON.stringify({ phone: ph }),
-                          })
-                          if (!r.ok) {
-                            alert('Could not send OTP. Please try again.')
-                            return
-                          }
-                          alert('OTP sent to your phone number.')
-                          setOtpVerified(false)
-                        } catch {
-                          alert('Could not send OTP. Please try again.')
-                        }
-                      }}
+                      onClick={notifyOtpDisabled}
                     >
                       Send OTP
                     </button>
                     <button
                       type="button"
                       className="button secondary"
-                      onClick={async () => {
-                        try {
-                          const ph = phone.trim()
-                          if (!ph || !otp.trim()) {
-                            alert('Enter phone and OTP before verifying')
-                            return
-                          }
-                          const r = await fetch('/api/otp/verify', {
-                            method: 'POST',
-                            headers: { 'content-type': 'application/json' },
-                            body: JSON.stringify({ phone: ph, code: otp.trim() }),
-                          })
-                          if (!r.ok) {
-                            alert('Invalid or expired OTP')
-                            setOtpVerified(false)
-                            return
-                          }
-                          setOtpVerified(true)
-                        } catch {
-                          alert('Could not verify OTP. Please try again.')
-                          setOtpVerified(false)
-                        }
-                      }}
+                      onClick={notifyOtpDisabled}
                     >
                       Verify OTP
                     </button>
@@ -772,57 +686,14 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
                     <button
                       type="button"
                       className="button"
-                      onClick={async () => {
-                        try {
-                          const ph = phone.trim()
-                          if (!ph) {
-                            alert('Enter phone number before requesting OTP')
-                            return
-                          }
-                          const r = await fetch('/api/otp/send', {
-                            method: 'POST',
-                            headers: { 'content-type': 'application/json' },
-                            body: JSON.stringify({ phone: ph }),
-                          })
-                          if (!r.ok) {
-                            alert('Could not send OTP. Please try again.')
-                            return
-                          }
-                          alert('OTP sent to your phone number.')
-                          setOtpVerified(false)
-                        } catch {
-                          alert('Could not send OTP. Please try again.')
-                        }
-                      }}
+                      onClick={notifyOtpDisabled}
                     >
                       Send OTP
                     </button>
                     <button
                       type="button"
                       className="button secondary"
-                      onClick={async () => {
-                        try {
-                          const ph = phone.trim()
-                          if (!ph || !otp.trim()) {
-                            alert('Enter phone and OTP before verifying')
-                            return
-                          }
-                          const r = await fetch('/api/otp/verify', {
-                            method: 'POST',
-                            headers: { 'content-type': 'application/json' },
-                            body: JSON.stringify({ phone: ph, code: otp.trim() }),
-                          })
-                          if (!r.ok) {
-                            alert('Invalid or expired OTP')
-                            setOtpVerified(false)
-                            return
-                          }
-                          setOtpVerified(true)
-                        } catch {
-                          alert('Could not verify OTP. Please try again.')
-                          setOtpVerified(false)
-                        }
-                      }}
+                      onClick={notifyOtpDisabled}
                     >
                       Verify OTP
                     </button>
@@ -920,57 +791,14 @@ export default function LoginShell({ initialOauthActive = false }: LoginShellPro
                     <button
                       type="button"
                       className="button"
-                      onClick={async () => {
-                        try {
-                          const ph = phone.trim()
-                          if (!ph) {
-                            alert('Enter phone number before requesting OTP')
-                            return
-                          }
-                          const r = await fetch('/api/otp/send', {
-                            method: 'POST',
-                            headers: { 'content-type': 'application/json' },
-                            body: JSON.stringify({ phone: ph }),
-                          })
-                          if (!r.ok) {
-                            alert('Could not send OTP. Please try again.')
-                            return
-                          }
-                          alert('OTP sent to your phone number.')
-                          setOtpVerified(false)
-                        } catch {
-                          alert('Could not send OTP. Please try again.')
-                        }
-                      }}
+                      onClick={notifyOtpDisabled}
                     >
                       Send OTP
                     </button>
                     <button
                       type="button"
                       className="button secondary"
-                      onClick={async () => {
-                        try {
-                          const ph = phone.trim()
-                          if (!ph || !otp.trim()) {
-                            alert('Enter phone and OTP before verifying')
-                            return
-                          }
-                          const r = await fetch('/api/otp/verify', {
-                            method: 'POST',
-                            headers: { 'content-type': 'application/json' },
-                            body: JSON.stringify({ phone: ph, code: otp.trim() }),
-                          })
-                          if (!r.ok) {
-                            alert('Invalid or expired OTP')
-                            setOtpVerified(false)
-                            return
-                          }
-                          setOtpVerified(true)
-                        } catch {
-                          alert('Could not verify OTP. Please try again.')
-                          setOtpVerified(false)
-                        }
-                      }}
+                      onClick={notifyOtpDisabled}
                     >
                       Verify OTP
                     </button>

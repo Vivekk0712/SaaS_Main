@@ -154,20 +154,23 @@
       "items": [
         {
           "label": "scholl feee",
-          "amount": 10
+          "amount": 100
         }
       ],
-      "total": 10,
-      "updatedAt": "2025-12-01T16:27:32.422Z",
+      "total": 100,
+      "updatedAt": "2025-12-30T07:17:59.939Z",
       "installments": {
         "count": 1,
         "parts": [
           {
             "label": "Installment 1",
-            "amount": 0,
+            "amount": null,
             "dueDate": "2025-12-01"
           }
         ]
+      },
+      "confirmations": {
+        "accountant": true
       }
     }
   ],
@@ -177,84 +180,30 @@
   },
   "adhocFees": [
     {
-      "id": "adhoc_milsu2ii",
-      "title": "Exam fees",
+      "id": "adhoc_mjjmkjgo",
+      "title": "exam",
       "purpose": "",
       "items": [
         {
-          "label": "NA",
-          "amount": 10
+          "label": "exam fee",
+          "amount": 2000
         }
       ],
-      "total": 10,
+      "total": 2000,
       "target": {
         "type": "student",
         "studentName": "Aditya Kumar",
-        "parentPhone": "+918431536379"
+        "parentPhone": "9000000001"
       },
-      "createdAt": "2025-11-30T14:11:54.042Z"
+      "createdAt": "2025-12-24T06:20:41.736Z"
     },
     {
-      "id": "adhoc_mim0mano",
-      "title": "EXAM FEE",
-      "purpose": "",
-      "items": [
-        {
-          "label": "EXAM FEE",
-          "amount": 1000
-        }
-      ],
-      "total": 1000,
-      "target": {
-        "type": "student",
-        "studentName": "Aditya Kumar",
-        "parentPhone": "+918431536379"
-      },
-      "createdAt": "2025-11-30T17:49:48.276Z"
-    },
-    {
-      "id": "adhoc_minbf8rh",
-      "title": "sports",
-      "purpose": "",
-      "items": [
-        {
-          "label": "sports",
-          "amount": 10000
-        }
-      ],
-      "total": 10000,
-      "target": {
-        "type": "student",
-        "studentName": "Aditya Kumar",
-        "parentPhone": ""
-      },
-      "createdAt": "2025-12-01T15:40:01.181Z"
-    },
-    {
-      "id": "adhoc_mind78z7",
+      "id": "adhoc_mjjnhibg",
       "title": "exam fee",
       "purpose": "",
       "items": [
         {
           "label": "exam fee",
-          "amount": 100
-        }
-      ],
-      "total": 100,
-      "target": {
-        "type": "student",
-        "studentName": "Aditya Kumar",
-        "parentPhone": ""
-      },
-      "createdAt": "2025-12-01T16:29:47.443Z"
-    },
-    {
-      "id": "adhoc_mja45i4c",
-      "title": "Exam fee",
-      "purpose": "",
-      "items": [
-        {
-          "label": "Exam fee",
           "amount": 10000
         }
       ],
@@ -262,17 +211,17 @@
       "target": {
         "type": "student",
         "studentName": "Aditya Kumar",
-        "parentPhone": ""
+        "parentPhone": "9000000001"
       },
-      "createdAt": "2025-12-17T14:35:11.484Z"
+      "createdAt": "2025-12-24T06:46:19.900Z"
     },
     {
-      "id": "adhoc_mja4ab7c",
-      "title": "Exam fee",
+      "id": "adhoc_mjmfs28b",
+      "title": "fee",
       "purpose": "",
       "items": [
         {
-          "label": "Exam fee",
+          "label": "exam fee",
           "amount": 1000
         }
       ],
@@ -280,17 +229,17 @@
       "target": {
         "type": "student",
         "studentName": "Aditya Kumar",
-        "parentPhone": ""
+        "parentPhone": "918431536379"
       },
-      "createdAt": "2025-12-17T14:38:55.800Z"
+      "createdAt": "2025-12-26T05:33:53.867Z"
     },
     {
-      "id": "adhoc_mja4dc2e",
-      "title": "School fee",
+      "id": "adhoc_mjs9b59y",
+      "title": "exam fee",
       "purpose": "",
       "items": [
         {
-          "label": "School fee",
+          "label": "fee",
           "amount": 100000
         }
       ],
@@ -298,9 +247,27 @@
       "target": {
         "type": "student",
         "studentName": "Aditya Kumar",
-        "parentPhone": ""
+        "parentPhone": "918431536379"
       },
-      "createdAt": "2025-12-17T14:41:16.886Z"
+      "createdAt": "2025-12-30T07:19:24.022Z"
+    },
+    {
+      "id": "adhoc_mjy4w9o2",
+      "title": "exam fee",
+      "purpose": "",
+      "items": [
+        {
+          "label": "exam ",
+          "amount": 10000
+        }
+      ],
+      "total": 10000,
+      "target": {
+        "type": "student",
+        "studentName": "Aditya Kumar",
+        "parentPhone": "918431536379"
+      },
+      "createdAt": "2026-01-03T10:02:28.466Z"
     }
   ],
   "attendance": {},
@@ -309,8 +276,8 @@
   "circulars": [],
   "calendar": {},
   "meta": {
-    "version": 43,
-    "updatedAt": "2025-12-20T15:33:31.126Z"
+    "version": 101,
+    "updatedAt": "2026-01-03T10:09:50.621Z"
   },
   "adhocBills": [
     {
@@ -765,6 +732,3500 @@
       "total": 10000,
       "createdAt": "2025-12-17T15:16:31.347Z",
       "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigw2qd_xwjs",
+      "adhocId": "adhoc_mja4dc2e",
+      "appId": "1A01",
+      "parentPhone": "918850623515",
+      "name": "Aditya Kumar",
+      "title": "School fee",
+      "items": [
+        {
+          "label": "School fee",
+          "amount": 100000
+        }
+      ],
+      "total": 100000,
+      "createdAt": "2025-12-23T10:53:56.053Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigw2qd_o288",
+      "adhocId": "adhoc_mja4dc2e",
+      "appId": "1A21",
+      "parentPhone": "9000000021",
+      "name": "Aditya Kumar",
+      "title": "School fee",
+      "items": [
+        {
+          "label": "School fee",
+          "amount": 100000
+        }
+      ],
+      "total": 100000,
+      "createdAt": "2025-12-23T10:53:56.053Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigw2qd_fp8l",
+      "adhocId": "adhoc_mja4dc2e",
+      "appId": "3B06",
+      "parentPhone": "9000000156",
+      "name": "Aditya Kumar",
+      "title": "School fee",
+      "items": [
+        {
+          "label": "School fee",
+          "amount": 100000
+        }
+      ],
+      "total": 100000,
+      "createdAt": "2025-12-23T10:53:56.053Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigw2qd_qpv5",
+      "adhocId": "adhoc_mja4dc2e",
+      "appId": "3B26",
+      "parentPhone": "9000000176",
+      "name": "Aditya Kumar",
+      "title": "School fee",
+      "items": [
+        {
+          "label": "School fee",
+          "amount": 100000
+        }
+      ],
+      "total": 100000,
+      "createdAt": "2025-12-23T10:53:56.053Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigwrnh_muac",
+      "adhocId": "adhoc_mjigwn0s",
+      "appId": "1A01",
+      "parentPhone": "918850623515",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 123456
+        }
+      ],
+      "total": 123456,
+      "createdAt": "2025-12-23T10:54:28.349Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigwrnh_bo6z",
+      "adhocId": "adhoc_mjigwn0s",
+      "appId": "1A21",
+      "parentPhone": "9000000021",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 123456
+        }
+      ],
+      "total": 123456,
+      "createdAt": "2025-12-23T10:54:28.349Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigwrnh_cv93",
+      "adhocId": "adhoc_mjigwn0s",
+      "appId": "3B06",
+      "parentPhone": "9000000156",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 123456
+        }
+      ],
+      "total": 123456,
+      "createdAt": "2025-12-23T10:54:28.349Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigwrnh_ersb",
+      "adhocId": "adhoc_mjigwn0s",
+      "appId": "3B26",
+      "parentPhone": "9000000176",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 123456
+        }
+      ],
+      "total": 123456,
+      "createdAt": "2025-12-23T10:54:28.349Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_c92c",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A01",
+      "parentPhone": "918850623515",
+      "name": "Aditya Kumar",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_8n5z",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A02",
+      "parentPhone": "9000000002",
+      "name": "Nisha Naik",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "paid",
+      "paidAt": "2025-12-24T11:34:37.640Z"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_jmpg",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A03",
+      "parentPhone": "9000000003",
+      "name": "Manoj Sharma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_efpg",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A04",
+      "parentPhone": "9000000004",
+      "name": "Pooja Patil",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_qh49",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A05",
+      "parentPhone": "9000000005",
+      "name": "Sanjay Reddy",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_ct3u",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A06",
+      "parentPhone": "9000000006",
+      "name": "Kavya Iyer",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_dba5",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A07",
+      "parentPhone": "9000000007",
+      "name": "Arjun Gupta",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_l7h8",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A08",
+      "parentPhone": "9000000008",
+      "name": "Ritu Nair",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_6beo",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A09",
+      "parentPhone": "9000000009",
+      "name": "Aarav Shetty",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_5x7w",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A10",
+      "parentPhone": "9000000010",
+      "name": "Ananya Kulkarni",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_kozn",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A11",
+      "parentPhone": "9000000011",
+      "name": "Rahul Verma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_k8fc",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A12",
+      "parentPhone": "9000000012",
+      "name": "Priya Gowda",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_7cf2",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A13",
+      "parentPhone": "9000000013",
+      "name": "Vikram Jain",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_ni6k",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A14",
+      "parentPhone": "9000000014",
+      "name": "Sneha Rao",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_3i9t",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A15",
+      "parentPhone": "9000000015",
+      "name": "Karthik Menon",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_li73",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A16",
+      "parentPhone": "9000000016",
+      "name": "Divya Desai",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_awj4",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A17",
+      "parentPhone": "9000000017",
+      "name": "Rohan Choudhary",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_f4dc",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A18",
+      "parentPhone": "9000000018",
+      "name": "Meera Bhat",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_6rzz",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A19",
+      "parentPhone": "9000000019",
+      "name": "Ishaan Singh",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_2neo",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A20",
+      "parentPhone": "9000000020",
+      "name": "Lakshmi Joshi",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_6ogg",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A21",
+      "parentPhone": "9000000021",
+      "name": "Aditya Kumar",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_okdh",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A22",
+      "parentPhone": "9000000022",
+      "name": "Nisha Naik",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_p21b",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A23",
+      "parentPhone": "9000000023",
+      "name": "Manoj Sharma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_3kka",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A24",
+      "parentPhone": "9000000024",
+      "name": "Pooja Patil",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_1547",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A25",
+      "parentPhone": "9000000025",
+      "name": "Sanjay Reddy",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_ecqk",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A26",
+      "parentPhone": "9000000026",
+      "name": "Kavya Iyer",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_uvgv",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A27",
+      "parentPhone": "9000000027",
+      "name": "Arjun Gupta",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_ljcy",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A28",
+      "parentPhone": "9000000028",
+      "name": "Ritu Nair",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_bdee",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A29",
+      "parentPhone": "9000000029",
+      "name": "Aarav Shetty",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_gqp4",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A30",
+      "parentPhone": "9000000030",
+      "name": "Ananya Kulkarni",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_w00w",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B01",
+      "parentPhone": "9000000031",
+      "name": "Sneha Naik",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_toh9",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B02",
+      "parentPhone": "9000000032",
+      "name": "Karthik Sharma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_0o1u",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B03",
+      "parentPhone": "9000000033",
+      "name": "Divya Patil",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_998c",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B04",
+      "parentPhone": "9000000034",
+      "name": "Rohan Reddy",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_yskz",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B05",
+      "parentPhone": "9000000035",
+      "name": "Meera Iyer",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_p6dp",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B06",
+      "parentPhone": "9000000036",
+      "name": "Ishaan Gupta",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_e17f",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B07",
+      "parentPhone": "9000000037",
+      "name": "Lakshmi Nair",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_pbg1",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B08",
+      "parentPhone": "9000000038",
+      "name": "Aditya Shetty",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_ad42",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B09",
+      "parentPhone": "9000000039",
+      "name": "Nisha Kulkarni",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_tbyw",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B10",
+      "parentPhone": "9000000040",
+      "name": "Manoj Verma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytka_8a4w",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B11",
+      "parentPhone": "9000000041",
+      "name": "Pooja Gowda",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_xtq9",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B12",
+      "parentPhone": "9000000042",
+      "name": "Sanjay Jain",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_7fd4",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B13",
+      "parentPhone": "9000000043",
+      "name": "Kavya Rao",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_tmgk",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B14",
+      "parentPhone": "9000000044",
+      "name": "Arjun Menon",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_dv1e",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B15",
+      "parentPhone": "9000000045",
+      "name": "Ritu Desai",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_y1fq",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B16",
+      "parentPhone": "9000000046",
+      "name": "Aarav Choudhary",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_gqyq",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B17",
+      "parentPhone": "9000000047",
+      "name": "Ananya Bhat",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_qctb",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B18",
+      "parentPhone": "9000000048",
+      "name": "Rahul Singh",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_dqat",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B19",
+      "parentPhone": "9000000049",
+      "name": "Priya Joshi",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_5nt5",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B20",
+      "parentPhone": "9000000050",
+      "name": "Vikram Kumar",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_zh7d",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B21",
+      "parentPhone": "9000000051",
+      "name": "Sneha Naik",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_9xkw",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B22",
+      "parentPhone": "9000000052",
+      "name": "Karthik Sharma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_afcc",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B23",
+      "parentPhone": "9000000053",
+      "name": "Divya Patil",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_ywfl",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B24",
+      "parentPhone": "9000000054",
+      "name": "Rohan Reddy",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_il7b",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B25",
+      "parentPhone": "9000000055",
+      "name": "Meera Iyer",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_wnzi",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B26",
+      "parentPhone": "9000000056",
+      "name": "Ishaan Gupta",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_z6k7",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B27",
+      "parentPhone": "9000000057",
+      "name": "Lakshmi Nair",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_52l8",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B28",
+      "parentPhone": "9000000058",
+      "name": "Aditya Shetty",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_mbso",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B29",
+      "parentPhone": "9000000059",
+      "name": "Nisha Kulkarni",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigytkb_d2d2",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B30",
+      "parentPhone": "9000000060",
+      "name": "Manoj Verma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:04.138Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_s48y",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A01",
+      "parentPhone": "918850623515",
+      "name": "Aditya Kumar",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_t5mf",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A02",
+      "parentPhone": "9000000002",
+      "name": "Nisha Naik",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "paid",
+      "paidAt": "2025-12-24T11:34:37.565Z"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_2ivt",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A03",
+      "parentPhone": "9000000003",
+      "name": "Manoj Sharma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_f41x",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A04",
+      "parentPhone": "9000000004",
+      "name": "Pooja Patil",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_doih",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A05",
+      "parentPhone": "9000000005",
+      "name": "Sanjay Reddy",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_bqad",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A06",
+      "parentPhone": "9000000006",
+      "name": "Kavya Iyer",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_dfvf",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A07",
+      "parentPhone": "9000000007",
+      "name": "Arjun Gupta",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_3llc",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A08",
+      "parentPhone": "9000000008",
+      "name": "Ritu Nair",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_1q8b",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A09",
+      "parentPhone": "9000000009",
+      "name": "Aarav Shetty",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_97ae",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A10",
+      "parentPhone": "9000000010",
+      "name": "Ananya Kulkarni",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_9oxp",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A11",
+      "parentPhone": "9000000011",
+      "name": "Rahul Verma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_0qg5",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A12",
+      "parentPhone": "9000000012",
+      "name": "Priya Gowda",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_be8i",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A13",
+      "parentPhone": "9000000013",
+      "name": "Vikram Jain",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_6xu3",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A14",
+      "parentPhone": "9000000014",
+      "name": "Sneha Rao",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_wijh",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A15",
+      "parentPhone": "9000000015",
+      "name": "Karthik Menon",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_jl6a",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A16",
+      "parentPhone": "9000000016",
+      "name": "Divya Desai",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_xejf",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A17",
+      "parentPhone": "9000000017",
+      "name": "Rohan Choudhary",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_cyfa",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A18",
+      "parentPhone": "9000000018",
+      "name": "Meera Bhat",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_t7tj",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A19",
+      "parentPhone": "9000000019",
+      "name": "Ishaan Singh",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_1azf",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A20",
+      "parentPhone": "9000000020",
+      "name": "Lakshmi Joshi",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_b3qv",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A21",
+      "parentPhone": "9000000021",
+      "name": "Aditya Kumar",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_wryn",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A22",
+      "parentPhone": "9000000022",
+      "name": "Nisha Naik",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_lr7i",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A23",
+      "parentPhone": "9000000023",
+      "name": "Manoj Sharma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_99sx",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A24",
+      "parentPhone": "9000000024",
+      "name": "Pooja Patil",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_s4nb",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A25",
+      "parentPhone": "9000000025",
+      "name": "Sanjay Reddy",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_3qt7",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A26",
+      "parentPhone": "9000000026",
+      "name": "Kavya Iyer",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_1ibl",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A27",
+      "parentPhone": "9000000027",
+      "name": "Arjun Gupta",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_cikx",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A28",
+      "parentPhone": "9000000028",
+      "name": "Ritu Nair",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_g615",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A29",
+      "parentPhone": "9000000029",
+      "name": "Aarav Shetty",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_x0db",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A30",
+      "parentPhone": "9000000030",
+      "name": "Ananya Kulkarni",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_e3hh",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B01",
+      "parentPhone": "9000000031",
+      "name": "Sneha Naik",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_p5tr",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B02",
+      "parentPhone": "9000000032",
+      "name": "Karthik Sharma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_mpyb",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B03",
+      "parentPhone": "9000000033",
+      "name": "Divya Patil",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_mq3w",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B04",
+      "parentPhone": "9000000034",
+      "name": "Rohan Reddy",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_kjl0",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B05",
+      "parentPhone": "9000000035",
+      "name": "Meera Iyer",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_7b96",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B06",
+      "parentPhone": "9000000036",
+      "name": "Ishaan Gupta",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_e7fw",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B07",
+      "parentPhone": "9000000037",
+      "name": "Lakshmi Nair",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_7n2i",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B08",
+      "parentPhone": "9000000038",
+      "name": "Aditya Shetty",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_r99p",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B09",
+      "parentPhone": "9000000039",
+      "name": "Nisha Kulkarni",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_b1it",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B10",
+      "parentPhone": "9000000040",
+      "name": "Manoj Verma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_cgst",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B11",
+      "parentPhone": "9000000041",
+      "name": "Pooja Gowda",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_hrph",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B12",
+      "parentPhone": "9000000042",
+      "name": "Sanjay Jain",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_2z5k",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B13",
+      "parentPhone": "9000000043",
+      "name": "Kavya Rao",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_2kh4",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B14",
+      "parentPhone": "9000000044",
+      "name": "Arjun Menon",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_m3yf",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B15",
+      "parentPhone": "9000000045",
+      "name": "Ritu Desai",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_x5p3",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B16",
+      "parentPhone": "9000000046",
+      "name": "Aarav Choudhary",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_btyt",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B17",
+      "parentPhone": "9000000047",
+      "name": "Ananya Bhat",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_nrqd",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B18",
+      "parentPhone": "9000000048",
+      "name": "Rahul Singh",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_5l4n",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B19",
+      "parentPhone": "9000000049",
+      "name": "Priya Joshi",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_5ehr",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B20",
+      "parentPhone": "9000000050",
+      "name": "Vikram Kumar",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_tjbl",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B21",
+      "parentPhone": "9000000051",
+      "name": "Sneha Naik",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_ovi5",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B22",
+      "parentPhone": "9000000052",
+      "name": "Karthik Sharma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_atiw",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B23",
+      "parentPhone": "9000000053",
+      "name": "Divya Patil",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_8cb5",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B24",
+      "parentPhone": "9000000054",
+      "name": "Rohan Reddy",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_w60e",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B25",
+      "parentPhone": "9000000055",
+      "name": "Meera Iyer",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_zkj9",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B26",
+      "parentPhone": "9000000056",
+      "name": "Ishaan Gupta",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_hsry",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B27",
+      "parentPhone": "9000000057",
+      "name": "Lakshmi Nair",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_0dyd",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B28",
+      "parentPhone": "9000000058",
+      "name": "Aditya Shetty",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_6ddz",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B29",
+      "parentPhone": "9000000059",
+      "name": "Nisha Kulkarni",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjigz7uf_0xuh",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B30",
+      "parentPhone": "9000000060",
+      "name": "Manoj Verma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:56:22.647Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_5ws7",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A01",
+      "parentPhone": "918850623515",
+      "name": "Aditya Kumar",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_xd40",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A02",
+      "parentPhone": "9000000002",
+      "name": "Nisha Naik",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "paid",
+      "paidAt": "2025-12-24T11:34:37.505Z"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_i5vj",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A03",
+      "parentPhone": "9000000003",
+      "name": "Manoj Sharma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_ecw3",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A04",
+      "parentPhone": "9000000004",
+      "name": "Pooja Patil",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_9o5y",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A05",
+      "parentPhone": "9000000005",
+      "name": "Sanjay Reddy",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_272d",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A06",
+      "parentPhone": "9000000006",
+      "name": "Kavya Iyer",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_p49d",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A07",
+      "parentPhone": "9000000007",
+      "name": "Arjun Gupta",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_i6ei",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A08",
+      "parentPhone": "9000000008",
+      "name": "Ritu Nair",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_350f",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A09",
+      "parentPhone": "9000000009",
+      "name": "Aarav Shetty",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_03gu",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A10",
+      "parentPhone": "9000000010",
+      "name": "Ananya Kulkarni",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_yosu",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A11",
+      "parentPhone": "9000000011",
+      "name": "Rahul Verma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_5sm5",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A12",
+      "parentPhone": "9000000012",
+      "name": "Priya Gowda",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_2z8n",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A13",
+      "parentPhone": "9000000013",
+      "name": "Vikram Jain",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_r6yr",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A14",
+      "parentPhone": "9000000014",
+      "name": "Sneha Rao",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_va6b",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A15",
+      "parentPhone": "9000000015",
+      "name": "Karthik Menon",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_wq8h",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A16",
+      "parentPhone": "9000000016",
+      "name": "Divya Desai",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_h1i1",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A17",
+      "parentPhone": "9000000017",
+      "name": "Rohan Choudhary",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_26ul",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A18",
+      "parentPhone": "9000000018",
+      "name": "Meera Bhat",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_omgc",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A19",
+      "parentPhone": "9000000019",
+      "name": "Ishaan Singh",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_r5xk",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A20",
+      "parentPhone": "9000000020",
+      "name": "Lakshmi Joshi",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_1q5z",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A21",
+      "parentPhone": "9000000021",
+      "name": "Aditya Kumar",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_bc60",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A22",
+      "parentPhone": "9000000022",
+      "name": "Nisha Naik",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_8bez",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A23",
+      "parentPhone": "9000000023",
+      "name": "Manoj Sharma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_vtfm",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A24",
+      "parentPhone": "9000000024",
+      "name": "Pooja Patil",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_wfs8",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A25",
+      "parentPhone": "9000000025",
+      "name": "Sanjay Reddy",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_mky3",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A26",
+      "parentPhone": "9000000026",
+      "name": "Kavya Iyer",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_20go",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A27",
+      "parentPhone": "9000000027",
+      "name": "Arjun Gupta",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_voey",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A28",
+      "parentPhone": "9000000028",
+      "name": "Ritu Nair",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_7n0g",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A29",
+      "parentPhone": "9000000029",
+      "name": "Aarav Shetty",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_rfdy",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1A30",
+      "parentPhone": "9000000030",
+      "name": "Ananya Kulkarni",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_7sil",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B01",
+      "parentPhone": "9000000031",
+      "name": "Sneha Naik",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_04r3",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B02",
+      "parentPhone": "9000000032",
+      "name": "Karthik Sharma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_8n16",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B03",
+      "parentPhone": "9000000033",
+      "name": "Divya Patil",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_pnrt",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B04",
+      "parentPhone": "9000000034",
+      "name": "Rohan Reddy",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_ifw4",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B05",
+      "parentPhone": "9000000035",
+      "name": "Meera Iyer",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_lt2r",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B06",
+      "parentPhone": "9000000036",
+      "name": "Ishaan Gupta",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_rji0",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B07",
+      "parentPhone": "9000000037",
+      "name": "Lakshmi Nair",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_ptdf",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B08",
+      "parentPhone": "9000000038",
+      "name": "Aditya Shetty",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_9g2o",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B09",
+      "parentPhone": "9000000039",
+      "name": "Nisha Kulkarni",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_wvot",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B10",
+      "parentPhone": "9000000040",
+      "name": "Manoj Verma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_ifd5",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B11",
+      "parentPhone": "9000000041",
+      "name": "Pooja Gowda",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_c3hg",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B12",
+      "parentPhone": "9000000042",
+      "name": "Sanjay Jain",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_p5h9",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B13",
+      "parentPhone": "9000000043",
+      "name": "Kavya Rao",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_olwf",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B14",
+      "parentPhone": "9000000044",
+      "name": "Arjun Menon",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_ip20",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B15",
+      "parentPhone": "9000000045",
+      "name": "Ritu Desai",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_s8cc",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B16",
+      "parentPhone": "9000000046",
+      "name": "Aarav Choudhary",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_ra9z",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B17",
+      "parentPhone": "9000000047",
+      "name": "Ananya Bhat",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_x8tt",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B18",
+      "parentPhone": "9000000048",
+      "name": "Rahul Singh",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_6s4z",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B19",
+      "parentPhone": "9000000049",
+      "name": "Priya Joshi",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_7vd5",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B20",
+      "parentPhone": "9000000050",
+      "name": "Vikram Kumar",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_4sxb",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B21",
+      "parentPhone": "9000000051",
+      "name": "Sneha Naik",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_qnef",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B22",
+      "parentPhone": "9000000052",
+      "name": "Karthik Sharma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_0y4s",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B23",
+      "parentPhone": "9000000053",
+      "name": "Divya Patil",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_isfr",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B24",
+      "parentPhone": "9000000054",
+      "name": "Rohan Reddy",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_l9gh",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B25",
+      "parentPhone": "9000000055",
+      "name": "Meera Iyer",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_0l7i",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B26",
+      "parentPhone": "9000000056",
+      "name": "Ishaan Gupta",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_irh6",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B27",
+      "parentPhone": "9000000057",
+      "name": "Lakshmi Nair",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_u3pr",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B28",
+      "parentPhone": "9000000058",
+      "name": "Aditya Shetty",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_wj2e",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B29",
+      "parentPhone": "9000000059",
+      "name": "Nisha Kulkarni",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjih0cib_da4s",
+      "adhocId": "adhoc_mjigyniw",
+      "appId": "1B30",
+      "parentPhone": "9000000060",
+      "name": "Manoj Verma",
+      "title": "exame fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-23T10:57:15.347Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjiqlcpo_axpm",
+      "adhocId": "adhoc_mjiql4jc",
+      "appId": "1A01",
+      "parentPhone": "918850623515",
+      "name": "Aditya Kumar",
+      "title": "exam",
+      "items": [
+        {
+          "label": "exam",
+          "amount": 1
+        }
+      ],
+      "total": 1,
+      "createdAt": "2025-12-23T15:25:31.932Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjiqlcpo_6hha",
+      "adhocId": "adhoc_mjiql4jc",
+      "appId": "1A21",
+      "parentPhone": "9000000021",
+      "name": "Aditya Kumar",
+      "title": "exam",
+      "items": [
+        {
+          "label": "exam",
+          "amount": 1
+        }
+      ],
+      "total": 1,
+      "createdAt": "2025-12-23T15:25:31.932Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjiqlcpo_0k2f",
+      "adhocId": "adhoc_mjiql4jc",
+      "appId": "3B06",
+      "parentPhone": "9000000156",
+      "name": "Aditya Kumar",
+      "title": "exam",
+      "items": [
+        {
+          "label": "exam",
+          "amount": 1
+        }
+      ],
+      "total": 1,
+      "createdAt": "2025-12-23T15:25:31.932Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjiqlcpo_nm1v",
+      "adhocId": "adhoc_mjiql4jc",
+      "appId": "3B26",
+      "parentPhone": "9000000176",
+      "name": "Aditya Kumar",
+      "title": "exam",
+      "items": [
+        {
+          "label": "exam",
+          "amount": 1
+        }
+      ],
+      "total": 1,
+      "createdAt": "2025-12-23T15:25:31.932Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjjgzjh8_cbix",
+      "adhocId": "adhoc_mjjgiolf",
+      "appId": "1A01",
+      "parentPhone": "8850623515",
+      "name": "Aditya Kumar",
+      "title": "exam",
+      "items": [
+        {
+          "label": "exam",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-24T03:44:23.900Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjjgzjh8_jz4s",
+      "adhocId": "adhoc_mjjgiolf",
+      "appId": "1A21",
+      "parentPhone": "9000000021",
+      "name": "Aditya Kumar",
+      "title": "exam",
+      "items": [
+        {
+          "label": "exam",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-24T03:44:23.900Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjjgzjh8_553i",
+      "adhocId": "adhoc_mjjgiolf",
+      "appId": "3B06",
+      "parentPhone": "9000000156",
+      "name": "Aditya Kumar",
+      "title": "exam",
+      "items": [
+        {
+          "label": "exam",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-24T03:44:23.900Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjjgzjh8_7ekg",
+      "adhocId": "adhoc_mjjgiolf",
+      "appId": "3B26",
+      "parentPhone": "9000000176",
+      "name": "Aditya Kumar",
+      "title": "exam",
+      "items": [
+        {
+          "label": "exam",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-24T03:44:23.900Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjjmeqqz_5nxa",
+      "adhocId": "adhoc_mjjmekb8",
+      "appId": "1A01",
+      "parentPhone": "9000000001",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "exam fee",
+          "amount": 10
+        }
+      ],
+      "total": 10,
+      "createdAt": "2025-12-24T06:16:11.243Z",
+      "status": "paid",
+      "paidAt": "2025-12-24T06:47:08.784Z"
+    },
+    {
+      "id": "adhoc_bill_mjjmeqqz_1o7e",
+      "adhocId": "adhoc_mjjmekb8",
+      "appId": "1A21",
+      "parentPhone": "9000000021",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "exam fee",
+          "amount": 10
+        }
+      ],
+      "total": 10,
+      "createdAt": "2025-12-24T06:16:11.243Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjjmeqqz_aatv",
+      "adhocId": "adhoc_mjjmekb8",
+      "appId": "3B06",
+      "parentPhone": "9000000156",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "exam fee",
+          "amount": 10
+        }
+      ],
+      "total": 10,
+      "createdAt": "2025-12-24T06:16:11.243Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjjmeqqz_qdpo",
+      "adhocId": "adhoc_mjjmekb8",
+      "appId": "3B26",
+      "parentPhone": "9000000176",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "exam fee",
+          "amount": 10
+        }
+      ],
+      "total": 10,
+      "createdAt": "2025-12-24T06:16:11.243Z",
+      "status": "unpaid"
+    },
+    {
+      "id": "adhoc_bill_mjjmkp5z_iom5",
+      "adhocId": "adhoc_mjjmkjgo",
+      "appId": "1A01",
+      "parentPhone": "9000000001",
+      "name": "Aditya Kumar",
+      "title": "exam",
+      "items": [
+        {
+          "label": "exam fee",
+          "amount": 2000
+        }
+      ],
+      "total": 2000,
+      "createdAt": "2025-12-24T06:20:49.125Z",
+      "status": "paid",
+      "paidAt": "2025-12-24T06:28:49.744Z"
+    },
+    {
+      "id": "adhoc_bill_mjjnhp41_fbv7",
+      "adhocId": "adhoc_mjjnhibg",
+      "appId": "1A01",
+      "parentPhone": "9000000001",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "exam fee",
+          "amount": 10000
+        }
+      ],
+      "total": 10000,
+      "createdAt": "2025-12-24T06:46:28.704Z",
+      "status": "paid",
+      "paidAt": "2025-12-24T06:47:08.702Z"
+    },
+    {
+      "id": "adhoc_bill_mjmfsa2p_9trl",
+      "adhocId": "adhoc_mjmfs28b",
+      "appId": "1A01",
+      "parentPhone": "8431536379",
+      "name": "Aditya Kumar",
+      "title": "fee",
+      "items": [
+        {
+          "label": "exam fee",
+          "amount": 1000
+        }
+      ],
+      "total": 1000,
+      "createdAt": "2025-12-26T05:34:04.033Z",
+      "status": "paid",
+      "paidAt": "2025-12-26T05:35:20.282Z"
+    },
+    {
+      "id": "adhoc_bill_mjs9bcis_tfqi",
+      "adhocId": "adhoc_mjs9b59y",
+      "appId": "1A01",
+      "parentPhone": "8431536379",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "fee",
+          "amount": 100000
+        }
+      ],
+      "total": 100000,
+      "createdAt": "2025-12-30T07:19:33.411Z",
+      "status": "paid",
+      "paidAt": "2025-12-30T07:20:25.515Z"
+    },
+    {
+      "id": "adhoc_bill_mjy4wkh2_3jtc",
+      "adhocId": "adhoc_mjy4w9o2",
+      "appId": "1A01",
+      "parentPhone": "8431536379",
+      "name": "Aditya Kumar",
+      "title": "exam fee",
+      "items": [
+        {
+          "label": "exam ",
+          "amount": 10000
+        }
+      ],
+      "total": 10000,
+      "createdAt": "2026-01-03T10:02:42.466Z",
+      "status": "paid",
+      "paidAt": "2026-01-03T10:09:50.619Z"
     }
   ],
   "academics": {

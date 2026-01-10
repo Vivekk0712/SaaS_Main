@@ -17,10 +17,14 @@ export async function POST(req: Request) {
     const marks = body.marks || {} // { usn: number }
     if (!test || !subject || !klass || !section || !max) return bad('invalid_payload')
     // resolve IDs
-    const t = await query<{ id:number }>('SELECT id FROM tests WHERE LOWER(name)=LOWER(?)', [test])
+    let t = await query<{ id:number }>('SELECT id FROM tests WHERE LOWER(name)=LOWER(?)', [test])
     const sub = await query<{ id:number }>('SELECT id FROM subjects WHERE LOWER(name)=LOWER(?)', [subject])
     const cls = await query<{ id:number }>('SELECT id FROM classes WHERE name=?', [klass])
     const sec = await query<{ id:number }>('SELECT id FROM sections WHERE class_id=? AND name=?', [cls[0]?.id, section])
+    if (!t.length) {
+      const r = await query<any>('INSERT INTO tests (name) VALUES (?)', [test])
+      t = [{ id: r.insertId }]
+    }
     if (!t.length || !sub.length || !cls.length || !sec.length) return bad('entity_not_found', 404)
     // upsert sheet
     const exist = await query<{ id:number }>(
@@ -56,4 +60,3 @@ export async function POST(req: Request) {
     return bad('server_error', 500)
   }
 }
-

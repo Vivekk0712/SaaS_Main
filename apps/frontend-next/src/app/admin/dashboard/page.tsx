@@ -499,6 +499,9 @@ export default function AdminDashboard() {
             {tabs.map(t => (
               <button key={t} className={`tab ${tab === t ? 'tab-active' : ''}`} onClick={()=>setTab(t as Tab)}>{t}</button>
             ))}
+            <Link className={`tab ${pathname?.startsWith('/admin/gallery') ? 'tab-active' : ''}`} href="/admin/gallery">
+              Gallery
+            </Link>
           </nav>
           <div className="actions" style={{ position:'relative' }}>
             <button className="btn-ghost" onClick={toggle}>{theme === 'light' ? 'Dark' : 'Light'} Mode</button>

@@ -3,6 +3,10 @@
 
 USE sas;
 
+-- Ensure invoice_id can store adhoc identifiers like ADHOC_...
+ALTER TABLE payment_attempts
+  MODIFY invoice_id VARCHAR(255) NOT NULL;
+
 -- Table: payment_attempts
 -- Stores all payment initiation attempts
 CREATE TABLE IF NOT EXISTS payment_attempts (

@@ -17,9 +17,19 @@ export default function BackButton() {
       router.push('/')
     }
   }
+  const hiddenPrefixes = [
+    '/parent',
+    '/admin',
+    '/student',
+    '/teacher',
+    '/accountant',
+    '/principal',
+    '/staff',
+  ]
 
-  // Optional: hide on root sign-in page
-  if (pathname === '/') return null
+  if (!pathname || pathname === '/' || hiddenPrefixes.some((p) => pathname.startsWith(p))) {
+    return null
+  }
 
   return (
     <button

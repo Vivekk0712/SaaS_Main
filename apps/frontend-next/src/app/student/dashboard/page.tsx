@@ -9,7 +9,7 @@ import { MotionDiv, MotionSection } from '../../../components/MotionComponents'
 
 type EventColor = 'blue' | 'green' | 'orange'
 
-type Event = { date: string; title: string; color: EventColor; description: string; tag: string }
+type Event = { date: string; title: string; color: EventColor; description: string; tag: string; attachments?: any[] }
 
 type CircularFilter = 'today' | 'week' | 'month'
 
@@ -92,6 +92,23 @@ function formatDMYFromYMD(ymd: string) {
   const m = ymd.slice(5, 7)
   const d = ymd.slice(8, 10)
   return `${d}/${m}/${y}`
+}
+
+function formatAttachmentLabel(a: any) {
+  if (!a) return 'Attachment'
+  if (a.type === 'link') {
+    if (a.name) return a.name
+    if (a.url) {
+      try {
+        const u = new URL(a.url)
+        return u.hostname
+      } catch {
+        return a.url
+      }
+    }
+    return 'Link'
+  }
+  return a.name || 'File'
 }
 
 function parseAttendanceStore() {
@@ -249,7 +266,14 @@ export default function StudentDashboard() {
         const v = store[k]
         const arr = Array.isArray(v) ? v : [v]
         for (const ev of arr) {
-          out.push({ date: ev.date, title: ev.title, color: ev.color as EventColor, description: ev.description, tag: ev.tag })
+          out.push({
+            date: ev.date,
+            title: ev.title,
+            color: ev.color as EventColor,
+            description: ev.description,
+            tag: ev.tag,
+            attachments: Array.isArray(ev.attachments) ? ev.attachments : [],
+          })
         }
       }
       setExtraEvents(out)
@@ -264,7 +288,16 @@ export default function StudentDashboard() {
           const out: Event[] = []
           for (const k of Object.keys(store)) {
             const v = store[k]; const arr = Array.isArray(v) ? v : [v]
-            for (const ev of arr) out.push({ date: ev.date, title: ev.title, color: ev.color as EventColor, description: ev.description, tag: ev.tag })
+            for (const ev of arr) {
+              out.push({
+                date: ev.date,
+                title: ev.title,
+                color: ev.color as EventColor,
+                description: ev.description,
+                tag: ev.tag,
+                attachments: Array.isArray(ev.attachments) ? ev.attachments : [],
+              })
+            }
           }
           setExtraEvents(out)
         } catch { setExtraEvents([]) }
@@ -277,7 +310,16 @@ export default function StudentDashboard() {
         const out: Event[] = []
         for (const k of Object.keys(store)) {
           const v = store[k]; const arr = Array.isArray(v) ? v : [v]
-          for (const ev of arr) out.push({ date: ev.date, title: ev.title, color: ev.color as EventColor, description: ev.description, tag: ev.tag })
+          for (const ev of arr) {
+            out.push({
+              date: ev.date,
+              title: ev.title,
+              color: ev.color as EventColor,
+              description: ev.description,
+              tag: ev.tag,
+              attachments: Array.isArray(ev.attachments) ? ev.attachments : [],
+            })
+          }
         }
         setExtraEvents(out)
       } catch { setExtraEvents([]) }
@@ -1641,14 +1683,11 @@ export default function StudentDashboard() {
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                         whiteSpace: 'nowrap',
-                                        maxWidth: 240,
+                                        display: 'inline-block',
+                                        maxWidth: 180,
                                       }}
                                     >
-                                      {(() => {
-                                        if (!a) return 'Attachment'
-                                        if (a.type === 'link') return a.name || 'Link'
-                                        return a.name || 'File'
-                                      })()}
+                                      {formatAttachmentLabel(a)}
                                     </span>
                                   </div>
                                   {a.type === 'link' ? (

@@ -5,10 +5,17 @@ import { getClasses, getSectionsForClass } from '../../teacher/data'
 
 const API = process.env.NEXT_PUBLIC_ONBOARDING_API_URL || ''
 
+function phoneKey(phone: string) {
+  const digits = String(phone || '').replace(/\D/g, '')
+  if (!digits) return ''
+  return digits.length > 10 ? digits.slice(-10) : digits
+}
+
 export default function AccountantDashboard() {
   const [tab, setTab] = React.useState<'fees'|'adhoc'|'students'>('fees')
   const [items, setItems] = React.useState<any[]>([])
   const [adhoc, setAdhoc] = React.useState<any[]>([])
+  const [adhocBills, setAdhocBills] = React.useState<any[]>([])
   const [students, setStudents] = React.useState<any[]>([])
   const [studentFilter, setStudentFilter] = React.useState<'all'|'paid'|'unpaid'|'today'|'week'|'month'>('all')
   const [studentQuery, setStudentQuery] = React.useState('')
@@ -34,26 +41,29 @@ export default function AccountantDashboard() {
   const load = async (background = false) => {
     try {
       if (firstRef.current && !background) setLoading(true)
+      let bills: any[] = []
       // local-first for instant view
       try { const rl = await fetch(`/api/local/staff/fees`); const j = await rl.json(); setItems(j.items || []) } catch { setItems([]) }
       // background refresh from remote
       try { const r = await fetch(`${API}/v1/onboarding/staff/fees`, { headers: { 'x-role': 'accountant', 'x-password': '12345' } }); if (r.ok) { const j = await r.json(); setItems(prev => j.items || prev) } } catch {}
       // adhoc
       try { const a = await fetch('/api/local/accounting/adhoc'); const aj = await a.json(); setAdhoc(aj.items || []) } catch { setAdhoc([]) }
+      // adhoc bills (for status + student totals)
+      try {
+        const billsRes = await fetch('/api/debug/adhoc-bills')
+        const billsData = await billsRes.json()
+        bills = billsData.adhocBills || []
+        setAdhocBills(bills)
+      } catch { setAdhocBills([]) }
       // students - fetch from MySQL and adhoc bills
       try {
         const rl = await fetch(`/api/mysql/profiles/students`)
         const sj = await rl.json()
         
-        // Fetch adhoc bills to calculate pending amounts
-        const billsRes = await fetch('/api/debug/adhoc-bills')
-        const billsData = await billsRes.json()
-        const bills = billsData.adhocBills || []
-        
         // Transform MySQL data and add fee information
         const studentsData = (sj.items || []).map((s: any) => {
-          // Find all bills for this student (by parent phone)
-          const studentBills = bills.filter((b: any) => b.parentPhone === s.parentPhone)
+          // Find all bills for this student (by parent phone, normalized)
+          const studentBills = bills.filter((b: any) => phoneKey(b.parentPhone || '') === phoneKey(s.parentPhone || ''))
           const unpaidBills = studentBills.filter((b: any) => b.status !== 'paid')
           const paidBills = studentBills.filter((b: any) => b.status === 'paid')
           
@@ -116,7 +126,7 @@ export default function AccountantDashboard() {
       
       // Transform MySQL data and add fee information
       const studentsData = (sj.items || []).map((s: any) => {
-        const studentBills = bills.filter((b: any) => b.parentPhone === s.parentPhone)
+        const studentBills = bills.filter((b: any) => phoneKey(b.parentPhone || '') === phoneKey(s.parentPhone || ''))
         const unpaidBills = studentBills.filter((b: any) => b.status !== 'paid')
         const paidBills = studentBills.filter((b: any) => b.status === 'paid')
         
@@ -282,7 +292,22 @@ export default function AccountantDashboard() {
                 const a = adhoc[0]
                 if (!a) return alert('No ad-hoc fees yet. Save one first.')
                 if (!confirm('Send the most recent ad-hoc fee to matching recipients now?')) return
-                try { await fetch(`/api/local/accounting/adhoc/${a.id}/send`, { method:'POST' }); alert('Ad-hoc fee sent.'); await load(true) } catch { alert('Send failed') }
+                try {
+                  const res = await fetch(`/api/local/accounting/adhoc/${a.id}/send`, { method:'POST' })
+                  const data = await res.json().catch(() => ({}))
+                  if (!res.ok) {
+                    if (data.error === 'ambiguous_student') {
+                      alert(`Multiple students found (${data.count}). Please include parent phone.`)
+                    } else {
+                      alert('Send failed')
+                    }
+                    return
+                  }
+                  alert(`Ad-hoc fee sent to ${data.delivered || 0} students.`)
+                  await load(true)
+                } catch {
+                  alert('Send failed')
+                }
               }}>Send Latest</button>
               <button className="btn-ghost" onClick={async()=>{
                 setPreviewLoading(true)
@@ -329,8 +354,7 @@ export default function AccountantDashboard() {
                   if (t?.type==='classes') tText = `Classes: ${(t.grades||[]).join(', ')}`
                   
                   // Check how many bills were sent
-                  const bills = (adhoc as any).bills || []
-                  const sentCount = bills.filter((b: any) => b.adhocId === a.id).length
+                  const sentCount = (adhocBills || []).filter((b: any) => b.adhocId === a.id).length
                   
                   return (
                     <tr key={a.id}>
@@ -350,7 +374,15 @@ export default function AccountantDashboard() {
                         <button className="btn-ghost" onClick={async()=>{ 
                           if(!confirm('Send this ad-hoc fee to recipients now?')) return
                           const res = await fetch(`/api/local/accounting/adhoc/${a.id}/send`,{ method:'POST'})
-                          const data = await res.json()
+                          const data = await res.json().catch(() => ({}))
+                          if (!res.ok) {
+                            if (data.error === 'ambiguous_student') {
+                              alert(`Multiple students found (${data.count}). Please include parent phone.`)
+                            } else {
+                              alert('Send failed')
+                            }
+                            return
+                          }
                           alert(`Sent to ${data.delivered || 0} students!`)
                           await load(true)
                         }}>Send</button>

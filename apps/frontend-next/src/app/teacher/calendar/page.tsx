@@ -23,6 +23,23 @@ type CalendarItem = {
   section?: string
 }
 
+function formatAttachmentLabel(a: any) {
+  if (!a) return 'Attachment'
+  if (a.type === 'link') {
+    if (a.name) return a.name
+    if (a.url) {
+      try {
+        const u = new URL(a.url)
+        return u.hostname
+      } catch {
+        return a.url
+      }
+    }
+    return 'Link'
+  }
+  return a.name || 'File'
+}
+
 const navLinks: Array<{ href: Route; label: string; icon: string }> = [
   { href: '/teacher/dashboard', label: 'Dashboard', icon: '🏠' },
   { href: '/teacher/attendance', label: 'Attendance', icon: '✅' },
@@ -383,8 +400,17 @@ export default function TeacherCalendarPage() {
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                           <span className="note">{a.type === 'link' ? 'Link' : 'File'}</span>
-                          <span style={{ fontWeight: 600 }}>
-                            {a.type === 'link' ? a.url : a.name}
+                          <span
+                            style={{
+                              fontWeight: 600,
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              whiteSpace: 'nowrap',
+                              display: 'inline-block',
+                              maxWidth: 180,
+                            }}
+                          >
+                            {formatAttachmentLabel(a)}
                           </span>
                         </div>
                         <button
@@ -413,7 +439,6 @@ export default function TeacherCalendarPage() {
             <aside
               className="events"
               id="teacher-calendar-events"
-              style={{ maxHeight: '60vh', overflowY: 'auto' }}
             >
               <div className="events-head">Events in {calMonth}</div>
               <div className="note-list">
@@ -450,9 +475,11 @@ export default function TeacherCalendarPage() {
                                   overflow: 'hidden',
                                   textOverflow: 'ellipsis',
                                   whiteSpace: 'nowrap',
+                                  display: 'inline-block',
+                                  maxWidth: 180,
                                 }}
                               >
-                                {a.type === 'link' ? a.url : a.name}
+                                {formatAttachmentLabel(a)}
                               </span>
                             </div>
                             {a.type === 'link' ? (

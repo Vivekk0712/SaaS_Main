@@ -43,6 +43,11 @@ function seedDummyAttendanceLocal() {
     if (!rawStudents) return
     const students = JSON.parse(rawStudents) as Student[]
     if (!Array.isArray(students) || !students.length) return
+    // Skip heavy dummy seeding when real datasets are large.
+    if (students.length > 120) {
+      localStorage.setItem('school:seed:attendanceDummy', 'skip-large')
+      return
+    }
 
     type Group = { klass: string; section: string; usns: string[] }
     const groups = new Map<string, Group>()

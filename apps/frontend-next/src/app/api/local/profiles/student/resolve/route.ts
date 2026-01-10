@@ -17,10 +17,14 @@ export async function POST(req: Request) {
   const phoneForAuth = canonicalPhone(String(fatherPhone))
   // Verify parent credentials against auth_users
   const users = await query<{ id:number; password_hash: Buffer }>('SELECT id, password_hash FROM auth_users WHERE email=? LIMIT 1', [phoneForAuth])
-  if (!users.length) return NextResponse.json({ error: 'invalid_credentials' }, { status: 401 })
-  const provided = sha256Hex(String(password))
-  const stored = Buffer.isBuffer(users[0].password_hash) ? users[0].password_hash.toString('hex') : String(users[0].password_hash || '')
-  if (provided !== stored) return NextResponse.json({ error: 'invalid_credentials' }, { status: 401 })
+  if (users.length) {
+    const provided = sha256Hex(String(password))
+    const stored = Buffer.isBuffer(users[0].password_hash) ? users[0].password_hash.toString('hex') : String(users[0].password_hash || '')
+    if (provided !== stored) return NextResponse.json({ error: 'invalid_credentials' }, { status: 401 })
+  } else {
+    // Demo fallback: allow default password for seeded parents when auth_users is empty.
+    if (String(password) !== '12345') return NextResponse.json({ error: 'invalid_credentials' }, { status: 401 })
+  }
   // Locate parent and their students
   const pr = await query<{ id:number; name:string }>('SELECT id,name FROM parents WHERE phone=? LIMIT 1', [phoneForAuth])
   if (!pr.length) return NextResponse.json({ error: 'not_found' }, { status: 404 })

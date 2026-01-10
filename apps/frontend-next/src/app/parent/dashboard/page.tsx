@@ -3,6 +3,7 @@ import React from 'react'
 import Link from 'next/link'
 import type { Route } from 'next'
 import { usePathname } from 'next/navigation'
+import { detectImageOrientation, type ImageOrientation } from '../../_lib/gallery/orientation'
 import {
   findStudent,
   readDiaryBy,
@@ -18,6 +19,15 @@ type EventColor = 'blue' | 'green' | 'orange'
 type CircularFilter = 'today' | 'week' | 'month'
 
 const CIRCULAR_CARD_COLORS = ['blue','green','orange','pink'] as const
+
+type GalleryItem = {
+  id: number
+  title: string
+  description: string
+  imageUrl?: string
+  imageData?: string
+  createdAt: string
+}
 
 // Simple helper to build a fixed 6x7 month grid starting on Monday
 function getMonthMatrix(base: Date) {
@@ -494,6 +504,96 @@ export default function ParentDashboard() {
   }, [])
 
   const [showCircularFilter, setShowCircularFilter] = React.useState(false)
+  const [galleryItems, setGalleryItems] = React.useState<GalleryItem[]>([])
+  const [carouselIndex, setCarouselIndex] = React.useState(0)
+  const [carouselAuto, setCarouselAuto] = React.useState(true)
+  const [carouselOrientationById, setCarouselOrientationById] = React.useState<Record<number, ImageOrientation>>({})
+
+  React.useEffect(() => {
+    let cancelled = false
+    const load = async () => {
+      try {
+        const r = await fetch('/api/mysql/gallery/list')
+        const j = await r.json()
+        const items = Array.isArray(j?.items) ? (j.items as GalleryItem[]) : []
+        if (cancelled) return
+        setGalleryItems(items)
+        setCarouselIndex((idx) => {
+          if (!items.length) return 0
+          return Math.min(idx, items.length - 1)
+        })
+      } catch {
+        if (!cancelled) setGalleryItems([])
+      }
+    }
+    load()
+    const refreshId = window.setInterval(load, 15000)
+    return () => {
+      cancelled = true
+      window.clearInterval(refreshId)
+    }
+  }, [])
+
+  React.useEffect(() => {
+    let cancelled = false
+    const run = async () => {
+      const next: Record<number, ImageOrientation> = {}
+      await Promise.all(
+        galleryItems.map(async (item) => {
+          const src = item.imageUrl || item.imageData || ''
+          const o = await detectImageOrientation(src)
+          next[item.id] = o
+        })
+      )
+      if (cancelled) return
+      setCarouselOrientationById(next)
+    }
+    if (galleryItems.length) run()
+    return () => {
+      cancelled = true
+    }
+  }, [galleryItems])
+
+  React.useEffect(() => {
+    if (!carouselAuto) return
+    if (galleryItems.length < 2) return
+    const id = window.setInterval(() => {
+      setCarouselIndex((idx) => (idx + 1) % galleryItems.length)
+    }, 4500)
+    return () => window.clearInterval(id)
+  }, [carouselAuto, galleryItems.length])
+
+  const goPrev = React.useCallback(() => {
+    if (galleryItems.length < 2) return
+    setCarouselIndex((idx) => (idx - 1 + galleryItems.length) % galleryItems.length)
+  }, [galleryItems.length])
+
+  const goNext = React.useCallback(() => {
+    if (galleryItems.length < 2) return
+    setCarouselIndex((idx) => (idx + 1) % galleryItems.length)
+  }, [galleryItems.length])
+
+  const carouselSlides = React.useMemo(() => {
+    const total = galleryItems.length
+    if (total === 0) return [] as Array<{ item: GalleryItem; offset: number }>
+    if (total === 1) return [{ item: galleryItems[0], offset: 0 }]
+    if (total === 2) {
+      const cur = galleryItems[carouselIndex % 2]
+      const next = galleryItems[(carouselIndex + 1) % 2]
+      return [
+        { item: cur, offset: 0 },
+        { item: next, offset: 1 },
+      ]
+    }
+    const prev = galleryItems[(carouselIndex - 1 + total) % total]
+    const cur = galleryItems[carouselIndex % total]
+    const next = galleryItems[(carouselIndex + 1) % total]
+    return [
+      { item: prev, offset: -1 },
+      { item: cur, offset: 0 },
+      { item: next, offset: 1 },
+    ]
+  }, [galleryItems, carouselIndex])
 
   const navLinks: Array<{ href: Route; label: string; icon: string }> = [
     { href: '/parent/dashboard', label: 'Dashboard', icon: '🏠' },
@@ -502,6 +602,7 @@ export default function ParentDashboard() {
     { href: '/parent/diary', label: 'Digital Diary', icon: '📔' },
     { href: '/parent/calendar', label: 'Calendar', icon: '📅' },
     { href: '/parent/circulars', label: 'Circulars', icon: '📣' },
+    { href: '/parent/gallery', label: 'Gallery', icon: '🖼️' },
     { href: '/parent/payments', label: 'Payments', icon: '💳' }
   ]
 
@@ -515,13 +616,6 @@ export default function ParentDashboard() {
           </div>
           <nav className="tabs" aria-label="Parent quick actions" />
           <div className="actions" style={{ position: 'relative' }}>
-            <button
-              className="btn-ghost hamburger"
-              aria-label="Open navigation menu"
-              onClick={() => setMobileNavOpen(open => !open)}
-            >
-              ☰
-            </button>
             <button className="btn-ghost" onClick={toggle} aria-label="Toggle theme">
               {theme === 'light' ? 'Dark' : 'Light'} Mode
             </button>
@@ -1314,6 +1408,95 @@ export default function ParentDashboard() {
                     </div>
                   )
                 })}
+              </div>
+            </section>
+
+            <section className="dash-gallery-carousel" style={{ marginTop: 18 }}>
+              <div className="dash-gallery-head">
+                <div>
+                  <div className="dash-gallery-title">Gallery</div>
+                  <div className="note">School moments ? auto plays every few seconds.</div>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                  <button
+                    type="button"
+                    className="btn-ghost"
+                    style={{ fontSize: 12, padding: '6px 12px', borderRadius: 999 }}
+                    onClick={() => setCarouselAuto((v) => !v)}
+                    disabled={galleryItems.length < 2}
+                  >
+                    Auto: {carouselAuto ? 'On' : 'Off'}
+                  </button>
+                  
+                </div>
+              </div>
+
+              <div className="dash-gallery-track">
+                <button
+                  type="button"
+                  className="dash-gallery-nav left"
+                  onClick={() => {
+                    setCarouselAuto(false)
+                    goPrev()
+                  }}
+                  aria-label="Previous photo"
+                  disabled={galleryItems.length < 2}
+                >
+                  {'<'}
+                </button>
+
+                {carouselSlides.length ? (
+                  carouselSlides.map(({ item, offset }) => (
+                    <div
+                      key={`${item.id}:${offset}`}
+                      className={`dash-gallery-card is-${carouselOrientationById[item.id] || 'portrait'} ${offset === 0 ? 'center' : 'side'} ${offset < 0 ? 'left' : offset > 0 ? 'right' : ''}`}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => {
+                        if (offset === 0) return
+                        const total = galleryItems.length
+                        if (!total) return
+                        setCarouselAuto(false)
+                        setCarouselIndex((idx) => (idx + offset + total) % total)
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key !== 'Enter' && e.key !== ' ') return
+                        e.preventDefault()
+                        if (offset === 0) return
+                        const total = galleryItems.length
+                        if (!total) return
+                        setCarouselAuto(false)
+                        setCarouselIndex((idx) => (idx + offset + total) % total)
+                      }}
+                    >
+                      <div
+                        className="dash-gallery-media"
+                        style={{ backgroundImage: `url(${item.imageUrl || item.imageData || ''})` }}
+                      />
+                      <div className="dash-gallery-overlay">
+                        <div className="dash-gallery-overlay-title">{item.title}</div>
+                        {item.description ? (
+                          <div className="dash-gallery-overlay-desc">{item.description}</div>
+                        ) : null}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="note">No gallery images yet.</div>
+                )}
+
+                <button
+                  type="button"
+                  className="dash-gallery-nav right"
+                  onClick={() => {
+                    setCarouselAuto(false)
+                    goNext()
+                  }}
+                  aria-label="Next photo"
+                  disabled={galleryItems.length < 2}
+                >
+                  {'>'}
+                </button>
               </div>
             </section>
 

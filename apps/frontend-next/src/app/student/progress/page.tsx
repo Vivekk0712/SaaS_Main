@@ -376,6 +376,12 @@ export default function StudentProgressPage() {
           const attendanceSeries: LineSeries[] = []
           const meta: Record<string, any> = {}
           const fmt = (ymd?: string) => (ymd && ymd.length >= 10) ? `${ymd.slice(8,10)}/${ymd.slice(5,7)}/${ymd.slice(0,4)}` : ''
+          const shiftYMD = (ymd: string, days: number) => {
+            const d = new Date(ymd)
+            if (Number.isNaN(d.getTime())) return ymd
+            d.setDate(d.getDate() + days)
+            return d.toISOString().slice(0, 10)
+          }
           tests.forEach(([t, d], idx) => {
             const map: Record<string, { score: number; max: number }> = {}
             d.items.forEach(it => { map[it.subject] = { score: Number(it.score)||0, max: Number(it.max)||0 } })
@@ -391,7 +397,7 @@ export default function StudentProgressPage() {
           const chronological = [...tests]
             .map(([t, d]) => ({ t, d }))
             .filter(x => x.d.date)
-            .sort((a, b) => (a.d.ts || 0) - (b.d.ts || 0))
+            .sort((a, b) => String(a.d.date || '').localeCompare(String(b.d.date || '')))
           const rangeNotes: string[] = []
           chronological.forEach((entry, idx) => {
             const current = entry
@@ -399,21 +405,20 @@ export default function StudentProgressPage() {
             const att = subjects.map(sub => {
               try {
                 if (!current.d.date) return 0
-                if (!prev) {
-                  const a = studentAttendanceSummaryBefore(meInfo.usn, meInfo.klass, meInfo.section, current.d.date, sub)
-                  return a.total ? Math.round((a.attended * 100) / a.total) : 0
+                const end = studentAttendanceSummaryBefore(meInfo.usn, meInfo.klass, meInfo.section, current.d.date, sub)
+                if (!prev || !prev.d.date) {
+                  return end.total ? Math.round((end.attended * 100) / end.total) : 0
                 }
-                if (prev.d.date) {
-                  const a = studentAttendanceSummaryBetween(
-                    meInfo.usn,
-                    meInfo.klass,
-                    meInfo.section,
-                    prev.d.date,
-                    current.d.date,
-                    sub
-                  )
-                  return a.total ? Math.round((a.attended * 100) / a.total) : 0
-                }
+                const start = studentAttendanceSummaryBefore(
+                  meInfo.usn,
+                  meInfo.klass,
+                  meInfo.section,
+                  shiftYMD(prev.d.date, -1),
+                  sub
+                )
+                const attended = Math.max(0, end.attended - start.attended)
+                const total = Math.max(0, end.total - start.total)
+                return total ? Math.round((attended * 100) / total) : 0
               } catch {}
               return 0
             })
