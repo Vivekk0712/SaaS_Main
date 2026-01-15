@@ -389,6 +389,7 @@ export default function TeacherDashboard() {
     { href: '/teacher/analytics', label: 'Analytics', icon: '📈' },
     { href: '/teacher/assignments', label: 'Assignments', icon: '📚' },
     { href: '/teacher/diary', label: 'Digital Diary', icon: '📔' },
+    { href: '/teacher/database-chat', label: 'Database Chat', icon: '💬' },
     { href: '/teacher/calendar', label: 'Academic Calendar', icon: '📅' },
     { href: '/teacher/marks', label: 'Marks Entry', icon: '✏️' },
     { href: '/teacher/academic-content', label: 'Academic Content', icon: '📘' },

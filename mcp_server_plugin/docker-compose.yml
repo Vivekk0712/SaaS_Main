@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  mcp-server:
+    build: .
+    ports:
+      - "5003:5003"
+    environment:
+      - PORT=5003
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_NAME=${DB_NAME}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - ERP_JWT_SECRET=${ERP_JWT_SECRET}
+      - ERP_JWT_ISSUER=${ERP_JWT_ISSUER}
+      - ERP_JWT_AUDIENCE=erp_mcp
+      - FRONTEND_URL=${FRONTEND_URL}
+    depends_on:
+      - mysql
+    restart: unless-stopped
+    networks:
+      - erp-network
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./sql/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    restart: unless-stopped
+    networks:
+      - erp-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - erp-network
+
+volumes:
+  mysql-data:
+
+networks:
+  erp-network:
+    driver: bridge

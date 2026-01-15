@@ -68,6 +68,21 @@ whatsappProc.on('exit', (code) => {
 procs.push(whatsappProc)
 console.log('[dev] starting whatsapp-plugin: npm run dev (in whatsapp_plugin/)')
 
+// Start MCP Server plugin (Python-based database chat)
+// Use venv's python on Windows
+const mcpCmd = process.platform === 'win32' ? 'venv\\Scripts\\python.exe' : 'venv/bin/python'
+const mcpProc = spawn(mcpCmd, ['-m', 'uvicorn', 'src.main:app', '--reload', '--port', '5003'], {
+  cwd: 'mcp_server_plugin',
+  stdio: 'inherit',
+  env: { ...process.env, ...envShared },
+  shell: false, // Don't use shell to avoid path issues
+})
+mcpProc.on('exit', (code) => {
+  console.log(`[dev] mcp-server-plugin exited with code ${code}`)
+})
+procs.push(mcpProc)
+console.log('[dev] starting mcp-server-plugin: venv\\Scripts\\python.exe -m uvicorn src.main:app --reload --port 5003 (in mcp_server_plugin/)')
+
 // Start websites
 run('frontend-next', npmCmd, ['run', 'dev', '-w', 'frontend-next'], envShared)
 run('onboarding-next', npmCmd, ['run', 'dev', '-w', 'onboarding-next'], envShared)

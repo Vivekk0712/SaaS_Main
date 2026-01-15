@@ -1,0 +1,23 @@
+{
+  "name": "mcp-server-plugin",
+  "version": "0.1.0",
+  "description": "MCP Server for ERP Database Querying - AI-powered natural language database queries",
+  "scripts": {
+    "dev": "python -m uvicorn src.main:app --reload --port 5003",
+    "start": "python -m uvicorn src.main:app --host 0.0.0.0 --port 5003",
+    "test": "pytest tests/",
+    "lint": "pylint src/",
+    "format": "black src/ tests/"
+  },
+  "keywords": [
+    "mcp",
+    "erp",
+    "database",
+    "ai",
+    "gemini",
+    "chatbot"
+  ],
+  "engines": {
+    "python": ">=3.10"
+  }
+}
